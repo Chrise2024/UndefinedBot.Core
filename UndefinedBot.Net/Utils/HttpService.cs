@@ -23,7 +23,7 @@ namespace UndefinedBot.Core.NetWork
         public async Task Start()
         {
             _httpListener.Start();
-            _httpServerLogger.Info("Http Server Started");
+            _httpServerLogger.Info("Listener", "Http Server Started");
             while (_httpListener.IsListening)
             {
                 try
@@ -34,15 +34,15 @@ namespace UndefinedBot.Core.NetWork
                 }
                 catch(Exception ex)
                 {
-                    _httpServerLogger.Error("Error Occured, Error Information:");
-                    _httpServerLogger.Error(ex.Message);
-                    _httpServerLogger.Error(ex.StackTrace ?? "");
+                    _httpServerLogger.Error("Listener", "Error Occured, Error Information:");
+                    _httpServerLogger.Error("Listener", ex.Message);
+                    _httpServerLogger.Error("Listener", ex.StackTrace ?? "");
                 }
             }
         }
         public void Stop()
         {
-            _httpServerLogger.Info("Http Server Stopped");
+            _httpServerLogger.Info("Listener", "Http Server Stopped");
             _httpListener.Stop();
             _httpListener.Close();
         }
@@ -60,9 +60,9 @@ namespace UndefinedBot.Core.NetWork
             }
             catch (Exception ex)
             {
-                _httpServerLogger.Error("Error Occured, Error Information:");
-                _httpServerLogger.Error(ex.Message);
-                _httpServerLogger.Error(ex.StackTrace ?? "");
+                _httpServerLogger.Error("Listener", "Error Occured, Error Information:");
+                _httpServerLogger.Error("Listener", ex.Message);
+                _httpServerLogger.Error("Listener", ex.StackTrace ?? "");
             }
         }
     }

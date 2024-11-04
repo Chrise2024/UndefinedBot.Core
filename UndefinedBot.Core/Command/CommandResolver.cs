@@ -18,9 +18,9 @@ namespace UndefinedBot.Core.Command
 
         private static readonly string s_commandPrefix = Core.GetConfigManager().GetCommandPrefix();
 
-        private static readonly Logger s_argLogger = new("CommandResolver", "ArgParse");
+        private static readonly Logger s_argLogger = new("CommandResolver");
 
-        private static readonly Logger s_handleLogger = new("CommandResolver", "HandleMsg");
+        private static readonly Logger s_handleLogger = new("CommandResolver");
         public static ArgSchematics Parse(MsgBodySchematics msgBody)
         {
             long GroupId = msgBody.GroupId ?? 0;
@@ -29,17 +29,17 @@ namespace UndefinedBot.Core.Command
             string CQString = msgBody.RawMessage ?? "";
             if (MsgId == 0)
             {
-                s_argLogger.Error("Invalid Msg Body");
+                s_argLogger.Error("ArgParse","Invalid Msg Body");
                 return s_noneCommandArg;
             }
             else if (CQString.Length == 0)
             {
-                s_argLogger.Error("Raw Msg Is Null");
+                s_argLogger.Error("ArgParse", "Raw Msg Is Null");
                 return s_noneCommandArg;
             }
             else
             {
-                s_argLogger.Info("Resolving, Raw = " + CQString);
+                s_argLogger.Info("ArgParse", "Resolving, Raw = " + CQString);
                 Match MatchCQReply = RegexProvider.GetCQReplyRegex().Match(CQString);
                 if (MatchCQReply.Success)
                 {
@@ -49,7 +49,7 @@ namespace UndefinedBot.Core.Command
                     if ( NormalCQString.StartsWith(s_commandPrefix))
                     {
                         List<string> Params = ParseCQString(NormalCQString[s_commandPrefix.Length..]);
-                        s_argLogger.Info("Parse Complete");
+                        s_argLogger.Info("ArgParse", "Parse Complete");
                         return new ArgSchematics(
                             Params[0],
                             [$"{TargetMsgId}", ..Params[1..]],
@@ -63,7 +63,7 @@ namespace UndefinedBot.Core.Command
                 else if (CQString.StartsWith(s_commandPrefix) && !CQString.Equals(s_commandPrefix))
                 {
                     List<string> Params = ParseCQString(CQString[s_commandPrefix.Length..]);
-                    s_argLogger.Info("Parse Complete");
+                    s_argLogger.Info("ArgParse", "Parse Complete");
                     return new ArgSchematics(
                             Params[0],
                             Params[1..],
@@ -73,7 +73,7 @@ namespace UndefinedBot.Core.Command
                             true
                             );
                 }
-                s_argLogger.Info("Parse Complete");
+                s_argLogger.Info("ArgParse", "Parse Complete");
             }
             return s_noneCommandArg;
         }

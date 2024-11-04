@@ -2,7 +2,6 @@
 using System.Text;
 using System.Net;
 using System.Net.Http.Json;
-using System.Drawing;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using UndefinedBot.Core;
@@ -43,14 +42,14 @@ namespace UndefinedBot.Core.NetWork
             catch (TaskCanceledException ex)
             {
                 Console.WriteLine("Task Cacled: ");
-                _httpApiLogger.Error(ex.Message);
-                _httpApiLogger.Error(ex.StackTrace ?? "");
+                _httpApiLogger.Error("HttpApi",ex.Message);
+                _httpApiLogger.Error("HttpApi", ex.StackTrace ?? "");
             }
             catch (Exception ex)
             {
-                _httpApiLogger.Error("Error Occured, Error Information:");
-                _httpApiLogger.Error(ex.Message);
-                _httpApiLogger.Error(ex.StackTrace ?? "");
+                _httpApiLogger.Error("HttpApi", "Error Occured, Error Information:");
+                _httpApiLogger.Error("HttpApi", ex.Message);
+                _httpApiLogger.Error("HttpApi", ex.StackTrace ?? "");
             }
         }
         public async void RecallGroupMsg<T>(T msgId)
@@ -72,14 +71,14 @@ namespace UndefinedBot.Core.NetWork
             catch (TaskCanceledException ex)
             {
                 Console.WriteLine("Task Cacled: ");
-                _httpApiLogger.Error(ex.Message);
-                _httpApiLogger.Error(ex.StackTrace ?? "");
+                _httpApiLogger.Error("HttpApi", ex.Message);
+                _httpApiLogger.Error("HttpApi", ex.StackTrace ?? "");
             }
             catch (Exception ex)
             {
-                _httpApiLogger.Error("Error Occured, Error Information:");
-                _httpApiLogger.Error(ex.Message);
-                _httpApiLogger.Error(ex.StackTrace ?? "");
+                _httpApiLogger.Error("HttpApi", "Error Occured, Error Information:");
+                _httpApiLogger.Error("HttpApi", ex.Message);
+                _httpApiLogger.Error("HttpApi", ex.StackTrace ?? "");
             }
         }
         public async Task<MsgBodySchematics> GetMsg<T>(T msgId)
@@ -102,8 +101,8 @@ namespace UndefinedBot.Core.NetWork
             catch (TaskCanceledException ex)
             {
                 Console.WriteLine("Task Cacled: ");
-                _httpApiLogger.Error(ex.Message);
-                _httpApiLogger.Error(ex.StackTrace ?? "");
+                _httpApiLogger.Error("HttpApi", ex.Message);
+                _httpApiLogger.Error("HttpApi", ex.StackTrace ?? "");
                 return new MsgBodySchematics();
             }
             catch
@@ -133,8 +132,8 @@ namespace UndefinedBot.Core.NetWork
             catch (TaskCanceledException ex)
             {
                 Console.WriteLine("Task Cacled: ");
-                _httpApiLogger.Error(ex.Message);
-                _httpApiLogger.Error(ex.StackTrace ?? "");
+                _httpApiLogger.Error("HttpApi", ex.Message);
+                _httpApiLogger.Error("HttpApi", ex.StackTrace ?? "");
                 return new GroupMemberSchematics();
             }
             catch
@@ -160,42 +159,13 @@ namespace UndefinedBot.Core.NetWork
             catch (TaskCanceledException ex)
             {
                 Console.WriteLine("Task Cacled: ");
-                _httpApiLogger.Error(ex.Message);
-                _httpApiLogger.Error(ex.StackTrace ?? "");
+                _httpApiLogger.Error("HttpApi", ex.Message);
+                _httpApiLogger.Error("HttpApi", ex.StackTrace ?? "");
                 return new HitokotoSchematics();
             }
             catch
             {
                 return new HitokotoSchematics();
-            }
-        }
-        public async Task<Image> GetQQAvatar<T>(T targetUin)
-        {
-            try
-            {
-                byte[] ImageBytes = await _httpClient.GetByteArrayAsync($"http://q.qlogo.cn/headimg_dl?dst_uin={targetUin}&spec=640&img_type=jpg");
-                if (ImageBytes.Length > 0)
-                {
-                    MemoryStream ms = new(ImageBytes);
-                    Image Im = Image.FromStream(ms);
-                    ms.Close();
-                    return Im;
-                }
-                else
-                {
-                    return Image.FromFile(Path.Join(Core.GetCoreRoot(), "Local", "512x512.png"));
-                }
-            }
-            catch (TaskCanceledException ex)
-            {
-                Console.WriteLine("Task Cacled: ");
-                _httpApiLogger.Error(ex.Message);
-                _httpApiLogger.Error(ex.StackTrace ?? "");
-                return new Bitmap(1, 1);
-            }
-            catch
-            {
-                return new Bitmap(1,1);
             }
         }
         public async Task<bool> CheckUin(long targetGroupId, long targetUin)
@@ -226,15 +196,15 @@ namespace UndefinedBot.Core.NetWork
             catch (TaskCanceledException ex)
             {
                 Console.WriteLine("Task Cacled: ");
-                _httpRequestLogger.Error(ex.Message);
-                _httpRequestLogger.Error(ex.StackTrace ?? "");
+                _httpRequestLogger.Error("Request", ex.Message);
+                _httpRequestLogger.Error("Request", ex.StackTrace ?? "");
                 return "";
             }
             catch (Exception ex)
             {
-                _httpRequestLogger.Error("Error Occured, Error Information:");
-                _httpRequestLogger.Error(ex.Message);
-                _httpRequestLogger.Error(ex.StackTrace ?? "");
+                _httpRequestLogger.Error("Request", "Error Occured, Error Information:");
+                _httpRequestLogger.Error("Request", ex.Message);
+                _httpRequestLogger.Error("Request", ex.StackTrace ?? "");
                 return "";
             }
         }
@@ -249,15 +219,15 @@ namespace UndefinedBot.Core.NetWork
             catch (TaskCanceledException ex)
             {
                 Console.WriteLine("Task Cacled: ");
-                _httpRequestLogger.Error(ex.Message);
-                _httpRequestLogger.Error(ex.StackTrace ?? "");
+                _httpRequestLogger.Error("Request", ex.Message);
+                _httpRequestLogger.Error("Request", ex.StackTrace ?? "");
                 return "";
             }
             catch (Exception ex)
             {
-                _httpRequestLogger.Error("Error Occured, Error Information:");
-                _httpRequestLogger.Error(ex.Message);
-                _httpRequestLogger.Error(ex.StackTrace ?? "");
+                _httpRequestLogger.Error("Request", "Error Occured, Error Information:");
+                _httpRequestLogger.Error("Request", ex.Message);
+                _httpRequestLogger.Error("Request", ex.StackTrace ?? "");
                 return "";
             }
         }
@@ -271,15 +241,15 @@ namespace UndefinedBot.Core.NetWork
             catch (TaskCanceledException ex)
             {
                 Console.WriteLine("Task Cacled: ");
-                _httpRequestLogger.Error(ex.Message);
-                _httpRequestLogger.Error(ex.StackTrace ?? "");
+                _httpRequestLogger.Error("Request", ex.Message);
+                _httpRequestLogger.Error("Request", ex.StackTrace ?? "");
                 return [];
             }
             catch (Exception ex)
             {
-                _httpRequestLogger.Error("Error Occured, Error Information:");
-                _httpRequestLogger.Error(ex.Message);
-                _httpRequestLogger.Error(ex.StackTrace ?? "");
+                _httpRequestLogger.Error("Request", "Error Occured, Error Information:");
+                _httpRequestLogger.Error("Request", ex.Message);
+                _httpRequestLogger.Error("Request", ex.StackTrace ?? "");
                 return [];
             }
         }

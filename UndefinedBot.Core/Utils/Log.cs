@@ -2,36 +2,34 @@
 
 namespace UndefinedBot.Core.Utils
 {
-    public class Logger(string nameSpace,string subType = "Common")
+    public class Logger(string nameSpace)
     {
         private readonly string _nameSpace = nameSpace;
 
-        private readonly string _subType = subType;
-
         private readonly ConsoleColor _defaultConsoleColor = Console.ForegroundColor;
-        public void Error(string message)
+        public void Error(string commandName,string message)
         {
             Console.ForegroundColor = ConsoleColor.Red;
-            PrintLine(message);
+            PrintLine(commandName, message);
             Console.ForegroundColor = _defaultConsoleColor;
         }
-        public void Warn(string message)
+        public void Warn(string commandName, string message)
         {
             Console.ForegroundColor = ConsoleColor.Yellow;
-            PrintLine(message);
+            PrintLine(commandName, message);
             Console.ForegroundColor = _defaultConsoleColor;
         }
-        public void Info(string message)
+        public void Info(string commandName, string message)
         {
             Console.ForegroundColor = _defaultConsoleColor;
-            PrintLine(message);
+            PrintLine(commandName, message);
         }
-        private void PrintLine(string text)
+        private void PrintLine(string commandName, string text)
         {
             string[] Lines = text.Split('\n',StringSplitOptions.RemoveEmptyEntries);
             foreach (string line in Lines)
             {
-                Console.WriteLine("[{0}][{1}][{2}] {3}", GetFormatTime(), _nameSpace, _subType, line);
+                Console.WriteLine("[{0}][{1}][{2}] {3}", GetFormatTime(), _nameSpace, commandName,  line);
             }
         }
         private string GetFormatTime()

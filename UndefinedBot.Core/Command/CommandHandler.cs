@@ -17,11 +17,7 @@ namespace UndefinedBot.Core.Command
     }
     public class CommandHandler
     {
-        private static readonly HttpApi s_httpApiI = new(Core.GetConfigManager().GetHttpPostUrl());
-
         private static readonly List<long> s_workGRoup = Core.GetConfigManager().GetGroupList();
-
-        private static readonly List<string> s_commandList = [];
 
         private static readonly Logger s_commandHandlerLogger = new("MsgHandler");
 
@@ -36,29 +32,10 @@ namespace UndefinedBot.Core.Command
                 ArgSchematics args = CommandResolver.Parse(MsgBody);
                 if (args.Status)
                 {
-                    if (s_commandList.Contains(args.Command))
-                    {
-                        s_commandHandlerLogger.Info("Executing with arg:");
-                        s_commandHandlerLogger.Info(JsonConvert.SerializeObject(args,Formatting.Indented));
-                        Event.Trigger(args);
-                    }
-                    else
-                    {
-                        await s_httpApiI.SendGroupMsg(
-                                args.GroupId,
-                                MsgBuilder
-                                    .GetInstance()
-                                    .Text($"这发的什么东西: <{args.Command}>").Build()
-                            );
-                    }
+                    s_commandHandlerLogger.Info("Handle","Executing with arg:");
+                    s_commandHandlerLogger.Info("Handle", JsonConvert.SerializeObject(args, Formatting.Indented));
+                    Event.Trigger(args);
                 }
-            }
-        }
-        public static void UpdateCommandList(List<string> CL)
-        {
-            foreach (var item in CL)
-            {
-                s_commandList.Add(item);
             }
         }
     }
