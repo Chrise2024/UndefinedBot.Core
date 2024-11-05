@@ -102,16 +102,6 @@ namespace UndefinedBot.Core.Command
                                 return $" {MsgId} ";
                             }
                         }
-                        /*
-                        else if (CQEntity.CQType.Equals("face"))
-                        {
-                            if (CQEntity.Properties.TryGetValue("id", out var FId))
-                            {
-                                if (TextRender.QFaceReference.TryGetValue(FId, out var Fstring))
-                                return $" {Fstring} ";
-                            }
-                        }
-                        */
                         else if (CQEntity.CQType.Equals("image"))
                         {
                             if (CQEntity.Properties.TryGetValue("url", out var ImageUrl))

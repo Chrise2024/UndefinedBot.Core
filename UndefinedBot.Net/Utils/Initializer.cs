@@ -21,35 +21,37 @@ namespace UndefinedBot.Core.Command
                 List<PluginPropertieSchematics> PluginRef = [];
                 foreach (string pf in PluginFolders)
                 {
-                    string[] Files = [.. Directory.GetFiles(pf).Where(name => name.EndsWith(".dll"))];
                     string PluginPropFile = Path.Join(pf, "plugin.json");
-                    if (Files.Length > 0 && File.Exists(PluginPropFile))
+                    if (File.Exists(PluginPropFile))
                     {
                         JObject PluginPropertyJson = FileIO.ReadAsJSON(PluginPropFile);
                         if (PluginPropertyJson.IsValid(PluginPropJsonSchema))
                         {
-
                             PluginPropertieSchematics PluginProperty = PluginPropertyJson.ToObject<PluginPropertieSchematics>();
-                            FileIO.EnsurePath(Path.Join(Program.GetProgramCahce(), PluginProperty.Name));
-                            object? PInstance = InitPlugin(Files[0], PluginProperty.EntryPoint, PluginProperty.Name);
-                            if (PInstance != null)
+                            string EntryFile = Path.Join(pf, PluginProperty.EntryFile);
+                            if (File.Exists(EntryFile))
                             {
-                                PluginProperty.Instance = PInstance;
-                                PluginRef.Add(PluginProperty);
+                                FileIO.EnsurePath(Path.Join(Program.GetProgramCahce(), PluginProperty.Name));
+                                object? PInstance = InitPlugin(EntryFile, PluginProperty.EntryPoint, PluginProperty.Name);
+                                if (PInstance != null)
+                                {
+                                    PluginProperty.Instance = PInstance;
+                                    PluginRef.Add(PluginProperty);
+                                }
+                                else
+                                {
+                                    s_initLogger.Warn("Program", $"Plugin: <{pf}> load failed");
+                                }
                             }
                             else
                             {
-                                s_initLogger.Warn("Program", $"Plugin: <{pf}> load failed");
+                                s_initLogger.Warn("Program", $"Plugin: <{pf}> EntryFile: <{EntryFile}> Not Found");
                             }
                         }
                         else
                         {
-                            s_initLogger.Warn("Program", $"Plugin: <{pf}> load failed");
+                            s_initLogger.Warn("Program", $"Plugin: <{pf}> Invalid plugin.json");
                         }
-                    }
-                    else
-                    {
-                        s_initLogger.Warn("Program", $"Plugin: <{pf}> load failed");
                     }
                 }
                 //Console.WriteLine(JsonConvert.SerializeObject(PluginRef));
@@ -67,11 +69,14 @@ namespace UndefinedBot.Core.Command
             Dictionary<string, CommandInstance> CommandRef = [];
             foreach (string cf in crfs)
             {
-                CommandInstance cfi = FileIO.ReadAsJSON<CommandInstance>(cf);
-                if (cfi.Name != null)
+                List<CommandInstance> cfi = FileIO.ReadAsJSON<List<CommandInstance>>(cf);
+                cfi.ForEach((i) =>
                 {
-                    CommandRef.Add(cfi.Name, cfi);
-                }
+                    if (i.Name != null)
+                    {
+                        CommandRef.Add(i.Name, i);
+                    }
+                });
             }
             return CommandRef;
         }
@@ -103,9 +108,10 @@ namespace UndefinedBot.Core.Command
                       ""properties"": {
                           ""name"": { ""type"": ""string"" },
                           ""description"": { ""type"": ""string"" },
+                          ""entry_file"": { ""type"": ""string"" },
                           ""entry_point"": { ""type"": ""string"" },
                       },
-                    ""required"": [""name"", ""description"", ""entry_point""]
+                    ""required"": [""name"", ""description"",""entry_file"", ""entry_point""]
                   }"
             );
     }
@@ -113,6 +119,7 @@ namespace UndefinedBot.Core.Command
     {
         [JsonProperty("name")] public string Name;
         [JsonProperty("description")] public string Description;
+        [JsonProperty("entry_file")] public string EntryFile;
         [JsonProperty("entry_point")] public string EntryPoint;
         [JsonIgnore] public object? Instance;
     }

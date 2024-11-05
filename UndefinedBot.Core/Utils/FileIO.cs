@@ -67,49 +67,51 @@ namespace UndefinedBot.Core.Utils
         }
         public static string ReadFile(string tPath)
         {
-            if (File.Exists(tPath))
+            try
             {
-                return File.ReadAllText(tPath);
+                if (File.Exists(tPath))
+                {
+                    return File.ReadAllText(tPath);
+                }
             }
-            else
-            {
-                return "";
-            }
+            catch { }
+            return "";
         }
         public static void WriteFile(string tPath, string content)
         {
-            EnsureFile(tPath, content);
-            File.WriteAllText(tPath, content);
+            try
+            {
+                EnsureFile(tPath, content);
+                File.WriteAllText(tPath, content);
+            }
+            catch { }
             return;
         }
         public static JObject ReadAsJSON(string tPath)
         {
-            string Content = ReadFile(tPath);
-            if (Content.Length != 0)
+            try
             {
-                return JObject.Parse(Content);
+                string Content = ReadFile(tPath);
+                if (Content.Length != 0)
+                {
+                    return JObject.Parse(Content);
+                }
             }
-            else
-            {
-                return [];
-            }
+            catch { }
+            return [];
         }
         public static T ReadAsJSON<T>(string tPath)
         {
-            string Content = ReadFile(tPath);
-            if (Content.Length != 0)
+            try
             {
-                return JObject.Parse(Content).ToObject<T>();
+                string Content = ReadFile(tPath);
+                if (Content.Length != 0)
+                {
+                    return JsonConvert.DeserializeObject<T>(Content);
+                }
             }
-            else
-            {
-                return new JObject().ToObject<T>();
-            }
-        }
-        public static JArray ReadAsJArray(string tPath)
-        {
-
-            return JArray.Parse(ReadFile(tPath));
+            catch { }
+            return new JObject().ToObject<T>();
         }
         public static void WriteAsJSON<T>(string tPath, T Content)
         {
@@ -118,12 +120,6 @@ namespace UndefinedBot.Core.Utils
             return;
         }
         public static void WriteAsJSON(string tPath, JObject Content)
-        {
-            EnsureFile(tPath);
-            WriteFile(tPath, JsonConvert.SerializeObject(Content, Formatting.Indented));
-            return;
-        }
-        public static void WriteAsJArray(string tPath, JArray Content)
         {
             EnsureFile(tPath);
             WriteFile(tPath, JsonConvert.SerializeObject(Content, Formatting.Indented));

@@ -99,7 +99,7 @@ namespace UndefinedBot.Core.Utils
             string Content = ReadFile(tPath);
             if (Content.Length != 0)
             {
-                return JObject.Parse(Content).ToObject<T>();
+                return JsonConvert.DeserializeObject<T>(Content);
             }
             else
             {

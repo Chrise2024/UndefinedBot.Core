@@ -28,7 +28,6 @@ namespace UndefinedBot.Core
         public readonly HttpRequest Request;
         public readonly ConfigManager Config;
         public readonly string RootPath;
-        //public readonly string PluginPath;
         public readonly string CachePath;
         public readonly List<CommandInstance> _commandInstances = [];
         public UndefinedAPI(string pluginName)
@@ -39,14 +38,11 @@ namespace UndefinedBot.Core
             Request = new();
             Config = new();
             RootPath = Environment.CurrentDirectory;
-            //PluginPath = Path.GetDirectoryName(Assembly.GetExecutingAssembly()?.Location) ?? Path.Join(Environment.CurrentDirectory, "Plugins", pluginName);
             CachePath = Path.Join(Core.GetCoreRoot(), "Cache", pluginName);
-            
         }
-        //public CommandEvent CommandEvent = CommandHandler.Event;
         public void SubmitCommand()
         {
-            Dictionary<string, CommandInstance> CommandRef = [];
+            List<CommandInstance> CommandRef = [];
             string CommandRefPath = Path.Join(RootPath, "CommandReference", $"{PluginName}.reference.json");
             foreach (var commandInstance in _commandInstances)
             {
@@ -60,7 +56,7 @@ namespace UndefinedBot.Core
                             this.Logger.Info(commandInstance.Name, "Command Completed");
                         }
                     };
-                    CommandRef.Add(commandInstance.Name, commandInstance);
+                    CommandRef.Add(commandInstance);
                     this.Logger.Info(commandInstance.Name, "Successful Load Command");
                 }
             }
@@ -80,7 +76,7 @@ namespace UndefinedBot.Core
     public class CommandInstance(string commandName)
     {
         [JsonProperty("name")] public readonly string Name = commandName;
-        [JsonProperty("alias")]public List<string> CommandAlias { get; private set; } = [];
+        [JsonProperty("alias")] public List<string> CommandAlias { get; private set; } = [];
         [JsonProperty("description")] public string? CommandDescription { get; private set; }
         [JsonProperty("short_description")] public string? CommandShortDescription { get; private set; }
         [JsonProperty("example")] public string? CommandExample { get; private set; }
@@ -114,7 +110,6 @@ namespace UndefinedBot.Core
         public void Action(CommandEventHandler action)
         {
             CommandAction = action;
-
         }
     }
 }
