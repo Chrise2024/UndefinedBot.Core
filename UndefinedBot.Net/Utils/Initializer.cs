@@ -74,7 +74,8 @@ namespace UndefinedBot.Core.Command
                 {
                     if (i.Name != null)
                     {
-                        CommandRef.Add(i.Name, i);
+                        CommandRef[i.Name] = i;
+                        //CommandRef.Add(i.Name, i);
                     }
                 });
             }
