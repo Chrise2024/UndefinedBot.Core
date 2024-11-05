@@ -44,7 +44,7 @@ namespace Command.Help
                                 await _undefinedApi.Api.SendGroupMsg(
                                     args.GroupId,
                                     _undefinedApi.GetMessageBuilder()
-                                        .Text(string.Format("---------------help---------------\n" + (desc ?? "") + (eg == null ? "" : $"\ne.g.\n{eg}"), _commandPrefix)).Build()
+                                        .Text(string.Format("---------------help---------------\n" + (desc ?? "") + (eg == null ? "" : $"\ne.g.\n{eg}") + $"可用指令别名: {JsonConvert.SerializeObject(Prop.CommandAlias)}", _commandPrefix)).Build()
                                 );
                             }
                         }
