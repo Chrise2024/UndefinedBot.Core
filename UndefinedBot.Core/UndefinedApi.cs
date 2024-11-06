@@ -23,6 +23,7 @@ namespace UndefinedBot.Core
     public class UndefinedAPI
     {
         public readonly string PluginName;
+        public readonly string PluginPath;
         public readonly Logger Logger;
         public readonly HttpApi Api;
         public readonly HttpRequest Request;
@@ -33,6 +34,7 @@ namespace UndefinedBot.Core
         public UndefinedAPI(string pluginName)
         {
             PluginName = pluginName;
+            PluginPath = Path.GetDirectoryName(Assembly.GetCallingAssembly().Location) ?? Path.Join(Environment.CurrentDirectory,"Plugins",pluginName);
             Logger = new(pluginName);
             Api = new(Core.GetConfigManager().GetHttpPostUrl());
             Request = new();
@@ -79,6 +81,7 @@ namespace UndefinedBot.Core
         [JsonProperty("alias")] public List<string> CommandAlias { get; private set; } = [];
         [JsonProperty("description")] public string? CommandDescription { get; private set; }
         [JsonProperty("short_description")] public string? CommandShortDescription { get; private set; }
+        [JsonProperty("usage")] public string? CommandUsage { get; private set; }
         [JsonProperty("example")] public string? CommandExample { get; private set; }
         [JsonIgnore] public CommandEventHandler? CommandAction { get; private set; }
         public CommandInstance Alias(IEnumerable<string> alias)
@@ -100,6 +103,11 @@ namespace UndefinedBot.Core
         public CommandInstance ShortDescription(string shortDescription)
         {
             CommandShortDescription = shortDescription;
+            return this;
+        }
+        public CommandInstance Usage(string usage)
+        {
+            CommandUsage = usage;
             return this;
         }
         public CommandInstance Example(string example)

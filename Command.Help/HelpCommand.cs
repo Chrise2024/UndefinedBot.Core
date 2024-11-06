@@ -24,8 +24,9 @@ namespace Command.Help
             _pluginName = pluginName;
             _commandPrefix = _undefinedApi.Config.GetCommandPrefix();
             _undefinedApi.RegisterCommand("help")
-                .Description("{0}help - 帮助\n使用方法：{0}help")
+                .Description("{0}help - 指令帮助文档")
                 .ShortDescription("{0}help - 帮助")
+                .Usage("{0}help [指令名]")
                 .Example("{0}help help")
                 .Action(async(ArgSchematics args) =>
                 {
@@ -39,12 +40,13 @@ namespace Command.Help
                         {
                             string? desc = Prop.CommandDescription;
                             string? eg = Prop.CommandExample;
-                            if (desc != null || eg != null)
+                            string? ug = Prop.CommandUsage;
+                            if (desc != null || eg != null || ug != null)
                             {
                                 await _undefinedApi.Api.SendGroupMsg(
                                     args.GroupId,
                                     _undefinedApi.GetMessageBuilder()
-                                        .Text(string.Format("---------------help---------------\n" + (desc ?? "") + (eg == null ? "" : $"\ne.g.\n{eg}") + $"\n可用指令别名: {JsonConvert.SerializeObject(Prop.CommandAlias)}", _commandPrefix)).Build()
+                                        .Text(string.Format("---------------help---------------\n" + (desc == null ? "" : $"{desc}\n") + (ug == null ? "" : $"使用方法: \n{eg}\n") + (eg == null ? "" : $"e.g.\n{eg}\n") + $"可用指令别名: \n{JsonConvert.SerializeObject(Prop.CommandAlias)}", _commandPrefix)).Build()
                                 );
                             }
                         }

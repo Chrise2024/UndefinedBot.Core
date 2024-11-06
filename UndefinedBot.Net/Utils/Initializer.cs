@@ -22,6 +22,7 @@ namespace UndefinedBot.Core.Command
                 foreach (string pf in PluginFolders)
                 {
                     string PluginPropFile = Path.Join(pf, "plugin.json");
+                    string PluginUCFile = Path.Join(pf, "UndefinedBot.Core.dll");
                     if (File.Exists(PluginPropFile))
                     {
                         JObject PluginPropertyJson = FileIO.ReadAsJSON(PluginPropFile);
@@ -31,6 +32,7 @@ namespace UndefinedBot.Core.Command
                             string EntryFile = Path.Join(pf, PluginProperty.EntryFile);
                             if (File.Exists(EntryFile))
                             {
+                                FileIO.SafeDeleteFile(PluginUCFile);
                                 FileIO.EnsurePath(Path.Join(Program.GetProgramCahce(), PluginProperty.Name));
                                 object? PInstance = InitPlugin(EntryFile, PluginProperty.EntryPoint, PluginProperty.Name);
                                 if (PInstance != null)
