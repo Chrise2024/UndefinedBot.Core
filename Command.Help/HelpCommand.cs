@@ -1,8 +1,6 @@
-﻿using System.Reflection;
-using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
 using UndefinedBot.Core;
 using UndefinedBot.Core.Command;
-using UndefinedBot.Core.Utils;
 
 namespace Command.Help
 {
@@ -24,11 +22,11 @@ namespace Command.Help
             _pluginName = pluginName;
             _commandPrefix = _undefinedApi.Config.GetCommandPrefix();
             _undefinedApi.RegisterCommand("help")
-                .Description("{0}help - 指令帮助文档")
-                .ShortDescription("{0}help - 帮助")
+                .Description("指令帮助文档")
+                .ShortDescription("帮助")
                 .Usage("{0}help [指令名]")
                 .Example("{0}help help")
-                .Action(async(ArgSchematics args) =>
+                .Action(async(args) =>
                 {
                     if (_commandReference.Count == 0)
                     {
@@ -36,17 +34,17 @@ namespace Command.Help
                     }
                     if (args.Param.Count > 0)
                     {
-                        if (_commandReference.TryGetValue(args.Param[0], out var Prop))
+                        if (_commandReference.TryGetValue(args.Param[0], out var prop))
                         {
-                            string? desc = Prop.CommandDescription;
-                            string? eg = Prop.CommandExample;
-                            string? ug = Prop.CommandUsage;
+                            string? desc = prop.CommandDescription;
+                            string? ug = prop.CommandUsage;
+                            string? eg = prop.CommandExample;
                             if (desc != null || eg != null || ug != null)
                             {
                                 await _undefinedApi.Api.SendGroupMsg(
                                     args.GroupId,
                                     _undefinedApi.GetMessageBuilder()
-                                        .Text(string.Format("---------------help---------------\n" + (desc == null ? "" : $"{desc}\n") + (ug == null ? "" : $"使用方法: \n{eg}\n") + (eg == null ? "" : $"e.g.\n{eg}\n") + $"可用指令别名: \n{JsonConvert.SerializeObject(Prop.CommandAlias)}", _commandPrefix)).Build()
+                                        .Text("---------------help---------------\n" + (desc == null ? "" : $"{prop.Name} - {desc}\n") + (ug == null ? "" : $"使用方法: \n{string.Format(ug,_commandPrefix)}\n") + (eg == null ? "" : $"e.g.\n{string.Format(eg,_commandPrefix)}\n") + $"可用指令别名: \n{JsonConvert.SerializeObject(prop.CommandAlias)}").Build()
                                 );
                             }
                         }
@@ -64,13 +62,13 @@ namespace Command.Help
                     {
                         if (_baseHelpText.Length == 0)
                         {
-                            string CommandText = "";
+                            string text = "";
                             foreach (var pair in _commandReference)
                             {
-                                CommandText += (pair.Value.CommandShortDescription ?? "") + "\n";
+                                text += $"{_commandPrefix}{pair.Value.Name} - {pair.Value.CommandShortDescription ?? ""}\n";
                             }
                             _baseHelpText = "---------------help---------------\n指令列表：\n" +
-                                CommandText +
+                                text +
                                 "使用#help+具体指令查看使用方法\ne.g. #help help";
                         }
                         await _undefinedApi.Api.SendGroupMsg(

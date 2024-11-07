@@ -1,9 +1,7 @@
 ﻿using System.Text;
 using UndefinedBot.Core;
 using UndefinedBot.Core.Utils;
-using UndefinedBot.Core.Command;
-using UndefinedBot.Core.NetWork;
-using Newtonsoft.Json;
+using UndefinedBot.Net.Utils;
 
 namespace UndefinedBot.Net
 {
@@ -13,11 +11,11 @@ namespace UndefinedBot.Net
 
         private static readonly string s_programRoot = Environment.CurrentDirectory;
 
-        private static readonly string s_programCahce = Path.Join(s_programRoot, "Cache");
+        private static readonly string s_programCache = Path.Join(s_programRoot, "Cache");
 
         private static readonly HttpServer s_httpServer = new(new ConfigManager().GetHttpServerUrl());
 
-        private static List<PluginPropertieSchematics> s_pluginReference = [];
+        private static List<PluginPropertySchematics> s_pluginReference = [];
 
         private static Dictionary<string, CommandInstance> s_commandReference = [];
         static void Main(string[] args)
@@ -31,26 +29,25 @@ namespace UndefinedBot.Net
             s_mainLogger.Info("Main","Bot Launched");
             Task.Run(s_httpServer.Start);
             //CommandHandler.Event.Trigger(new ArgSchematics("q", ["1234"],0,0,0,true));
-            string TempString;
             while (true)
             {
-                TempString = Console.ReadLine() ?? "";
-                if (TempString.Equals("stop"))
+                string tempString = Console.ReadLine() ?? "";
+                if (tempString.Equals("stop"))
                 {
                     s_httpServer.Stop();
                     break;
                 }
             }
-            s_mainLogger.Info("Main", "Bot Colsed");
+            s_mainLogger.Info("Main", "Bot Closed");
             Console.ReadKey();
         }
         public static string GetProgramRoot()
         {
             return s_programRoot;
         }
-        public static string GetProgramCahce()
+        public static string GetProgramCache()
         {
-            return s_programCahce;
+            return s_programCache;
         }
     }
 }

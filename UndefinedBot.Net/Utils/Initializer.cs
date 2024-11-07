@@ -1,44 +1,43 @@
-﻿using System;
-using System.Reflection;
+﻿using System.Reflection;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Newtonsoft.Json.Schema;
+using UndefinedBot.Core;
 using UndefinedBot.Core.Utils;
-using UndefinedBot.Net;
 
-namespace UndefinedBot.Core.Command
+namespace UndefinedBot.Net.Utils
 {
-    internal class Initializer
+    abstract internal class Initializer
     {
         private static readonly string s_pluginRoot = Path.Join(Program.GetProgramRoot(),"Plugins");
 
         private static readonly Logger s_initLogger = new("Initialize");
-        internal static List<PluginPropertieSchematics> LoadPlugins()
+        static internal List<PluginPropertySchematics> LoadPlugins()
         {
             if (Directory.Exists(s_pluginRoot))
             {
-                string[] PluginFolders = Directory.GetDirectories(s_pluginRoot);
-                List<PluginPropertieSchematics> PluginRef = [];
-                foreach (string pf in PluginFolders)
+                string[] pluginFolders = Directory.GetDirectories(s_pluginRoot);
+                List<PluginPropertySchematics> pluginRef = [];
+                foreach (string pf in pluginFolders)
                 {
-                    string PluginPropFile = Path.Join(pf, "plugin.json");
-                    string PluginUCFile = Path.Join(pf, "UndefinedBot.Core.dll");
-                    if (File.Exists(PluginPropFile))
+                    string pluginPropFile = Path.Join(pf, "plugin.json");
+                    string pluginUcFile = Path.Join(pf, "UndefinedBot.Core.dll");
+                    if (File.Exists(pluginPropFile))
                     {
-                        JObject PluginPropertyJson = FileIO.ReadAsJSON(PluginPropFile);
-                        if (PluginPropertyJson.IsValid(PluginPropJsonSchema))
+                        JObject pluginPropertyJson = FileIO.ReadAsJSON(pluginPropFile);
+                        if (pluginPropertyJson.IsValid(s_pluginPropJsonSchema))
                         {
-                            PluginPropertieSchematics PluginProperty = PluginPropertyJson.ToObject<PluginPropertieSchematics>();
-                            string EntryFile = Path.Join(pf, PluginProperty.EntryFile);
-                            if (File.Exists(EntryFile))
+                            PluginPropertySchematics pluginProperty = pluginPropertyJson.ToObject<PluginPropertySchematics>();
+                            string entryFile = Path.Join(pf, pluginProperty.EntryFile);
+                            if (File.Exists(entryFile))
                             {
-                                FileIO.SafeDeleteFile(PluginUCFile);
-                                FileIO.EnsurePath(Path.Join(Program.GetProgramCahce(), PluginProperty.Name));
-                                object? PInstance = InitPlugin(EntryFile, PluginProperty.EntryPoint, PluginProperty.Name);
-                                if (PInstance != null)
+                                FileIO.SafeDeleteFile(pluginUcFile);
+                                FileIO.EnsurePath(Path.Join(Program.GetProgramCache(), pluginProperty.Name));
+                                object? pInstance = InitPlugin(entryFile, pluginProperty.EntryPoint, pluginProperty.Name);
+                                if (pInstance != null)
                                 {
-                                    PluginProperty.Instance = PInstance;
-                                    PluginRef.Add(PluginProperty);
+                                    pluginProperty.Instance = pInstance;
+                                    pluginRef.Add(pluginProperty);
                                 }
                                 else
                                 {
@@ -47,7 +46,7 @@ namespace UndefinedBot.Core.Command
                             }
                             else
                             {
-                                s_initLogger.Warn("Program", $"Plugin: <{pf}> EntryFile: <{EntryFile}> Not Found");
+                                s_initLogger.Warn("Program", $"Plugin: <{pf}> EntryFile: <{entryFile}> Not Found");
                             }
                         }
                         else
@@ -57,7 +56,7 @@ namespace UndefinedBot.Core.Command
                     }
                 }
                 //Console.WriteLine(JsonConvert.SerializeObject(PluginRef));
-                return PluginRef;
+                return pluginRef;
             }
             else
             {
@@ -68,7 +67,7 @@ namespace UndefinedBot.Core.Command
         public static Dictionary<string,CommandInstance> GetCommandReference()
         {
             string[] crfs = Directory.GetFiles(Path.Join(Program.GetProgramRoot(),"CommandReference"));
-            Dictionary<string, CommandInstance> CommandRef = [];
+            Dictionary<string, CommandInstance> commandRef = [];
             foreach (string cf in crfs)
             {
                 List<CommandInstance> cfi = FileIO.ReadAsJSON<List<CommandInstance>>(cf);
@@ -76,28 +75,20 @@ namespace UndefinedBot.Core.Command
                 {
                     if (i.Name != null)
                     {
-                        CommandRef[i.Name] = i;
+                        commandRef[i.Name] = i;
                         //CommandRef.Add(i.Name, i);
                     }
                 });
             }
-            return CommandRef;
+            return commandRef;
         }
         private static object? InitPlugin(string pluginDllPath,string entryPoint, string pluginName)
         {
             try
             {
-                Assembly PluginAssembly = Assembly.LoadFrom(pluginDllPath);
-                IEnumerable<Type> Types = PluginAssembly.GetTypes().Where(t => t.IsClass && t.Name == entryPoint);
-                foreach (Type type in Types)
-                {
-                    var PInstance = Activator.CreateInstance(type, [pluginName]);
-                    if (PInstance != null)
-                    {
-                        return PInstance;
-                    }
-                }
-                return null;
+                Assembly pluginAssembly = Assembly.LoadFrom(pluginDllPath);
+                IEnumerable<Type> types = pluginAssembly.GetTypes().Where(t => t.IsClass && t.Name == entryPoint);
+                return types.Select(type => Activator.CreateInstance(type, [pluginName])).OfType<object>().FirstOrDefault();
             }
             catch (Exception ex)
             {
@@ -105,7 +96,7 @@ namespace UndefinedBot.Core.Command
                 return null;
             }
         }
-        internal static JSchema PluginPropJsonSchema = JSchema.Parse(
+        private static readonly JSchema s_pluginPropJsonSchema = JSchema.Parse(
                 @"{
                       ""type"": ""object"",
                       ""properties"": {
@@ -118,7 +109,7 @@ namespace UndefinedBot.Core.Command
                   }"
             );
     }
-    internal struct PluginPropertieSchematics
+    internal struct PluginPropertySchematics
     {
         [JsonProperty("name")] public string Name;
         [JsonProperty("description")] public string Description;
@@ -126,7 +117,7 @@ namespace UndefinedBot.Core.Command
         [JsonProperty("entry_point")] public string EntryPoint;
         [JsonIgnore] public object? Instance;
     }
-    internal struct CommandPropertieSchematics
+    internal struct CommandPropertySchematics
     {
         [JsonProperty("name")] public string Name;
         [JsonProperty("alias")] public List<string> Alias;

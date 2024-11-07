@@ -1,13 +1,10 @@
-﻿using System;
-using System.Net;
-using System.Text;
+﻿using System.Net;
 using System.Text.RegularExpressions;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
-using UndefinedBot.Core.Utils;
 using UndefinedBot.Core.Command;
+using UndefinedBot.Core.Utils;
 
-namespace UndefinedBot.Core.NetWork
+namespace UndefinedBot.Net.Utils
 {
     internal class HttpServer
     {
@@ -16,9 +13,9 @@ namespace UndefinedBot.Core.NetWork
 
         private readonly Logger _httpServerLogger = new("HttpServer");
 
-        public HttpServer(string Prefixe)
+        public HttpServer(string prefix)
         {
-            _httpListener.Prefixes.Add(Prefixe);
+            _httpListener.Prefixes.Add(prefix);
         }
         public async Task Start()
         {
@@ -51,12 +48,12 @@ namespace UndefinedBot.Core.NetWork
             try
             {
                 StreamReader sr = new(context.Request.InputStream);
-                string TempString = sr.ReadToEnd().Replace("\\u",";/.-u").Replace("\\", "-:/&]").Replace(";/.-u","\\u");
-                string ReqString = Regex.Unescape(TempString);
+                string tempString = sr.ReadToEnd().Replace("\\u",";/.-u").Replace("\\", "-:/&]").Replace(";/.-u","\\u");
+                string reqString = Regex.Unescape(tempString);
                 sr.Close();
                 context.Response.StatusCode = 200;
                 context.Response.Close();
-                await CommandHandler.HandleMsg(JsonConvert.DeserializeObject<MsgBodySchematics>(ReqString.Replace("-:/&]", "\\")));
+                await CommandHandler.HandleMsg(JsonConvert.DeserializeObject<MsgBodySchematics>(reqString.Replace("-:/&]", "\\")));
             }
             catch (Exception ex)
             {
