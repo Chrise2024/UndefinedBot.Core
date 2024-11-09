@@ -1,11 +1,23 @@
 ﻿using System.Reflection;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Serialization;
 using UndefinedBot.Core.Command;
 using UndefinedBot.Core.NetWork;
 using UndefinedBot.Core.Utils;
 
 namespace UndefinedBot.Core
 {
+    public delegate void CommandFinishHandler();
+
+    public class CommandFinishEvent
+    {
+        public event CommandFinishHandler? OnCommandFinish;
+
+        public void Trigger()
+        {
+            OnCommandFinish?.Invoke();
+        }
+    }
     internal class Core
     {
         private static readonly string s_programRoot = Environment.CurrentDirectory;
@@ -30,7 +42,9 @@ namespace UndefinedBot.Core
         public readonly ConfigManager Config;
         public readonly string RootPath;
         public readonly string CachePath;
-        public readonly List<CommandInstance> _commandInstances = [];
+        public readonly CommandFinishEvent FinishEvent;
+        public readonly CacheManager Cache;
+        private readonly List<CommandInstance> _commandInstances = [];
         public UndefinedAPI(string pluginName)
         {
             PluginName = pluginName;
@@ -41,32 +55,40 @@ namespace UndefinedBot.Core
             Config = new();
             RootPath = Environment.CurrentDirectory;
             CachePath = Path.Join(Core.GetCoreRoot(), "Cache", pluginName);
+            FinishEvent = new();
+            Cache = new(pluginName, CachePath, FinishEvent);
         }
         public void SubmitCommand()
         {
-            List<CommandInstance> CommandRef = [];
-            string CommandRefPath = Path.Join(RootPath, "CommandReference", $"{PluginName}.reference.json");
+            List<CommandInstance> commandRef = [];
+            string commandRefPath = Path.Join(RootPath, "CommandReference", $"{PluginName}.reference.json");
             foreach (var commandInstance in _commandInstances)
             {
                 if (commandInstance.CommandAction != null)
                 {
-                    CommandHandler.Event.OnCommand += async (ArgSchematics args) => {
+                    CommandHandler.CommandEvent.OnCommand += async (ArgSchematics args) => {
                         if (commandInstance.Name.Equals(args.Command) || commandInstance.CommandAlias.Contains(args.Command))
                         {
                             this.Logger.Info(commandInstance.Name, "Command Triggered");
                             await commandInstance.CommandAction(args);
                             this.Logger.Info(commandInstance.Name, "Command Completed");
+                            this.FinishEvent.Trigger();
                         }
                     };
-                    CommandRef.Add(commandInstance);
+                    commandRef.Add(commandInstance);
                     this.Logger.Info(commandInstance.Name, "Successful Load Command");
                 }
             }
-            FileIO.WriteAsJSON(CommandRefPath, CommandRef);
+            FileIO.WriteAsJSON(commandRefPath, commandRef);
         }
         public MsgBuilder GetMessageBuilder()
         {
             return MsgBuilder.GetInstance();
+        }
+
+        public ForwardBuilder GetForwardBuilder()
+        {
+            return ForwardBuilder.GetInstance();
         }
         public CommandInstance RegisterCommand(string commandName)
         {

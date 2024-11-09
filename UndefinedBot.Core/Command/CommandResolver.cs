@@ -1,33 +1,23 @@
-﻿using System;
-using System.Text;
-using System.Text.RegularExpressions;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
-using UndefinedBot.Core.NetWork;
+﻿using System.Text.RegularExpressions;
 using UndefinedBot.Core.Utils;
 
 namespace UndefinedBot.Core.Command
 {
     internal class CommandResolver
     {
-        private static readonly ArgSchematics s_invalidCommandArg = new("null", [], 0,  0, 0, false);
 
         private static readonly ArgSchematics s_noneCommandArg = new("", [],0,0,0, false);
-
-        private static readonly List<long> s_workGRoup = Core.GetConfigManager().GetGroupList();
 
         private static readonly string s_commandPrefix = Core.GetConfigManager().GetCommandPrefix();
 
         private static readonly Logger s_argLogger = new("CommandResolver");
-
-        private static readonly Logger s_handleLogger = new("CommandResolver");
         public static ArgSchematics Parse(MsgBodySchematics msgBody)
         {
-            long GroupId = msgBody.GroupId ?? 0;
-            long CallerUin = msgBody.UserId ?? 0;
-            int MsgId = msgBody.MessageId ?? 0;
+            long groupId = msgBody.GroupId ?? 0;
+            long callerUin = msgBody.UserId ?? 0;
+            int msgId = msgBody.MessageId ?? 0;
             string CQString = msgBody.RawMessage ?? "";
-            if (MsgId == 0)
+            if (groupId == 0 || callerUin == 0 || msgId == 0)
             {
                 s_argLogger.Error("ArgParse","Invalid Msg Body");
                 return s_noneCommandArg;
@@ -40,22 +30,22 @@ namespace UndefinedBot.Core.Command
             else
             {
                 s_argLogger.Info("ArgParse", "Resolving, Raw = " + CQString);
-                Match MatchCQReply = RegexProvider.GetCQReplyRegex().Match(CQString);
-                if (MatchCQReply.Success)
+                Match matchCQReply = RegexProvider.GetCQReplyRegex().Match(CQString);
+                if (matchCQReply.Success)
                 {
-                    CQEntitySchematics CQEntity = DecodeCQEntity(MatchCQReply.Value);
-                    int TargetMsgId = Int32.Parse(CQEntity.Properties.TryGetValue("id", out var IntMsgId) ? IntMsgId : "0");
-                    string NormalCQString = CQString.Replace(MatchCQReply.Value, "").Trim();
-                    if ( NormalCQString.StartsWith(s_commandPrefix))
+                    CQEntitySchematics CQEntity = DecodeCQEntity(matchCQReply.Value);
+                    int targetMsgId = Int32.Parse(CQEntity.Properties.GetValueOrDefault("id", "0"));
+                    string normalCQString = CQString.Replace(matchCQReply.Value, "").Trim();
+                    if ( normalCQString.StartsWith(s_commandPrefix))
                     {
-                        List<string> Params = ParseCQString(NormalCQString[s_commandPrefix.Length..]);
+                        List<string> Params = ParseCQString(normalCQString[s_commandPrefix.Length..]);
                         s_argLogger.Info("ArgParse", "Parse Complete");
                         return new ArgSchematics(
                             Params[0],
-                            [$"{TargetMsgId}", ..Params[1..]],
-                            CallerUin,
-                            GroupId,
-                            MsgId,
+                            [$"{targetMsgId}", ..Params[1..]],
+                            callerUin,
+                            groupId,
+                            msgId,
                             true
                             );
                     }
@@ -67,9 +57,9 @@ namespace UndefinedBot.Core.Command
                     return new ArgSchematics(
                             Params[0],
                             Params[1..],
-                            CallerUin,
-                            GroupId,
-                            MsgId,
+                            callerUin,
+                            groupId,
+                            msgId,
                             true
                             );
                 }
@@ -84,50 +74,54 @@ namespace UndefinedBot.Core.Command
             {
                 return [];
             }
-            return new(
-                RegexProvider.GetCQEntityRegex().Replace(
-                    CQString, match => {
+            return
+            [
+                ..RegexProvider.GetCQEntityRegex().Replace(
+                    CQString, match =>
+                    {
                         CQEntitySchematics CQEntity = DecodeCQEntity(match.Value);
                         if (CQEntity.CQType.Equals("at"))
                         {
-                            if (CQEntity.Properties.TryGetValue("qq",out var Uin))
+                            if (CQEntity.Properties.TryGetValue("qq", out string? uin))
                             {
-                                return $" {Uin} ";
+                                return $" {uin} ";
                             }
                         }
                         else if (CQEntity.CQType.Equals("reply"))
                         {
-                            if (CQEntity.Properties.TryGetValue("id", out var MsgId))
+                            if (CQEntity.Properties.TryGetValue("id", out string? msgId))
                             {
-                                return $" {MsgId} ";
+                                return $" {msgId} ";
                             }
                         }
                         else if (CQEntity.CQType.Equals("image"))
                         {
-                            if (CQEntity.Properties.TryGetValue("url", out var ImageUrl))
+                            if (CQEntity.Properties.TryGetValue("url", out string? imageUrl))
                             {
-                                return $" {ImageUrl} ";
+                                return $" {imageUrl} ";
                             }
                             else
                             {
-                                return CQEntity.Properties.TryGetValue("file", out var IUrl) ? $" {IUrl} " : " ";
+                                return CQEntity.Properties.TryGetValue("file", out string? imUrl) ? $" {imUrl} " : " ";
                             }
                         }
+
                         return " ";
                     }
                 ).Split(" ", StringSplitOptions.RemoveEmptyEntries)
-            );
+
+            ];
         }
         private static CQEntitySchematics DecodeCQEntity(string CQEntityString)
         {
-            Dictionary<string,string> Properties = [];
-            CQEntityString = CQEntityString[1..(CQEntityString.Length - 1)]
-                .Replace(",", "\r")
+            Dictionary<string,string> properties = [];
+            CQEntityString = CQEntityString[1..^1]
+                .Replace(",", "\r$\r")
                 .Replace("&amp;", "&")
                 .Replace("&#91;", "[")
                 .Replace("&#93;", "]")
                 .Replace("&#44;", ",");
-            string[] CQPiece = CQEntityString.Split("\r");
+            string[] CQPiece = CQEntityString.Split("\r$\r");
             CQEntitySchematics CQEntity = new(CQPiece[0][3..]);
             for (int i = 1; i < CQPiece.Length; i++)
             {
@@ -135,35 +129,35 @@ namespace UndefinedBot.Core.Command
                 if (temp.Length > 1)
                 {
 
-                    Properties.Add(temp[0], temp[1]);
+                    properties.Add(temp[0], temp[1]);
                 }
             }
-            CQEntity.Properties = Properties;
+            CQEntity.Properties = properties;
             return CQEntity;
         }
-
-        public static string ExtractUrlFromMsg(MsgBodySchematics msgBody)
+        /*
+        private static string ExtractUrlFromMsg(MsgBodySchematics msgBody)
         {
             if (msgBody.Message?.Count > 0)
             {
-                List<JObject> MsgChain = msgBody.Message;
-                if (MsgChain.Count > 0)
+                List<JObject> msgChain = msgBody.Message;
+                if (msgChain.Count > 0)
                 {
-                    JObject Msg = MsgChain[0];
-                    if (Msg.Value<string>("type")?.Equals("image") ?? false)
+                    JObject msg = msgChain[0];
+                    if (msg.Value<string>("type")?.Equals("image") ?? false)
                     {
-                        if (Msg.TryGetValue("data", out var JT))
+                        if (msg.TryGetValue("data", out var JT))
                         {
-                            JObject? DataObj = JT.ToObject<JObject>();
-                            if (DataObj != null)
+                            JObject? dataObj = JT.ToObject<JObject>();
+                            if (dataObj != null)
                             {
-                                if (DataObj.TryGetValue("url",out var Temp))
+                                if (dataObj.TryGetValue("url",out var temp))
                                 {
-                                    return Temp.ToObject<string>() ?? "";
+                                    return temp.ToObject<string>() ?? "";
                                 }
                                 else
                                 {
-                                    return DataObj.Value<string>("file") ?? "";
+                                    return dataObj.Value<string>("file") ?? "";
                                 }
                             }
                         }
@@ -172,6 +166,7 @@ namespace UndefinedBot.Core.Command
             }
             return "";
         }
+        */
     }
     public struct ArgSchematics(
         string command,

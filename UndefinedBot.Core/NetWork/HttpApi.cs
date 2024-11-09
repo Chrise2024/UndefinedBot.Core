@@ -1,10 +1,6 @@
-﻿using System;
-using System.Text;
-using System.Net;
-using System.Net.Http.Json;
+﻿using System.Text;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-using UndefinedBot.Core;
 using UndefinedBot.Core.Utils;
 using UndefinedBot.Core.Command;
 
@@ -25,25 +21,50 @@ namespace UndefinedBot.Core.NetWork
         {
             try
             {
-                object ReqJSON = new
+                object reqJSON = new
                 {
                     group_id = targetGroupId,
                     message = msgChain
                 };
-                //Console.WriteLine(JsonConvert.SerializeObject(ReqJSON));
                 await _httpClient.PostAsync(_httpPostUrl + "/send_group_msg",
                    new StringContent(
-                       JsonConvert.SerializeObject(ReqJSON),
+                       JsonConvert.SerializeObject(reqJSON),
                        Encoding.UTF8,
                        "application/json"
                    )
                 );
             }
-            catch (TaskCanceledException ex)
+            catch (TaskCanceledException)
             {
-                Console.WriteLine("Task Cacled: ");
-                _httpApiLogger.Error("HttpApi",ex.Message);
+                Console.WriteLine("Task Canceled: ");
+            }
+            catch (Exception ex)
+            {
+                _httpApiLogger.Error("HttpApi", "Error Occured, Error Information:");
+                _httpApiLogger.Error("HttpApi", ex.Message);
                 _httpApiLogger.Error("HttpApi", ex.StackTrace ?? "");
+            }
+        }
+        public async Task SendGroupForward<T>(T targetGroupId,List<ForwardNode> forwardNodes)
+        {
+            try
+            {
+                object reqJSON = new
+                {
+                    group_id = targetGroupId,
+                    message = forwardNodes
+                };
+                await _httpClient.PostAsync(_httpPostUrl + "/send_group_forward_msg",
+                    new StringContent(
+                        JsonConvert.SerializeObject(reqJSON),
+                        Encoding.UTF8,
+                        "application/json"
+                    )
+                );
+            }
+            catch (TaskCanceledException)
+            {
+                Console.WriteLine("Task Canceled: ");
             }
             catch (Exception ex)
             {
@@ -56,23 +77,21 @@ namespace UndefinedBot.Core.NetWork
         {
             try
             {
-                object ReqJSON = new
+                object reqJSON = new
                 {
                     message_id = msgId
                 };
                 await _httpClient.PostAsync(_httpPostUrl + "/delete_msg",
                    new StringContent(
-                       JsonConvert.SerializeObject(ReqJSON),
+                       JsonConvert.SerializeObject(reqJSON),
                        Encoding.UTF8,
                        "application/json"
                    )
                 );
             }
-            catch (TaskCanceledException ex)
+            catch (TaskCanceledException)
             {
-                Console.WriteLine("Task Cacled: ");
-                _httpApiLogger.Error("HttpApi", ex.Message);
-                _httpApiLogger.Error("HttpApi", ex.StackTrace ?? "");
+                Console.WriteLine("Task Canceled: ");
             }
             catch (Exception ex)
             {
@@ -85,28 +104,29 @@ namespace UndefinedBot.Core.NetWork
         {
             try
             {
-                object ReqJSON = new
+                object reqJSON = new
                 {
                     message_id = msgId
                 };
                 HttpResponseMessage response = await _httpClient.PostAsync(_httpPostUrl + "/get_msg",
                    new StringContent(
-                       JsonConvert.SerializeObject(ReqJSON),
+                       JsonConvert.SerializeObject(reqJSON),
                        Encoding.UTF8,
                        "application/json"
                    )
                 );
                 return JObject.Parse(response.Content.ReadAsStringAsync().Result)["data"]?.ToObject<MsgBodySchematics>() ?? new MsgBodySchematics();
             }
-            catch (TaskCanceledException ex)
+            catch (TaskCanceledException)
             {
-                Console.WriteLine("Task Cacled: ");
-                _httpApiLogger.Error("HttpApi", ex.Message);
-                _httpApiLogger.Error("HttpApi", ex.StackTrace ?? "");
+                _httpApiLogger.Error("HttpApi", "Task Canceled: ");
                 return new MsgBodySchematics();
             }
-            catch
+            catch (Exception ex)
             {
+                _httpApiLogger.Error("HttpApi", "Error Occured, Error Information:");
+                _httpApiLogger.Error("HttpApi", ex.Message);
+                _httpApiLogger.Error("HttpApi", ex.StackTrace ?? "");
                 return new MsgBodySchematics();
             }
         }
@@ -114,7 +134,7 @@ namespace UndefinedBot.Core.NetWork
         {
             try
             {
-                object ReqJSON = new
+                object reqJSON = new
                 {
                     group_id = targetGroupId,
                     user_id = targetUin,
@@ -122,50 +142,54 @@ namespace UndefinedBot.Core.NetWork
                 };
                 HttpResponseMessage response = await _httpClient.PostAsync(_httpPostUrl + "/get_group_member_info",
                    new StringContent(
-                       JsonConvert.SerializeObject(ReqJSON),
+                       JsonConvert.SerializeObject(reqJSON),
                        Encoding.UTF8,
                        "application/json"
                    )
                 );
                 return JObject.Parse(response.Content.ReadAsStringAsync().Result)["data"]?.ToObject<GroupMemberSchematics>() ?? new GroupMemberSchematics();
             }
-            catch (TaskCanceledException ex)
+            catch (TaskCanceledException)
             {
-                Console.WriteLine("Task Cacled: ");
-                _httpApiLogger.Error("HttpApi", ex.Message);
-                _httpApiLogger.Error("HttpApi", ex.StackTrace ?? "");
+                _httpApiLogger.Error("HttpApi", "Task Canceled: ");
                 return new GroupMemberSchematics();
             }
-            catch
+            catch (Exception ex)
             {
+                _httpApiLogger.Error("HttpApi", "Error Occured, Error Information:");
+                _httpApiLogger.Error("HttpApi", ex.Message);
+                _httpApiLogger.Error("HttpApi", ex.StackTrace ?? "");
                 return new GroupMemberSchematics();
             }
         }
-        public async Task<HitokotoSchematics> GetHitokoto(string htioType)
+        public async Task<List<GroupMemberSchematics>> GetGroupMemberList<T>(T targetGroupId)
         {
-            string Para = "";
-            foreach(char index in htioType)
-            {
-                if (index >= 'a' && index <= 'l')
-                {
-                    Para += $"c={index}&";
-                }
-            }
             try
             {
-                HttpResponseMessage response = await _httpClient.GetAsync("https://v1.hitokoto.cn/?" + Para);
-                return JsonConvert.DeserializeObject<HitokotoSchematics>(response.Content.ReadAsStringAsync().Result);
+                object reqJSON = new
+                {
+                    group_id = targetGroupId,
+                    no_cache = false
+                };
+                HttpResponseMessage response = await _httpClient.PostAsync(_httpPostUrl + "/get_group_member_list",
+                    new StringContent(
+                        JsonConvert.SerializeObject(reqJSON),
+                        Encoding.UTF8,
+                        "application/json"
+                    )
+                );
+                return JObject.Parse(response.Content.ReadAsStringAsync().Result)["data"]?.ToObject<List<GroupMemberSchematics>>() ?? [];
             }
-            catch (TaskCanceledException ex)
+            catch (TaskCanceledException)
             {
-                Console.WriteLine("Task Cacled: ");
+                _httpApiLogger.Error("HttpApi", "Task Canceled: ");
+                return [];
+            }
+            catch (Exception ex)
+            {
                 _httpApiLogger.Error("HttpApi", ex.Message);
                 _httpApiLogger.Error("HttpApi", ex.StackTrace ?? "");
-                return new HitokotoSchematics();
-            }
-            catch
-            {
-                return new HitokotoSchematics();
+                return [];
             }
         }
         public async Task<bool> CheckUin(long targetGroupId, long targetUin)
@@ -177,27 +201,25 @@ namespace UndefinedBot.Core.NetWork
     {
         private readonly HttpClient _httpClient = new()
         {
-            Timeout = TimeSpan.FromSeconds(5)
+            Timeout = TimeSpan.FromSeconds(10)
         };
 
         private readonly Logger _httpRequestLogger = new("HttpRequest");
 
-        public async Task<string> POST(string Url, object? content = null)
+        public async Task<string> POST(string url, object? content = null)
         {
             try
             {
-                HttpResponseMessage response = await _httpClient.PostAsync(Url, content == null ? null : new StringContent(
+                HttpResponseMessage response = await _httpClient.PostAsync(url, content == null ? null : new StringContent(
                        JsonConvert.SerializeObject(content),
                        Encoding.UTF8,
                        "application/json"
                    ));
                 return await response.Content.ReadAsStringAsync();
             }
-            catch (TaskCanceledException ex)
+            catch (TaskCanceledException)
             {
-                Console.WriteLine("Task Cacled: ");
-                _httpRequestLogger.Error("Request", ex.Message);
-                _httpRequestLogger.Error("Request", ex.StackTrace ?? "");
+                _httpRequestLogger.Error("HttpApi", "Task Canceled: ");
                 return "";
             }
             catch (Exception ex)
@@ -216,11 +238,9 @@ namespace UndefinedBot.Core.NetWork
                 HttpResponseMessage response = await _httpClient.GetAsync(url);
                 return await response.Content.ReadAsStringAsync();
             }
-            catch (TaskCanceledException ex)
+            catch (TaskCanceledException)
             {
-                Console.WriteLine("Task Cacled: ");
-                _httpRequestLogger.Error("Request", ex.Message);
-                _httpRequestLogger.Error("Request", ex.StackTrace ?? "");
+                _httpRequestLogger.Error("HttpApi", "Task Canceled: ");
                 return "";
             }
             catch (Exception ex)
@@ -238,11 +258,9 @@ namespace UndefinedBot.Core.NetWork
             {
                 return await _httpClient.GetByteArrayAsync(url);
             }
-            catch (TaskCanceledException ex)
+            catch (TaskCanceledException)
             {
-                Console.WriteLine("Task Cacled: ");
-                _httpRequestLogger.Error("Request", ex.Message);
-                _httpRequestLogger.Error("Request", ex.StackTrace ?? "");
+                _httpRequestLogger.Error("HttpApi", "Task Canceled: ");
                 return [];
             }
             catch (Exception ex)
@@ -253,21 +271,6 @@ namespace UndefinedBot.Core.NetWork
                 return [];
             }
         }
-    }
-    public struct HitokotoSchematics
-    {
-        [JsonProperty("id")] public int? Id;
-        [JsonProperty("uuid")] public string? Uuid;
-        [JsonProperty("hitokoto")] public string? Hitokoto;
-        [JsonProperty("type")] public string? Type;
-        [JsonProperty("from")] public string? From;
-        [JsonProperty("from_who")] public string? FromWho;
-        [JsonProperty("creator")] public string? Creator;
-        [JsonProperty("creator_uid")] public int? CreatorUid;
-        [JsonProperty("reviewer")] public int? Reviewer;
-        [JsonProperty("commit_from")] public string? CommitFrom;
-        [JsonProperty("created_at")] public string? CreatedAt;
-        [JsonProperty("length")] public int? Length;
     }
     public struct GroupMemberSchematics
     {

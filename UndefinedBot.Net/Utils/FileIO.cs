@@ -81,10 +81,10 @@ namespace UndefinedBot.Net.Utils
                 return [];
             }
         }
-        public static T ReadAsJSON<T>(string tPath)
+        public static T? ReadAsJSON<T>(string tPath)
         {
             string content = ReadFile(tPath);
-            return content.Length != 0 ? JsonConvert.DeserializeObject<T>(content) : new JObject().ToObject<T>();
+            return content.Length != 0 ? JsonConvert.DeserializeObject<T>(content) : default;
         }
         public static JArray ReadAsJArray(string tPath)
         {
@@ -92,11 +92,6 @@ namespace UndefinedBot.Net.Utils
             return JArray.Parse(ReadFile(tPath));
         }
         public static void WriteAsJSON<T>(string tPath, T content)
-        {
-            EnsureFile(tPath);
-            WriteFile(tPath, JsonConvert.SerializeObject(content, Formatting.Indented));
-        }
-        public static void WriteAsJSON(string tPath, JObject content)
         {
             EnsureFile(tPath);
             WriteFile(tPath, JsonConvert.SerializeObject(content, Formatting.Indented));

@@ -1,8 +1,6 @@
-﻿using System;
-using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Newtonsoft.Json.Schema;
-using UndefinedBot.Core.Utils;
 
 namespace UndefinedBot.Core.Utils
 {
