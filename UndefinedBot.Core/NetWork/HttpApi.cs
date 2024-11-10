@@ -40,9 +40,9 @@ namespace UndefinedBot.Core.NetWork
             }
             catch (Exception ex)
             {
-                _httpApiLogger.Error("HttpApi", "Error Occured, Error Information:");
-                _httpApiLogger.Error("HttpApi", ex.Message);
-                _httpApiLogger.Error("HttpApi", ex.StackTrace ?? "");
+                _httpApiLogger.Error("Error Occured, Error Information:");
+                _httpApiLogger.Error(ex.Message);
+                _httpApiLogger.Error(ex.StackTrace ?? "");
             }
         }
         public async Task SendGroupForward<T>(T targetGroupId,List<ForwardNode> forwardNodes)
@@ -68,9 +68,9 @@ namespace UndefinedBot.Core.NetWork
             }
             catch (Exception ex)
             {
-                _httpApiLogger.Error("HttpApi", "Error Occured, Error Information:");
-                _httpApiLogger.Error("HttpApi", ex.Message);
-                _httpApiLogger.Error("HttpApi", ex.StackTrace ?? "");
+                _httpApiLogger.Error("Error Occured, Error Information:");
+                _httpApiLogger.Error(ex.Message);
+                _httpApiLogger.Error(ex.StackTrace ?? "");
             }
         }
         public async void RecallGroupMsg<T>(T msgId)
@@ -95,9 +95,9 @@ namespace UndefinedBot.Core.NetWork
             }
             catch (Exception ex)
             {
-                _httpApiLogger.Error("HttpApi", "Error Occured, Error Information:");
-                _httpApiLogger.Error("HttpApi", ex.Message);
-                _httpApiLogger.Error("HttpApi", ex.StackTrace ?? "");
+                _httpApiLogger.Error("Error Occured, Error Information:");
+                _httpApiLogger.Error(ex.Message);
+                _httpApiLogger.Error(ex.StackTrace ?? "");
             }
         }
         public async Task<MsgBodySchematics> GetMsg<T>(T msgId)
@@ -119,14 +119,14 @@ namespace UndefinedBot.Core.NetWork
             }
             catch (TaskCanceledException)
             {
-                _httpApiLogger.Error("HttpApi", "Task Canceled: ");
+                _httpApiLogger.Error("Task Canceled: ");
                 return new MsgBodySchematics();
             }
             catch (Exception ex)
             {
-                _httpApiLogger.Error("HttpApi", "Error Occured, Error Information:");
-                _httpApiLogger.Error("HttpApi", ex.Message);
-                _httpApiLogger.Error("HttpApi", ex.StackTrace ?? "");
+                _httpApiLogger.Error("Error Occured, Error Information:");
+                _httpApiLogger.Error(ex.Message);
+                _httpApiLogger.Error(ex.StackTrace ?? "");
                 return new MsgBodySchematics();
             }
         }
@@ -151,14 +151,14 @@ namespace UndefinedBot.Core.NetWork
             }
             catch (TaskCanceledException)
             {
-                _httpApiLogger.Error("HttpApi", "Task Canceled: ");
+                _httpApiLogger.Error("Task Canceled: ");
                 return new GroupMemberSchematics();
             }
             catch (Exception ex)
             {
-                _httpApiLogger.Error("HttpApi", "Error Occured, Error Information:");
-                _httpApiLogger.Error("HttpApi", ex.Message);
-                _httpApiLogger.Error("HttpApi", ex.StackTrace ?? "");
+                _httpApiLogger.Error("Error Occured, Error Information:");
+                _httpApiLogger.Error(ex.Message);
+                _httpApiLogger.Error(ex.StackTrace ?? "");
                 return new GroupMemberSchematics();
             }
         }
@@ -182,13 +182,13 @@ namespace UndefinedBot.Core.NetWork
             }
             catch (TaskCanceledException)
             {
-                _httpApiLogger.Error("HttpApi", "Task Canceled: ");
+                _httpApiLogger.Error("Task Canceled: ");
                 return [];
             }
             catch (Exception ex)
             {
-                _httpApiLogger.Error("HttpApi", ex.Message);
-                _httpApiLogger.Error("HttpApi", ex.StackTrace ?? "");
+                _httpApiLogger.Error(ex.Message);
+                _httpApiLogger.Error(ex.StackTrace ?? "");
                 return [];
             }
         }
@@ -219,14 +219,14 @@ namespace UndefinedBot.Core.NetWork
             }
             catch (TaskCanceledException)
             {
-                _httpRequestLogger.Error("HttpApi", "Task Canceled: ");
+                _httpRequestLogger.Error("Task Canceled: ");
                 return "";
             }
             catch (Exception ex)
             {
-                _httpRequestLogger.Error("Request", "Error Occured, Error Information:");
-                _httpRequestLogger.Error("Request", ex.Message);
-                _httpRequestLogger.Error("Request", ex.StackTrace ?? "");
+                _httpRequestLogger.Error("Error Occured, Error Information:");
+                _httpRequestLogger.Error(ex.Message);
+                _httpRequestLogger.Error(ex.StackTrace ?? "");
                 return "";
             }
         }
@@ -240,14 +240,14 @@ namespace UndefinedBot.Core.NetWork
             }
             catch (TaskCanceledException)
             {
-                _httpRequestLogger.Error("HttpApi", "Task Canceled: ");
+                _httpRequestLogger.Error("Task Canceled: ");
                 return "";
             }
             catch (Exception ex)
             {
-                _httpRequestLogger.Error("Request", "Error Occured, Error Information:");
-                _httpRequestLogger.Error("Request", ex.Message);
-                _httpRequestLogger.Error("Request", ex.StackTrace ?? "");
+                _httpRequestLogger.Error("Error Occured, Error Information:");
+                _httpRequestLogger.Error(ex.Message);
+                _httpRequestLogger.Error(ex.StackTrace ?? "");
                 return "";
             }
         }
@@ -260,14 +260,14 @@ namespace UndefinedBot.Core.NetWork
             }
             catch (TaskCanceledException)
             {
-                _httpRequestLogger.Error("HttpApi", "Task Canceled: ");
+                _httpRequestLogger.Error("Task Canceled: ");
                 return [];
             }
             catch (Exception ex)
             {
-                _httpRequestLogger.Error("Request", "Error Occured, Error Information:");
-                _httpRequestLogger.Error("Request", ex.Message);
-                _httpRequestLogger.Error("Request", ex.StackTrace ?? "");
+                _httpRequestLogger.Error("Error Occured, Error Information:");
+                _httpRequestLogger.Error(ex.Message);
+                _httpRequestLogger.Error(ex.StackTrace ?? "");
                 return [];
             }
         }

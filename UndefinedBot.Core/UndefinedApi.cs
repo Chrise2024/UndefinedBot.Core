@@ -8,7 +8,7 @@ using UndefinedBot.Core.Utils;
 namespace UndefinedBot.Core
 {
     public delegate void CommandFinishHandler();
-
+    public delegate Task CommandActionHandler(CommandContext commandContext);
     public class CommandFinishEvent
     {
         public event CommandFinishHandler? OnCommandFinish;
@@ -69,18 +69,38 @@ namespace UndefinedBot.Core
                     CommandHandler.CommandEvent.OnCommand += async (ArgSchematics args) => {
                         if (commandInstance.Name.Equals(args.Command) || commandInstance.CommandAlias.Contains(args.Command))
                         {
-                            this.Logger.Info(commandInstance.Name, "Command Triggered");
-                            await commandInstance.CommandAction(args);
-                            this.Logger.Info(commandInstance.Name, "Command Completed");
+                            CommandContext ctx = new(commandInstance.Name, this, args);
+                            ctx.Logger.Info("Command Triggered");
+                            await commandInstance.CommandAction(ctx);
+                            ctx.Logger.Info("Command Completed");
                             this.FinishEvent.Trigger();
                         }
                     };
                     commandRef.Add(commandInstance);
-                    this.Logger.Info(commandInstance.Name, "Successful Load Command");
+                    this.Logger.Info($"Successful Load Command <{commandInstance.Name}>");
                 }
             }
             FileIO.WriteAsJSON(commandRefPath, commandRef);
         }
+        public CommandInstance RegisterCommand(string commandName)
+        {
+            CommandInstance ci = new(commandName);
+            _commandInstances.Add(ci);
+            return ci;
+        }
+    }
+    public class CommandContext(string commandName,UndefinedAPI baseApi,ArgSchematics args)
+    {
+        public readonly string PluginName = baseApi.PluginName;
+        public readonly string CommandName = commandName;
+        public readonly string RootPath = baseApi.RootPath;
+        public readonly string CachePath = baseApi.CachePath;
+        public readonly ArgSchematics Args = args;
+        public readonly CommandLogger Logger = new(baseApi.PluginName,commandName);
+        public readonly ConfigManager Config = baseApi.Config;
+        public readonly CacheManager Cache = baseApi.Cache;
+        public readonly HttpRequest Request = baseApi.Request;
+        public readonly HttpApi Api = baseApi.Api;
         public MsgBuilder GetMessageBuilder()
         {
             return MsgBuilder.GetInstance();
@@ -89,12 +109,6 @@ namespace UndefinedBot.Core
         public ForwardBuilder GetForwardBuilder()
         {
             return ForwardBuilder.GetInstance();
-        }
-        public CommandInstance RegisterCommand(string commandName)
-        {
-            CommandInstance ci = new(commandName);
-            _commandInstances.Add(ci);
-            return ci;
         }
     }
     public class CommandInstance(string commandName)
@@ -105,7 +119,7 @@ namespace UndefinedBot.Core
         [JsonProperty("short_description")] public string? CommandShortDescription { get; private set; }
         [JsonProperty("usage")] public string? CommandUsage { get; private set; }
         [JsonProperty("example")] public string? CommandExample { get; private set; }
-        [JsonIgnore] public CommandEventHandler? CommandAction { get; private set; }
+        [JsonIgnore] public CommandActionHandler? CommandAction { get; private set; }
         public CommandInstance Alias(IEnumerable<string> alias)
         {
             foreach (var item in alias)
@@ -137,7 +151,7 @@ namespace UndefinedBot.Core
             CommandExample = example;
             return this;
         }
-        public void Action(CommandEventHandler action)
+        public void Action(CommandActionHandler action)
         {
             CommandAction = action;
         }

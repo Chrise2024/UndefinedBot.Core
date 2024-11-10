@@ -54,9 +54,9 @@ namespace UndefinedBot.Core.Utils
             }
             catch(Exception ex)
             {
-                _cacheLogger.Error("Cache","Cache Create Failed");
-                _cacheLogger.Error("Cache",ex.ToString());
-                _cacheLogger.Error("Cache",ex.StackTrace ?? "");
+                _cacheLogger.Error("Cache Create Failed");
+                _cacheLogger.Error(ex.ToString());
+                _cacheLogger.Error(ex.StackTrace ?? "");
                 return "";
             }
         }
@@ -69,9 +69,9 @@ namespace UndefinedBot.Core.Utils
             }
             catch(Exception ex)
             {
-                _cacheLogger.Error("Cache","Cache Create Failed");
-                _cacheLogger.Error("Cache",ex.ToString());
-                _cacheLogger.Error("Cache",ex.StackTrace ?? "");
+                _cacheLogger.Error("Cache Create Failed");
+                _cacheLogger.Error(ex.ToString());
+                _cacheLogger.Error(ex.StackTrace ?? "");
                 return false;
             }
         }
@@ -87,9 +87,9 @@ namespace UndefinedBot.Core.Utils
             }
             catch(Exception ex)
             {
-                _cacheLogger.Error("Cache","Cache Modify Failed");
-                _cacheLogger.Error("Cache",ex.ToString());
-                _cacheLogger.Error("Cache",ex.StackTrace ?? "");
+                _cacheLogger.Error("Cache Modify Failed");
+                _cacheLogger.Error(ex.ToString());
+                _cacheLogger.Error(ex.StackTrace ?? "");
                 return default;
             }
         }

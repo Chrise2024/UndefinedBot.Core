@@ -100,7 +100,7 @@ namespace UndefinedBot.Core.Utils
             catch { }
             return [];
         }
-        public static T ReadAsJSON<T>(string tPath)
+        public static T? ReadAsJSON<T>(string tPath)
         {
             try
             {

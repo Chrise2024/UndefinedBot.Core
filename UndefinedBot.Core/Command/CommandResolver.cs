@@ -19,17 +19,17 @@ namespace UndefinedBot.Core.Command
             string CQString = msgBody.RawMessage ?? "";
             if (groupId == 0 || callerUin == 0 || msgId == 0)
             {
-                s_argLogger.Error("ArgParse","Invalid Msg Body");
+                s_argLogger.Error("Invalid Msg Body");
                 return s_noneCommandArg;
             }
             else if (CQString.Length == 0)
             {
-                s_argLogger.Error("ArgParse", "Raw Msg Is Null");
+                s_argLogger.Error( "Raw Msg Is Null");
                 return s_noneCommandArg;
             }
             else
             {
-                s_argLogger.Info("ArgParse", "Resolving, Raw = " + CQString);
+                s_argLogger.Info( "Resolving, Raw = " + CQString);
                 Match matchCQReply = RegexProvider.GetCQReplyRegex().Match(CQString);
                 if (matchCQReply.Success)
                 {
@@ -39,7 +39,7 @@ namespace UndefinedBot.Core.Command
                     if ( normalCQString.StartsWith(s_commandPrefix))
                     {
                         List<string> Params = ParseCQString(normalCQString[s_commandPrefix.Length..]);
-                        s_argLogger.Info("ArgParse", "Parse Complete");
+                        s_argLogger.Info( "Parse Complete");
                         return new ArgSchematics(
                             Params[0],
                             [$"{targetMsgId}", ..Params[1..]],
@@ -53,7 +53,7 @@ namespace UndefinedBot.Core.Command
                 else if (CQString.StartsWith(s_commandPrefix) && !CQString.Equals(s_commandPrefix))
                 {
                     List<string> Params = ParseCQString(CQString[s_commandPrefix.Length..]);
-                    s_argLogger.Info("ArgParse", "Parse Complete");
+                    s_argLogger.Info( "Parse Complete");
                     return new ArgSchematics(
                             Params[0],
                             Params[1..],
@@ -63,7 +63,7 @@ namespace UndefinedBot.Core.Command
                             true
                             );
                 }
-                s_argLogger.Info("ArgParse", "Parse Complete");
+                s_argLogger.Info( "Parse Complete");
             }
             return s_noneCommandArg;
         }

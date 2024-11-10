@@ -31,8 +31,8 @@ namespace UndefinedBot.Core.Command
                 ArgSchematics args = CommandResolver.Parse(msgBody);
                 if (args.Status)
                 {
-                    s_commandHandlerLogger.Info("Handle","Executing with arg:");
-                    s_commandHandlerLogger.Info("Handle", JsonConvert.SerializeObject(args, Formatting.Indented));
+                    s_commandHandlerLogger.Info("Executing with arg:");
+                    s_commandHandlerLogger.Info(JsonConvert.SerializeObject(args, Formatting.Indented));
                     //CacheEvent.Trigger();
                     CommandEvent.Trigger(args);
                 }
