@@ -26,7 +26,7 @@ namespace UndefinedBot.Net
             s_commandReference = Initializer.GetCommandReference();
             FileIO.WriteAsJSON(Path.Join(s_programRoot, "plugin_reference.json"),s_pluginReference);
             FileIO.WriteAsJSON(Path.Join(s_programRoot, "command_reference.json"), s_commandReference);
-            s_mainLogger.Info("Main","Bot Launched");
+            s_mainLogger.Info("Bot Launched");
             Task.Run(s_httpServer.Start);
             //CommandHandler.Event.Trigger(new ArgSchematics("q", ["1234"],0,0,0,true));
             while (true)
@@ -38,7 +38,7 @@ namespace UndefinedBot.Net
                     break;
                 }
             }
-            s_mainLogger.Info("Main", "Bot Closed");
+            s_mainLogger.Info("Bot Closed");
             Console.ReadKey();
         }
         public static string GetProgramRoot()

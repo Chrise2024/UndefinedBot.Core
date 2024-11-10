@@ -32,7 +32,12 @@ namespace UndefinedBot.Net.Utils
                             if (File.Exists(entryFile))
                             {
                                 FileIO.SafeDeleteFile(pluginUcFile);
-                                FileIO.EnsurePath(Path.Join(Program.GetProgramCache(), pluginProperty.Name));
+                                string pluginCachePath = Path.Join(Program.GetProgramCache(), pluginProperty.Name);
+                                FileIO.EnsurePath(pluginCachePath);
+                                foreach (string cf in Directory.GetFiles(pluginCachePath))
+                                {
+                                    FileIO.SafeDeleteFile(cf);
+                                }
                                 object? pInstance = InitPlugin(entryFile, pluginProperty.EntryPoint, pluginProperty.Name);
                                 if (pInstance != null)
                                 {
@@ -41,17 +46,17 @@ namespace UndefinedBot.Net.Utils
                                 }
                                 else
                                 {
-                                    s_initLogger.Warn("Program", $"Plugin: <{pf}> load failed");
+                                    s_initLogger.Warn($"Plugin: <{pf}> load failed");
                                 }
                             }
                             else
                             {
-                                s_initLogger.Warn("Program", $"Plugin: <{pf}> EntryFile: <{entryFile}> Not Found");
+                                s_initLogger.Warn($"Plugin: <{pf}> EntryFile: <{entryFile}> Not Found");
                             }
                         }
                         else
                         {
-                            s_initLogger.Warn("Program", $"Plugin: <{pf}> Invalid plugin.json");
+                            s_initLogger.Warn($"Plugin: <{pf}> Invalid plugin.json");
                         }
                     }
                 }
@@ -70,7 +75,7 @@ namespace UndefinedBot.Net.Utils
             Dictionary<string, CommandInstance> commandRef = [];
             foreach (string cf in crfs)
             {
-                List<CommandInstance> cfi = FileIO.ReadAsJSON<List<CommandInstance>>(cf);
+                List<CommandInstance> cfi = FileIO.ReadAsJSON<List<CommandInstance>>(cf) ?? [];
                 cfi.ForEach((i) =>
                 {
                     if (i.Name != null)
