@@ -1,6 +1,7 @@
 ﻿using System.Net;
 using System.Text.RegularExpressions;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using UndefinedBot.Core.Command;
 using UndefinedBot.Core.Utils;
 
@@ -48,12 +49,12 @@ namespace UndefinedBot.Net.Utils
             try
             {
                 StreamReader sr = new(context.Request.InputStream);
-                string tempString = sr.ReadToEnd().Replace("\\u",";/.-u").Replace("\\", "-:/&]").Replace(";/.-u","\\u");
+                string tempString = await sr.ReadToEndAsync();//.Replace("\\u",";/.-u").Replace("\\", "-:/&]").Replace(";/.-u","\\u");
                 string reqString = Regex.Unescape(tempString);
                 sr.Close();
                 context.Response.StatusCode = 200;
                 context.Response.Close();
-                await CommandHandler.HandleMsg(JsonConvert.DeserializeObject<MsgBodySchematics>(reqString.Replace("-:/&]", "\\")));
+                await CommandHandler.HandleMsg(JObject.Parse(reqString/*.Replace("-:/&]", "\\")*/));
             }
             catch (Exception ex)
             {

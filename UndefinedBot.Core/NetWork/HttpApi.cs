@@ -21,14 +21,14 @@ namespace UndefinedBot.Core.NetWork
         {
             try
             {
-                object reqJSON = new
+                object reqJson = new
                 {
                     group_id = targetGroupId,
                     message = msgChain
                 };
                 await _httpClient.PostAsync(_httpPostUrl + "/send_group_msg",
                    new StringContent(
-                       JsonConvert.SerializeObject(reqJSON),
+                       JsonConvert.SerializeObject(reqJson),
                        Encoding.UTF8,
                        "application/json"
                    )
@@ -49,14 +49,14 @@ namespace UndefinedBot.Core.NetWork
         {
             try
             {
-                object reqJSON = new
+                object reqJson = new
                 {
                     group_id = targetGroupId,
                     message = forwardNodes
                 };
                 await _httpClient.PostAsync(_httpPostUrl + "/send_group_forward_msg",
                     new StringContent(
-                        JsonConvert.SerializeObject(reqJSON),
+                        JsonConvert.SerializeObject(reqJson),
                         Encoding.UTF8,
                         "application/json"
                     )
@@ -77,13 +77,13 @@ namespace UndefinedBot.Core.NetWork
         {
             try
             {
-                object reqJSON = new
+                object reqJson = new
                 {
                     message_id = msgId
                 };
                 await _httpClient.PostAsync(_httpPostUrl + "/delete_msg",
                    new StringContent(
-                       JsonConvert.SerializeObject(reqJSON),
+                       JsonConvert.SerializeObject(reqJson),
                        Encoding.UTF8,
                        "application/json"
                    )
@@ -100,41 +100,41 @@ namespace UndefinedBot.Core.NetWork
                 _httpApiLogger.Error(ex.StackTrace ?? "");
             }
         }
-        public async Task<MsgBodySchematics> GetMsg<T>(T msgId)
+        public async Task<MsgBody> GetMsg<T>(T msgId)
         {
             try
             {
-                object reqJSON = new
+                object reqJson = new
                 {
                     message_id = msgId
                 };
                 HttpResponseMessage response = await _httpClient.PostAsync(_httpPostUrl + "/get_msg",
                    new StringContent(
-                       JsonConvert.SerializeObject(reqJSON),
+                       JsonConvert.SerializeObject(reqJson),
                        Encoding.UTF8,
                        "application/json"
                    )
                 );
-                return JObject.Parse(response.Content.ReadAsStringAsync().Result)["data"]?.ToObject<MsgBodySchematics>() ?? new MsgBodySchematics();
+                return JObject.Parse(response.Content.ReadAsStringAsync().Result)["data"]?.ToObject<MsgBody>() ?? new MsgBody();
             }
             catch (TaskCanceledException)
             {
                 _httpApiLogger.Error("Task Canceled: ");
-                return new MsgBodySchematics();
+                return new MsgBody();
             }
             catch (Exception ex)
             {
                 _httpApiLogger.Error("Error Occured, Error Information:");
                 _httpApiLogger.Error(ex.Message);
                 _httpApiLogger.Error(ex.StackTrace ?? "");
-                return new MsgBodySchematics();
+                return new MsgBody();
             }
         }
-        public async Task<GroupMemberSchematics> GetGroupMember<T1, T2>(T1 targetGroupId, T2 targetUin)
+        public async Task<GroupMember> GetGroupMember<T1, T2>(T1 targetGroupId, T2 targetUin)
         {
             try
             {
-                object reqJSON = new
+                object reqJson = new
                 {
                     group_id = targetGroupId,
                     user_id = targetUin,
@@ -142,43 +142,43 @@ namespace UndefinedBot.Core.NetWork
                 };
                 HttpResponseMessage response = await _httpClient.PostAsync(_httpPostUrl + "/get_group_member_info",
                    new StringContent(
-                       JsonConvert.SerializeObject(reqJSON),
+                       JsonConvert.SerializeObject(reqJson),
                        Encoding.UTF8,
                        "application/json"
                    )
                 );
-                return JObject.Parse(response.Content.ReadAsStringAsync().Result)["data"]?.ToObject<GroupMemberSchematics>() ?? new GroupMemberSchematics();
+                return JObject.Parse(response.Content.ReadAsStringAsync().Result)["data"]?.ToObject<GroupMember>() ?? new GroupMember();
             }
             catch (TaskCanceledException)
             {
                 _httpApiLogger.Error("Task Canceled: ");
-                return new GroupMemberSchematics();
+                return new GroupMember();
             }
             catch (Exception ex)
             {
                 _httpApiLogger.Error("Error Occured, Error Information:");
                 _httpApiLogger.Error(ex.Message);
                 _httpApiLogger.Error(ex.StackTrace ?? "");
-                return new GroupMemberSchematics();
+                return new GroupMember();
             }
         }
-        public async Task<List<GroupMemberSchematics>> GetGroupMemberList<T>(T targetGroupId)
+        public async Task<List<GroupMember>> GetGroupMemberList<T>(T targetGroupId)
         {
             try
             {
-                object reqJSON = new
+                object reqJson = new
                 {
                     group_id = targetGroupId,
                     no_cache = false
                 };
                 HttpResponseMessage response = await _httpClient.PostAsync(_httpPostUrl + "/get_group_member_list",
                     new StringContent(
-                        JsonConvert.SerializeObject(reqJSON),
+                        JsonConvert.SerializeObject(reqJson),
                         Encoding.UTF8,
                         "application/json"
                     )
                 );
-                return JObject.Parse(response.Content.ReadAsStringAsync().Result)["data"]?.ToObject<List<GroupMemberSchematics>>() ?? [];
+                return JObject.Parse(response.Content.ReadAsStringAsync().Result)["data"]?.ToObject<List<GroupMember>>() ?? [];
             }
             catch (TaskCanceledException)
             {
@@ -272,7 +272,7 @@ namespace UndefinedBot.Core.NetWork
             }
         }
     }
-    public struct GroupMemberSchematics
+    public struct GroupMember
     {
         [JsonProperty("group_id")] public long? GroupId;
         [JsonProperty("user_id")] public long? UserId;

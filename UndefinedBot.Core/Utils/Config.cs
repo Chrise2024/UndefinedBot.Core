@@ -22,9 +22,9 @@ namespace UndefinedBot.Core.Utils
 
         private readonly string _configPath = Path.Join(Core.GetCoreRoot(), "config.json");
 
-        private ConfigSchematics _config;
+        private Config _config;
 
-        private readonly ConfigSchematics _defaultConfig = new("http://127.0.0.1:8087/", "http://127.0.0.1:8085", [], "#");
+        private readonly Config _defaultConfig = new("http://127.0.0.1:8087/", "http://127.0.0.1:8085", [], "#");
 
         /*
          * 8087为Bot上报消息的Url，即当前程序开启的Http Server地址
@@ -35,20 +35,20 @@ namespace UndefinedBot.Core.Utils
         {
             if (!File.Exists(_configPath))
             {
-                FileIO.WriteAsJSON<ConfigSchematics>(_configPath, _defaultConfig);
+                FileIO.WriteAsJson<Config>(_configPath, _defaultConfig);
                 _config = _defaultConfig;
             }
             else
             {
-                JObject RConfig = FileIO.ReadAsJSON(_configPath);
+                JObject RConfig = FileIO.ReadAsJson(_configPath);
                 if (RConfig.IsValid(_configJsonSchema))
                 {
-                    _config = RConfig.ToObject<ConfigSchematics>();
+                    _config = RConfig.ToObject<Config>();
                 }
                 else
                 {
                     _config = _defaultConfig;
-                    FileIO.WriteAsJSON<ConfigSchematics>(_configPath, _defaultConfig);
+                    FileIO.WriteAsJson<Config>(_configPath, _defaultConfig);
                 }
             }
         }
@@ -69,7 +69,7 @@ namespace UndefinedBot.Core.Utils
             return _config.CommandPrefix;
         }
     }
-    public struct ConfigSchematics(
+    public struct Config(
         string httpServerUrl,
         string httpPostUrl,
         List<long> groupId,

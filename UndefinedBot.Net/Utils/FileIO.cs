@@ -69,7 +69,7 @@ namespace UndefinedBot.Net.Utils
             EnsureFile(tPath, content);
             File.WriteAllText(tPath, content);
         }
-        public static JObject ReadAsJSON(string tPath)
+        public static JObject ReadAsJson(string tPath)
         {
             string content = ReadFile(tPath);
             if (content.Length != 0)
@@ -81,7 +81,7 @@ namespace UndefinedBot.Net.Utils
                 return [];
             }
         }
-        public static T? ReadAsJSON<T>(string tPath)
+        public static T? ReadAsJson<T>(string tPath)
         {
             string content = ReadFile(tPath);
             return content.Length != 0 ? JsonConvert.DeserializeObject<T>(content) : default;
@@ -91,7 +91,7 @@ namespace UndefinedBot.Net.Utils
 
             return JArray.Parse(ReadFile(tPath));
         }
-        public static void WriteAsJSON<T>(string tPath, T content)
+        public static void WriteAsJson<T>(string tPath, T content)
         {
             EnsureFile(tPath);
             WriteFile(tPath, JsonConvert.SerializeObject(content, Formatting.Indented));

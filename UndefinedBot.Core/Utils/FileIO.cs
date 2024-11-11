@@ -87,7 +87,7 @@ namespace UndefinedBot.Core.Utils
             catch { }
             return;
         }
-        public static JObject ReadAsJSON(string tPath)
+        public static JObject ReadAsJson(string tPath)
         {
             try
             {
@@ -100,7 +100,7 @@ namespace UndefinedBot.Core.Utils
             catch { }
             return [];
         }
-        public static T? ReadAsJSON<T>(string tPath)
+        public static T? ReadAsJson<T>(string tPath)
         {
             try
             {
@@ -113,13 +113,13 @@ namespace UndefinedBot.Core.Utils
             catch { }
             return new JObject().ToObject<T>();
         }
-        public static void WriteAsJSON<T>(string tPath, T Content)
+        public static void WriteAsJson<T>(string tPath, T Content)
         {
             EnsureFile(tPath);
             WriteFile(tPath, JsonConvert.SerializeObject(Content, Formatting.Indented));
             return;
         }
-        public static void WriteAsJSON(string tPath, JObject Content)
+        public static void WriteAsJson(string tPath, JObject Content)
         {
             EnsureFile(tPath);
             WriteFile(tPath, JsonConvert.SerializeObject(Content, Formatting.Indented));

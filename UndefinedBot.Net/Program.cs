@@ -1,5 +1,11 @@
 ﻿using System.Text;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using UndefinedBot.Core;
+using UndefinedBot.Core.Command;
+using UndefinedBot.Core.Command.Arguments;
+using UndefinedBot.Core.Command.Arguments.ArgumentRange;
+using UndefinedBot.Core.Command.Arguments.ArgumentType;
 using UndefinedBot.Core.Utils;
 using UndefinedBot.Net.Utils;
 
@@ -15,7 +21,7 @@ namespace UndefinedBot.Net
 
         private static readonly HttpServer s_httpServer = new(new ConfigManager().GetHttpServerUrl());
 
-        private static List<PluginPropertySchematics> s_pluginReference = [];
+        private static List<PluginProperty> s_pluginReference = [];
 
         private static Dictionary<string, CommandInstance> s_commandReference = [];
         static void Main(string[] args)
@@ -24,11 +30,12 @@ namespace UndefinedBot.Net
             Console.InputEncoding = Encoding.UTF8;
             s_pluginReference = Initializer.LoadPlugins();
             s_commandReference = Initializer.GetCommandReference();
-            FileIO.WriteAsJSON(Path.Join(s_programRoot, "plugin_reference.json"),s_pluginReference);
-            FileIO.WriteAsJSON(Path.Join(s_programRoot, "command_reference.json"), s_commandReference);
+            FileIO.WriteAsJson(Path.Join(s_programRoot, "plugin_reference.json"),s_pluginReference);
+            FileIO.WriteAsJson(Path.Join(s_programRoot, "command_reference.json"), s_commandReference);
             s_mainLogger.Info("Bot Launched");
             Task.Run(s_httpServer.Start);
-            //CommandHandler.Event.Trigger(new ArgSchematics("q", ["1234"],0,0,0,true));
+            
+            CommandHandler.TriggerEvent.Trigger(new CallingProperty("help", 0, 0, 0, "0", 0), ["aaa","123"]);
             while (true)
             {
                 string tempString = Console.ReadLine() ?? "";
@@ -40,6 +47,17 @@ namespace UndefinedBot.Net
             }
             s_mainLogger.Info("Bot Closed");
             Console.ReadKey();
+        }
+        public static bool InRange(object current,object maximum,object minimum)
+        {
+            try
+            {
+                return ((IComparable)maximum)?.CompareTo(current) > 0 && ((IComparable)minimum).CompareTo(current) < 0;
+            }
+            catch
+            {
+                return false;
+            }
         }
         public static string GetProgramRoot()
         {

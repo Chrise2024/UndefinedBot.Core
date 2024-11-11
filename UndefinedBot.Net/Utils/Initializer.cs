@@ -3,6 +3,7 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Newtonsoft.Json.Schema;
 using UndefinedBot.Core;
+using UndefinedBot.Core.Command;
 using UndefinedBot.Core.Utils;
 
 namespace UndefinedBot.Net.Utils
@@ -12,22 +13,22 @@ namespace UndefinedBot.Net.Utils
         private static readonly string s_pluginRoot = Path.Join(Program.GetProgramRoot(),"Plugins");
 
         private static readonly Logger s_initLogger = new("Initialize");
-        static internal List<PluginPropertySchematics> LoadPlugins()
+        static internal List<PluginProperty> LoadPlugins()
         {
             if (Directory.Exists(s_pluginRoot))
             {
                 string[] pluginFolders = Directory.GetDirectories(s_pluginRoot);
-                List<PluginPropertySchematics> pluginRef = [];
+                List<PluginProperty> pluginRef = [];
                 foreach (string pf in pluginFolders)
                 {
                     string pluginPropFile = Path.Join(pf, "plugin.json");
                     string pluginUcFile = Path.Join(pf, "UndefinedBot.Core.dll");
                     if (File.Exists(pluginPropFile))
                     {
-                        JObject pluginPropertyJson = FileIO.ReadAsJSON(pluginPropFile);
+                        JObject pluginPropertyJson = FileIO.ReadAsJson(pluginPropFile);
                         if (pluginPropertyJson.IsValid(s_pluginPropJsonSchema))
                         {
-                            PluginPropertySchematics pluginProperty = pluginPropertyJson.ToObject<PluginPropertySchematics>();
+                            PluginProperty pluginProperty = pluginPropertyJson.ToObject<PluginProperty>();
                             string entryFile = Path.Join(pf, pluginProperty.EntryFile);
                             if (File.Exists(entryFile))
                             {
@@ -75,7 +76,7 @@ namespace UndefinedBot.Net.Utils
             Dictionary<string, CommandInstance> commandRef = [];
             foreach (string cf in crfs)
             {
-                List<CommandInstance> cfi = FileIO.ReadAsJSON<List<CommandInstance>>(cf) ?? [];
+                List<CommandInstance> cfi = FileIO.ReadAsJson<List<CommandInstance>>(cf) ?? [];
                 cfi.ForEach((i) =>
                 {
                     if (i.Name != null)
@@ -114,7 +115,7 @@ namespace UndefinedBot.Net.Utils
                   }"
             );
     }
-    internal struct PluginPropertySchematics
+    internal struct PluginProperty
     {
         [JsonProperty("name")] public string Name;
         [JsonProperty("description")] public string Description;
@@ -122,7 +123,7 @@ namespace UndefinedBot.Net.Utils
         [JsonProperty("entry_point")] public string EntryPoint;
         [JsonIgnore] public object? Instance;
     }
-    internal struct CommandPropertySchematics
+    internal struct CommandProperty
     {
         [JsonProperty("name")] public string Name;
         [JsonProperty("alias")] public List<string> Alias;
