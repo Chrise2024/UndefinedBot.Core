@@ -1,0 +1,159 @@
+﻿using System.Reflection;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Serialization;
+using UndefinedBot.Core.Command;
+using UndefinedBot.Core.NetWork;
+using UndefinedBot.Core.Utils;
+
+namespace UndefinedBot.Core
+{
+    public delegate void CommandFinishHandler();
+    public delegate Task CommandActionHandler(CommandContext commandContext);
+    public class CommandFinishEvent
+    {
+        public event CommandFinishHandler? OnCommandFinish;
+
+        public void Trigger()
+        {
+            OnCommandFinish?.Invoke();
+        }
+    }
+    internal class Core
+    {
+        private static readonly string s_programRoot = Environment.CurrentDirectory;
+
+        private static readonly ConfigManager s_mainConfigManager = new();
+        public static ConfigManager GetConfigManager()
+        {
+            return s_mainConfigManager;
+        }
+        public static string GetCoreRoot()
+        {
+            return s_programRoot;
+        }
+    }
+    public class UndefinedAPI
+    {
+        public readonly string PluginName;
+        public readonly string PluginPath;
+        public readonly Logger Logger;
+        public readonly HttpApi Api;
+        public readonly HttpRequest Request;
+        public readonly ConfigManager Config;
+        public readonly string RootPath;
+        public readonly string CachePath;
+        public readonly CommandFinishEvent FinishEvent;
+        public readonly CacheManager Cache;
+        private readonly List<CommandInstance> _commandInstances = [];
+        public UndefinedAPI(string pluginName)
+        {
+            PluginName = pluginName;
+            PluginPath = Path.GetDirectoryName(Assembly.GetCallingAssembly().Location) ?? Path.Join(Environment.CurrentDirectory,"Plugins",pluginName);
+            Logger = new(pluginName);
+            Api = new(Core.GetConfigManager().GetHttpPostUrl());
+            Request = new();
+            Config = new();
+            RootPath = Environment.CurrentDirectory;
+            CachePath = Path.Join(Core.GetCoreRoot(), "Cache", pluginName);
+            FinishEvent = new();
+            Cache = new(pluginName, CachePath, FinishEvent);
+        }
+        public void SubmitCommand()
+        {
+            List<CommandInstance> commandRef = [];
+            string commandRefPath = Path.Join(RootPath, "CommandReference", $"{PluginName}.reference.json");
+            foreach (var commandInstance in _commandInstances)
+            {
+                if (commandInstance.CommandAction != null)
+                {
+                    CommandHandler.CommandEvent.OnCommand += async (ArgSchematics args) => {
+                        if (commandInstance.Name.Equals(args.Command) || commandInstance.CommandAlias.Contains(args.Command))
+                        {
+                            CommandContext ctx = new(commandInstance.Name, this, args);
+                            ctx.Logger.Info("Command Triggered");
+                            await commandInstance.CommandAction(ctx);
+                            ctx.Logger.Info("Command Completed");
+                            this.FinishEvent.Trigger();
+                        }
+                    };
+                    commandRef.Add(commandInstance);
+                    this.Logger.Info($"Successful Load Command <{commandInstance.Name}>");
+                }
+            }
+            FileIO.WriteAsJSON(commandRefPath, commandRef);
+        }
+        public CommandInstance RegisterCommand(string commandName)
+        {
+            CommandInstance ci = new(commandName);
+            _commandInstances.Add(ci);
+            return ci;
+        }
+    }
+    public class CommandContext(string commandName,UndefinedAPI baseApi,ArgSchematics args)
+    {
+        public readonly string PluginName = baseApi.PluginName;
+        public readonly string CommandName = commandName;
+        public readonly string RootPath = baseApi.RootPath;
+        public readonly string CachePath = baseApi.CachePath;
+        public readonly ArgSchematics Args = args;
+        public readonly CommandLogger Logger = new(baseApi.PluginName,commandName);
+        public readonly ConfigManager Config = baseApi.Config;
+        public readonly CacheManager Cache = baseApi.Cache;
+        public readonly HttpRequest Request = baseApi.Request;
+        public readonly HttpApi Api = baseApi.Api;
+        public MsgBuilder GetMessageBuilder()
+        {
+            return MsgBuilder.GetInstance();
+        }
+
+        public ForwardBuilder GetForwardBuilder()
+        {
+            return ForwardBuilder.GetInstance();
+        }
+    }
+    public class CommandInstance(string commandName)
+    {
+        [JsonProperty("name")] public readonly string Name = commandName;
+        [JsonProperty("alias")] public List<string> CommandAlias { get; private set; } = [];
+        [JsonProperty("description")] public string? CommandDescription { get; private set; }
+        [JsonProperty("short_description")] public string? CommandShortDescription { get; private set; }
+        [JsonProperty("usage")] public string? CommandUsage { get; private set; }
+        [JsonProperty("example")] public string? CommandExample { get; private set; }
+        [JsonIgnore] public CommandActionHandler? CommandAction { get; private set; }
+        public CommandInstance Alias(IEnumerable<string> alias)
+        {
+            foreach (var item in alias)
+            {
+                if (!CommandAlias.Contains(item))
+                {
+                    CommandAlias.Add(item);
+                }
+            }
+            return this;
+        }
+        public CommandInstance Description(string description)
+        {
+            CommandDescription = description;
+            return this;
+        }
+        public CommandInstance ShortDescription(string shortDescription)
+        {
+            CommandShortDescription = shortDescription;
+            return this;
+        }
+        public CommandInstance Usage(string usage)
+        {
+            CommandUsage = usage;
+            return this;
+        }
+        public CommandInstance Example(string example)
+        {
+            CommandExample = example;
+            return this;
+        }
+        public void Action(CommandActionHandler action)
+        {
+            CommandAction = action;
+        }
+    }
+}
