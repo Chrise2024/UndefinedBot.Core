@@ -2,7 +2,7 @@
 
 UndefinedBot is a modularity QQ Bot based on .Net8.0 OneBot11.
 
-In developing commands: [https://github.com/Chrise2024/UndefinedBot.Command.git](https://github.com/Chrise2024/UndefinedBot.Command.git)
+In developing commands: [https://github.com/Chrise2024/UndefinedBot.Command](https://github.com/Chrise2024/UndefinedBot.Command)
 
 ## Plugins Loading
 
