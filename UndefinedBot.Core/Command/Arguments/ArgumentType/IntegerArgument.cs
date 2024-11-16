@@ -15,8 +15,10 @@ namespace UndefinedBot.Core.Command.Arguments.ArgumentType
                 ? val
                 : throw new ArgumentInvalidException($"{token} Is Not Valid Integer");
         }
-        public long GetInteger(string token)
+        public static long GetInteger(string key,CommandContext ctx)
         {
+            string token = ctx.ArgumentReference.GetValueOrDefault(key) ??
+                           throw new ArgumentInvalidException($"Undefined Argument: {key}");
             return long.TryParse(token, out long val)
                 ? val
                 : throw new ArgumentInvalidException($"{token} Is Not Valid Integer");

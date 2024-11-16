@@ -15,8 +15,10 @@ namespace UndefinedBot.Core.Command.Arguments.ArgumentType
                 ? val
                 : throw new ArgumentInvalidException($"{token} Is Not Valid Positive Integer");
         }
-        public DateTime GetDate(string token)
+        public static DateTime GetDate(string key,CommandContext ctx)
         {
+            string token = ctx.ArgumentReference.GetValueOrDefault(key) ??
+                           throw new ArgumentInvalidException($"Undefined Argument: {key}");
             return DateTime.TryParse(token, out DateTime val)
                 ? val
                 : throw new ArgumentInvalidException($"{token} Is Not Valid Positive Integer");

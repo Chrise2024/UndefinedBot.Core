@@ -16,8 +16,10 @@ namespace UndefinedBot.Core.Command.Arguments.ArgumentType
                 ? val
                 : throw new ArgumentInvalidException($"{token} Is Not Valid Number");
         }
-        public double GetNumber(string token)
+        public static double GetNumber(string key,CommandContext ctx)
         {
+            string token = ctx.ArgumentReference.GetValueOrDefault(key) ??
+                           throw new ArgumentInvalidException($"Undefined Argument: {key}");
             return double.TryParse(token, out double val)
                 ? val
                 : throw new ArgumentInvalidException($"{token} Is Not Valid Number");

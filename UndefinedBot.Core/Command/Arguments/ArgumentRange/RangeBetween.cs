@@ -1,39 +1,27 @@
-﻿using System;
-
-namespace UndefinedBot.Core.Command.Arguments.ArgumentRange
+﻿namespace UndefinedBot.Core.Command.Arguments.ArgumentRange
 {
-    public class RangeBetween : IArgumentRange
+    public class RangeBetween<T> : IArgumentRange where T : IComparable
     {
-        public object Maximum { get; }
-        public object Minimum { get; }
-        public RangeBetween(object range1, object range2)
+        private T Maximum { get; }
+        private T Minimum { get; }
+        public RangeBetween(T range1, T range2)
         {
-            int? res = ((IComparable)range1)?.CompareTo(range2);
-            if (res != null && range1 != null && range2 != null)
+            if (range1.CompareTo(range2) > 0)
             {
-                if (res > 0)
-                {
-                    Maximum = range1;
-                    Minimum = range2;
-                }
-                else
-                {
-                    Maximum = range2;
-                    Minimum = range1;
-                }
+                Maximum = range1;
+                Minimum = range2;
             }
             else
             {
-                Maximum = 0;
-                Minimum = 0;
-                throw new ArgumentOutOfRangeException();
+                Maximum = range2;
+                Minimum = range1;
             }
         }
         public bool InRange(object current)
         {
             try
             {
-                return ((IComparable)Maximum)?.CompareTo(current) > 0 && ((IComparable)Minimum).CompareTo(current) < 0;
+                return Maximum.CompareTo((T)current) > 0 && Minimum.CompareTo((T)current) < 0;
             }
             catch
             {

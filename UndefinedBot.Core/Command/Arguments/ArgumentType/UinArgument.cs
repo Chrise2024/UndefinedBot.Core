@@ -10,13 +10,14 @@ namespace UndefinedBot.Core.Command.Arguments.ArgumentType
         {
             return QUin.CqAtRegex().IsMatch(token);
         }
-
         public object GetValue(string token)
         {
             return QUin.Parse(token);
         }
-        public QUin GetQUin(string token)
+        public static QUin GetQUin(string key,CommandContext ctx)
         {
+            string token = ctx.ArgumentReference.GetValueOrDefault(key) ??
+                           throw new ArgumentInvalidException($"Undefined Argument: {key}");
             return QUin.Parse(token);
         }
     }
@@ -28,7 +29,6 @@ namespace UndefinedBot.Core.Command.Arguments.ArgumentType
         {
             Uin = uin;
         }
-
         public static QUin Parse(string token)
         {
             if (CqAtRegex().IsMatch(token))

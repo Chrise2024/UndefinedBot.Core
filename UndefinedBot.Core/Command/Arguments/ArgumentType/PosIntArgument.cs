@@ -15,8 +15,10 @@ namespace UndefinedBot.Core.Command.Arguments.ArgumentType
                 ? val
                 : throw new ArgumentInvalidException($"{token} Is Not Valid Positive Integer");
         }
-        public ulong GetPosInt(string token)
+        public static ulong GetPosInt(string key,CommandContext ctx)
         {
+            string token = ctx.ArgumentReference.GetValueOrDefault(key) ??
+                           throw new ArgumentInvalidException($"Undefined Argument: {key}");
             return ulong.TryParse(token, out ulong val)
                 ? val
                 : throw new ArgumentInvalidException($"{token} Is Not Valid Positive Integer");
