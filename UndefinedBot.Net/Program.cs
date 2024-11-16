@@ -1,4 +1,5 @@
 ﻿using System.Text;
+using System.Text.RegularExpressions;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using UndefinedBot.Core;
@@ -34,8 +35,7 @@ namespace UndefinedBot.Net
             FileIO.WriteAsJson(Path.Join(s_programRoot, "command_reference.json"), s_commandReference);
             s_mainLogger.Info("Bot Launched");
             Task.Run(s_httpServer.Start);
-            
-            CommandHandler.TriggerEvent.Trigger(new CallingProperty("help", 0, 0, 0, "0", 0), ["aaa","123"]);
+            CommandHandler.TriggerEvent.Trigger(new CallingProperty("help", 0, 0, 0, "0", 0), ["aaa","[CQ:reply,id=114514]"]);
             while (true)
             {
                 string tempString = Console.ReadLine() ?? "";
@@ -47,17 +47,6 @@ namespace UndefinedBot.Net
             }
             s_mainLogger.Info("Bot Closed");
             Console.ReadKey();
-        }
-        public static bool InRange(object current,object maximum,object minimum)
-        {
-            try
-            {
-                return ((IComparable)maximum)?.CompareTo(current) > 0 && ((IComparable)minimum).CompareTo(current) < 0;
-            }
-            catch
-            {
-                return false;
-            }
         }
         public static string GetProgramRoot()
         {

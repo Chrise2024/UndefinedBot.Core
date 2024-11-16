@@ -15,15 +15,15 @@ namespace UndefinedBot.Core.Command
         public static (string?,List<string>) Tokenize(string msgString)
         {
             List<string> rawTokens = ParseCqString(msgString);
-            if (rawTokens.Count > 1 && RegexProvider.GetIntegerRegex().IsMatch(rawTokens[0]) && rawTokens[1].StartsWith(s_commandPrefix))
+            if (rawTokens.Count > 1 && rawTokens[1].StartsWith(s_commandPrefix))
             {
-                string cmd = rawTokens[1];
+                string cmd = rawTokens[1].Replace(s_commandPrefix,"");
                 rawTokens.RemoveAt(1);
                 return (cmd,rawTokens);
             }
             else if (rawTokens.Count > 0 && rawTokens[0].StartsWith(s_commandPrefix))
             {
-                return (rawTokens[0], rawTokens[1..]);
+                return (rawTokens[0].Replace(s_commandPrefix,""), rawTokens[1..]);
             }
             else
             {

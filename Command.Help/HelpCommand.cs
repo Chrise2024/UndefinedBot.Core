@@ -37,9 +37,10 @@ namespace Command.Help
                     {
                         Console.WriteLine("aaa");
                         Console.WriteLine(JsonConvert.SerializeObject(ctx));
-                    }).Then(new VariableNode("bbb", new IntegerArgument(new RangeBetween(111L, 222L)))
+                    }).Then(new VariableNode("rid", new ReplyArgument())
                         .Execute(async (ctx) =>
                         {
+                            Console.WriteLine(JsonConvert.SerializeObject(ReplyArgument.GetQReply("rfid",ctx)));
                             Console.WriteLine("aaa-bbb");
                         })))
                     .Then(new SubCommandNode("ccc")

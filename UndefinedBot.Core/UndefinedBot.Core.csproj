@@ -9,7 +9,7 @@
     <!-- NuGet 包信息 -->
     <PackageId>UndefinedBot.Core</PackageId>
 	<Title>UndefinedBot.Core</Title>
-    <Version>1.1.6.4</Version>
+    <Version>1.1.6.5-alpha</Version>
     <Authors>ChriseCecilia</Authors>
     <Description>UndefinedBot SDK</Description>
     <Copyright>Copyright © 2024</Copyright>
@@ -18,7 +18,7 @@
 
   <ItemGroup>
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
-    <PackageReference Include="Newtonsoft.Json.Schema" Version="4.0.2-beta1" />
+    <PackageReference Include="Newtonsoft.Json.Schema" Version="4.0.1" />
   </ItemGroup>
 
 </Project>
