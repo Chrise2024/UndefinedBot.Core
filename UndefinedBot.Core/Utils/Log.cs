@@ -7,18 +7,30 @@ namespace UndefinedBot.Core.Utils
         private readonly string _nameSpace = nameSpace;
 
         private readonly ConsoleColor _defaultConsoleColor = Console.ForegroundColor;
+        /// <summary>
+        /// Log errors on console
+        /// </summary>
+        /// <param name="message">message to log</param>
         public void Error(string message)
         {
             Console.ForegroundColor = ConsoleColor.Red;
             PrintLine(message);
             Console.ForegroundColor = _defaultConsoleColor;
         }
+        /// <summary>
+        /// Log warns on console
+        /// </summary>
+        /// <param name="message">message to log</param>
         public void Warn(string message)
         {
             Console.ForegroundColor = ConsoleColor.Yellow;
             PrintLine(message);
             Console.ForegroundColor = _defaultConsoleColor;
         }
+        /// <summary>
+        /// Log infos on console
+        /// </summary>
+        /// <param name="message">message to log</param>
         public void Info(string message)
         {
             Console.ForegroundColor = _defaultConsoleColor;

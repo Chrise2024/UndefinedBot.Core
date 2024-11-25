@@ -1,4 +1,5 @@
 ﻿using System.Reflection;
+using Newtonsoft.Json;
 using UndefinedBot.Core.Command;
 using UndefinedBot.Core.Command.Arguments;
 using UndefinedBot.Core.Command.Arguments.ArgumentType;
@@ -58,8 +59,14 @@ namespace UndefinedBot.Core
             FinishEvent = new();
             Cache = new(pluginName, CachePath, FinishEvent);
         }
+        /// <summary>
+        /// Submit Command After Register
+        /// </summary>
         public void SubmitCommand()
         {
+            //while command is triggered, control flow will travel all child nodes by deep-first.
+            //If none child node in node's all child,this node will execute itself.
+            //one node is only accessible to args the same level as itself or more front.
             List<CommandInstance> commandRef = [];
             string commandRefPath = Path.Join(RootPath, "CommandReference", $"{PluginName}.reference.json");
             foreach (var commandInstance in _commandInstances)
@@ -67,13 +74,12 @@ namespace UndefinedBot.Core
                 CommandHandler.TriggerEvent.OnCommand += async (CallingProperty cp,List<string> tokens) => {
                     if (commandInstance.Name.Equals(cp.Command) || commandInstance.CommandAlias.Contains(cp.Command))
                     {
-                        Dictionary<string, string> argumentRef = [];
-                        RecurseNode(argumentRef,commandInstance.RootNode,tokens,0);
-                        CommandContext ctx = new(commandInstance.Name,tokens , this, cp, argumentRef);
+                        CommandContext ctx = new(commandInstance.Name, this, cp);
                         ctx.Logger.Info("Command Triggered");
+                        //While any node matches the token,control flow will execute this node and throw CommandFinishException to exit.
                         try
                         {
-                            await commandInstance.RootNode.ExecuteSelf(ctx);
+                            await commandInstance.Run(ctx,tokens);
                             ctx.Logger.Info("Command Failed");
                         }
                         catch (ArgumentInvalidException ex)
@@ -92,24 +98,20 @@ namespace UndefinedBot.Core
             }
             FileIO.WriteAsJson(commandRefPath, commandRef);
         }
+        /// <summary>
+        /// Register Command
+        /// </summary>
+        /// <param name="commandName">
+        /// Command Name to be Called
+        /// </param>
+        /// <returns>
+        /// CommandInstance
+        /// </returns>
         public CommandInstance RegisterCommand(string commandName)
         {
             CommandInstance ci = new(commandName);
             _commandInstances.Add(ci);
             return ci;
-        }
-
-        private void RecurseNode(Dictionary<string, string> ar, ICommandNode cNode,List<string> tokens, int index)
-        {
-            if (index >= tokens.Count)
-            {
-                return;
-            }
-            foreach (ICommandNode node in cNode.Child)
-            {
-                ar[node.NodeName] = tokens[index];
-                RecurseNode(ar, node, tokens, index + 1);
-            }
         }
     }
 }
