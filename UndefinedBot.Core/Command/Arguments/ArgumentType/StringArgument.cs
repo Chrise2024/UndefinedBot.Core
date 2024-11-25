@@ -13,7 +13,7 @@ namespace UndefinedBot.Core.Command.Arguments.ArgumentType
         public object GetValue(string token)
         {
             return IsValid(token)
-                ? token 
+                ? token
                 : throw new ArgumentInvalidException("Null String Literal");
         }
         public static string GetString(string key,CommandContext ctx)
@@ -21,8 +21,8 @@ namespace UndefinedBot.Core.Command.Arguments.ArgumentType
             string token = ctx.ArgumentReference.GetValueOrDefault(key) ??
                            throw new ArgumentInvalidException($"Undefined Argument: {key}");
             return string.IsNullOrEmpty(token)
-                ? token 
-                : throw new ArgumentInvalidException("Null String Literal");
+                ? throw new ArgumentInvalidException("Null String Literal")
+                : token;
         }
     }
 }
