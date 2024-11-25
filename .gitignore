@@ -262,10 +262,3 @@ __pycache__/
 
 #macos
 .DS_Store
-
-#Lagrange.Core
-Lagrange.Core/Utility/Crypto/Provider/Dandelion/*.cs
-docs/node_modules
-docs/.vitepress/dist
-docs/.vitepress/cache
-docs/api
