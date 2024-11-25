@@ -2,26 +2,26 @@
 {
     public class RangeBetween<T> : IArgumentRange where T : IComparable
     {
-        private T Maximum { get; }
-        private T Minimum { get; }
+        private T _maximum { get; }
+        private T _minimum { get; }
         public RangeBetween(T range1, T range2)
         {
             if (range1.CompareTo(range2) > 0)
             {
-                Maximum = range1;
-                Minimum = range2;
+                _maximum = range1;
+                _minimum = range2;
             }
             else
             {
-                Maximum = range2;
-                Minimum = range1;
+                _maximum = range2;
+                _minimum = range1;
             }
         }
         public bool InRange(object current)
         {
             try
             {
-                return Maximum.CompareTo((T)current) > 0 && Minimum.CompareTo((T)current) < 0;
+                return _maximum.CompareTo((T)current) > 0 && _minimum.CompareTo((T)current) < 0;
             }
             catch
             {
