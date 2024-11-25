@@ -19,20 +19,28 @@ namespace UndefinedBot.Core.Command
         public ICommandNode? Parent { get; }
         public List<ICommandNode> Child { get; }
         public CommandNodeAction? NodeAction { get; }
-        public void SetParent(ICommandNode parentNode);
-        public void SetAction(CommandNodeAction action);
+        internal void SetParent(ICommandNode parentNode);
+        internal void SetAction(CommandNodeAction action);
         public ICommandNode Then(ICommandNode nextNode);
         public ICommandNode Execute(CommandNodeAction action);
-        public Task ExecuteSelf(CommandContext ctx);
+        internal Task ExecuteSelf(CommandContext ctx,List<string> tokens);
     }
-    public class RootCommandNode(string name, IArgumentType argumentType) : ICommandNode
+    /// <summary>
+    /// Root node of command tree.Only use in <see cref="UndefinedBot.Core.Command.CommandInstance"/>.
+    /// </summary>
+    /// <param name="name">Node name,will be same as command name</param>
+    internal class RootCommandNode(string name) : ICommandNode
     {
         public string NodeName { get; } = name;
         public CommandNodeType NodeType { get; } = CommandNodeType.RootCommand;
-        public IArgumentType ArgumentType { get; } = argumentType;
+        public IArgumentType ArgumentType { get; } = new StringArgument();
         public ICommandNode? Parent { get; private set; }
         public List<ICommandNode> Child { get; } = [];
         public CommandNodeAction? NodeAction { get; private set; }
+        /// <summary>
+        /// <para>Set action of the node</para>
+        /// <para>Only use in api internal</para>
+        /// </summary>
         public void SetAction(CommandNodeAction action)
         {
             NodeAction = action;
@@ -41,22 +49,43 @@ namespace UndefinedBot.Core.Command
         {
             Parent = parentNode;
         }
+        /// <summary>
+        /// Add child node to this node
+        /// </summary>
+        /// <param name="nextNode"><see cref="UndefinedBot.Core.Command.SubCommandNode"/> or <see cref="UndefinedBot.Core.Command.VariableNode"/></param>
+        /// <returns>This node self</returns>
+        /// <example>
+        /// <code>
+        /// </code>
+        /// </example>
         public ICommandNode Then(ICommandNode nextNode)
         {
             nextNode.SetParent(this);
             Child.Add(nextNode);
             return this;
         }
+        /// <summary>
+        /// Set node's action
+        /// </summary>
+        /// <param name="action"><see cref="UndefinedBot.Core.Command.CommandNodeAction"/></param>
+        /// <example>
+        /// <code>
+        ///     Node.Execute(async (ctx) => {
+        ///         ...
+        ///     });
+        /// </code>
+        /// </example>
+        /// <returns>This node self</returns>
         public ICommandNode Execute(CommandNodeAction action)
         {
             NodeAction = action;
             return this;
         }
-        public async Task ExecuteSelf(CommandContext ctx)
+        public async Task ExecuteSelf(CommandContext ctx,List<string> tokens)
         {
             foreach (ICommandNode child in Child)
             {
-                await child.ExecuteSelf(ctx);
+                await child.ExecuteSelf(ctx,tokens);
             }
             if (NodeAction != null)
             {
@@ -81,29 +110,55 @@ namespace UndefinedBot.Core.Command
         {
             Parent = parentNode;
         }
+        /// <summary>
+        /// Add child node to this node
+        /// </summary>
+        /// <param name="nextNode"><see cref="UndefinedBot.Core.Command.SubCommandNode"/> or <see cref="UndefinedBot.Core.Command.VariableNode"/></param>
+        /// <returns>This node self</returns>
+        /// <example>
+        /// <code>
+        ///     Node.Then(new SubCommandNode("foo",new StringArgument()))
+        /// </code>
+        /// </example>
         public ICommandNode Then(ICommandNode nextNode)
         {
             nextNode.SetParent(this);
             Child.Add(nextNode);
             return this;
         }
+        /// <summary>
+        /// Set node's action
+        /// </summary>
+        /// <param name="action"><see cref="UndefinedBot.Core.Command.CommandNodeAction"/></param>
+        /// <example>
+        /// <code>
+        ///     Node.Execute(async (ctx) => {
+        ///         ...
+        ///     });
+        /// </code>
+        /// </example>
+        /// <returns>This node self</returns>
         public ICommandNode Execute(CommandNodeAction action)
         {
             NodeAction = action;
             return this;
         }
-        public async Task ExecuteSelf(CommandContext ctx)
+        public async Task ExecuteSelf(CommandContext ctx,List<string> tokens)
         {
-            if (ctx.ArgumentReference.TryGetValue(NodeName, out string? current) && current.Equals(NodeName))
+            if (tokens.Count > 0)
             {
-                foreach (ICommandNode child in Child)
+                string current = tokens[0];
+                if (current.Equals(NodeName))
                 {
-                    await child.ExecuteSelf(ctx);
-                }
-                if (NodeAction != null)
-                {
-                    await NodeAction(ctx);
-                    throw new CommandFinishException("Completed");
+                    foreach (ICommandNode child in Child)
+                    {
+                        await child.ExecuteSelf(ctx,tokens[1..]);
+                    }
+                    if (NodeAction != null)
+                    {
+                        await NodeAction(ctx);
+                        throw new CommandFinishException("Completed");
+                    }
                 }
             }
         }
@@ -124,31 +179,57 @@ namespace UndefinedBot.Core.Command
         {
             Parent = parentNode;
         }
+        /// <summary>
+        /// Add child node to this node
+        /// </summary>
+        /// <param name="nextNode"><see cref="UndefinedBot.Core.Command.SubCommandNode"/> or <see cref="UndefinedBot.Core.Command.VariableNode"/></param>
+        /// <returns>This node self</returns>
+        /// <example>
+        /// <code>
+        /// </code>
+        /// </example>
         public ICommandNode Then(ICommandNode nextNode)
         {
             nextNode.SetParent(this);
             Child.Add(nextNode);
             return this;
         }
+        /// <summary>
+        /// Set node's action
+        /// </summary>
+        /// <param name="action"><see cref="UndefinedBot.Core.Command.CommandNodeAction"/></param>
+        /// <example>
+        /// <code>
+        ///     Node.Execute(async (ctx) => {
+        ///         ...
+        ///     });
+        /// </code>
+        /// </example>
+        /// <returns>This node self</returns>
         public ICommandNode Execute(CommandNodeAction action)
         {
             NodeAction = action;
             return this;
         }
-        public async Task ExecuteSelf(CommandContext ctx)
+        public async Task ExecuteSelf(CommandContext ctx,List<string> tokens)
         {
-            if (ctx.ArgumentReference.TryGetValue(NodeName, out string? current) && ArgumentType.IsValid(current))
+            if (tokens.Count > 0)
             {
-                foreach (ICommandNode child in Child)
+                string current = tokens[0];
+                if (ArgumentType.IsValid(current))
                 {
-                    await child.ExecuteSelf(ctx);
+                    ctx.ArgumentReference[NodeName] = current;
+                    foreach (ICommandNode child in Child)
+                    {
+                        await child.ExecuteSelf(ctx,tokens[1..]);
+                    }
+                    if (NodeAction != null)
+                    {
+                        await NodeAction(ctx);
+                        throw new CommandFinishException("Completed");
+                    }
                 }
-                if (NodeAction != null)
-                {
-                    await NodeAction(ctx);
-                    throw new CommandFinishException("Completed");
-                }
-            } 
+            }
         }
     }
 

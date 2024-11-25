@@ -3,15 +3,18 @@ using UndefinedBot.Core.Utils;
 
 namespace UndefinedBot.Core.Command
 {
-    public class CommandContext(string commandName,List<string> tokens,UndefinedAPI baseApi,CallingProperty cp,Dictionary<string,string> ar)
+    /// <summary>
+    /// Context of command,containing apis, calling info and arguments
+    /// </summary>
+    public class CommandContext(string commandName,UndefinedAPI baseApi,CallingProperty cp)
     {
         public readonly string PluginName = baseApi.PluginName;
         public readonly string CommandName = commandName;
         public readonly string RootPath = baseApi.RootPath;
         public readonly string CachePath = baseApi.CachePath;
-        public readonly List<string> Tokens = tokens;
+        //public readonly List<string> Tokens = tokens;
         public readonly CallingProperty CallingProperties = cp;
-        public readonly Dictionary<string, string> ArgumentReference = ar;
+        public readonly Dictionary<string, string> ArgumentReference = [];
         public readonly CommandLogger Logger = new(baseApi.PluginName,commandName);
         public readonly ConfigManager Config = baseApi.Config;
         public readonly CacheManager Cache = baseApi.Cache;

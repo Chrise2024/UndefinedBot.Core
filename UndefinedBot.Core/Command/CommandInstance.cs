@@ -12,18 +12,23 @@ namespace UndefinedBot.Core.Command
         [JsonProperty("usage")] public string? CommandUsage { get; private set; }
         [JsonProperty("example")] public string? CommandExample { get; private set; }
         [JsonIgnore] public ICommandNode RootNode { get; private set; }
-        public CommandInstance(string commandName)
+        internal CommandInstance(string commandName)
         {
             Name = commandName;
-            RootNode = new RootCommandNode(commandName, new StringArgument());
+            RootNode = new RootCommandNode(commandName);
         }
-        public async Task Run(CommandContext ctx)
+        internal async Task Run(CommandContext ctx,List<string> tokens)
         {
-            await RootNode.ExecuteSelf(ctx);
+            await RootNode.ExecuteSelf(ctx,tokens);
         }
+        /// <summary>
+        /// Add command alias
+        /// </summary>
+        /// <param name="alias">Array of aliases</param>
+        /// <returns>self</returns>
         public CommandInstance Alias(IEnumerable<string> alias)
         {
-            foreach (var item in alias)
+            foreach (string item in alias)
             {
                 if (!CommandAlias.Contains(item))
                 {
@@ -32,26 +37,61 @@ namespace UndefinedBot.Core.Command
             }
             return this;
         }
+        /// <summary>
+        /// <para>Add command desc</para>
+        /// <para>This desc will be displayed in help command</para>
+        /// </summary>
+        /// <param name="description">description</param>
+        /// <returns></returns>
         public CommandInstance Description(string description)
         {
             CommandDescription = description;
             return this;
         }
+        /// <summary>
+        /// <para>Add command short desc</para>
+        /// <para>This desc will be displayed in help command summary</para>
+        /// </summary>
+        /// <param name="shortDescription">short description</param>
+        /// <returns>self</returns>
         public CommandInstance ShortDescription(string shortDescription)
         {
             CommandShortDescription = shortDescription;
             return this;
         }
+        /// <summary>
+        /// Add command usage pattern
+        /// </summary>
+        /// <param name="usage">usage</param>
+        /// <returns>self</returns>
         public CommandInstance Usage(string usage)
         {
             CommandUsage = usage;
             return this;
         }
+        /// <summary>
+        /// Add command example
+        /// </summary>
+        /// <param name="example">example</param>
+        /// <returns>self</returns>
         public CommandInstance Example(string example)
         {
             CommandExample = example;
             return this;
         }
+        /// <summary>
+        /// Add command action
+        /// </summary>
+        /// <param name="action"><see cref="UndefinedBot.Core.Command.CommandNodeAction"/></param>
+        /// <example>
+        /// <code>
+        ///     this.Execute(async (ctx) => {
+        ///         ...
+        ///     });
+        /// </code>
+        /// </example>
+        /// <remarks>While action added,control flow will goto command tree building.</remarks>
+        /// <returns>self</returns>
         public ICommandNode Execute(CommandNodeAction action)
         {
             RootNode.SetAction(action);

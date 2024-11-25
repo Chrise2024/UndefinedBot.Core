@@ -13,6 +13,11 @@ namespace UndefinedBot.Core.Command
             OnCommand?.Invoke(cp,tokens);
         }
     }
+    /**
+     * <summary>
+     * Process OneBot11 Format Message and Resolve to Broadcast Message Event
+     * </summary>
+     */
     public abstract class CommandHandler
     {
         private static readonly List<long> s_workGroup = Core.GetConfigManager().GetGroupList();
@@ -40,8 +45,7 @@ namespace UndefinedBot.Core.Command
                         msgBody.SubType ?? "group",
                         msgBody.Time
                         );
-                    s_commandHandlerLogger.Info("Executing:");
-                    s_commandHandlerLogger.Info("Properties:");
+                    s_commandHandlerLogger.Info("Executing...\nProperties:");
                     s_commandHandlerLogger.Info(JsonConvert.SerializeObject(cp, Formatting.Indented));
                     s_commandHandlerLogger.Info("Tokens:");
                     s_commandHandlerLogger.Info(JsonConvert.SerializeObject(tokens));

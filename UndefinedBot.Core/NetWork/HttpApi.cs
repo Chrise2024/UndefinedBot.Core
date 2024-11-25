@@ -16,7 +16,12 @@ namespace UndefinedBot.Core.NetWork
         };
 
         private readonly Logger _httpApiLogger = new("HttpRequest");
-
+        /// <summary>
+        /// Send Message to Group
+        /// </summary>
+        /// <param name="targetGroupId">Group Id to send</param>
+        /// <param name="msgChain">Onebot11 MessageChain</param>
+        /// <typeparam name="T">string or long</typeparam>
         public async Task SendGroupMsg<T>(T targetGroupId,List<JObject> msgChain)
         {
             try
@@ -45,6 +50,12 @@ namespace UndefinedBot.Core.NetWork
                 _httpApiLogger.Error(ex.StackTrace ?? "");
             }
         }
+        /// <summary>
+        /// Send Forward to Group
+        /// </summary>
+        /// <param name="targetGroupId">Group Id to send</param>
+        /// <param name="forwardNodes">Onebot11 MessageChain</param>
+        /// <typeparam name="T">string or long</typeparam>
         public async Task SendGroupForward<T>(T targetGroupId,List<ForwardNode> forwardNodes)
         {
             try
@@ -73,6 +84,11 @@ namespace UndefinedBot.Core.NetWork
                 _httpApiLogger.Error(ex.StackTrace ?? "");
             }
         }
+        /// <summary>
+        /// Recall Message in Group
+        /// </summary>
+        /// <param name="msgId">Message Id of Message to Recall</param>
+        /// <typeparam name="T">string or int</typeparam>
         public async void RecallGroupMsg<T>(T msgId)
         {
             try
@@ -100,6 +116,12 @@ namespace UndefinedBot.Core.NetWork
                 _httpApiLogger.Error(ex.StackTrace ?? "");
             }
         }
+        /// <summary>
+        /// Get Message
+        /// </summary>
+        /// <param name="msgId">Message Id of Message to get</param>
+        /// <typeparam name="T">string or int</typeparam>
+        /// <returns>MsgBody</returns>
         public async Task<MsgBody> GetMsg<T>(T msgId)
         {
             try
@@ -130,6 +152,14 @@ namespace UndefinedBot.Core.NetWork
                 return new MsgBody();
             }
         }
+        /// <summary>
+        /// Get group member info
+        /// </summary>
+        /// <param name="targetGroupId">Group Id</param>
+        /// <param name="targetUin">User Id to get</param>
+        /// <typeparam name="T1">string or long</typeparam>
+        /// <typeparam name="T2">string or long</typeparam>
+        /// <returns>GroupMember</returns>
         public async Task<GroupMember> GetGroupMember<T1, T2>(T1 targetGroupId, T2 targetUin)
         {
             try
@@ -162,6 +192,13 @@ namespace UndefinedBot.Core.NetWork
                 return new GroupMember();
             }
         }
+
+        /// <summary>
+        /// Get group member list
+        /// </summary>
+        /// <param name="targetGroupId">Group Id to get</param>
+        /// <typeparam name="T">string or long</typeparam>
+        /// <returns>A list contains GroupMember</returns>
         public async Task<List<GroupMember>> GetGroupMemberList<T>(T targetGroupId)
         {
             try
@@ -206,7 +243,7 @@ namespace UndefinedBot.Core.NetWork
 
         private readonly Logger _httpRequestLogger = new("HttpRequest");
 
-        public async Task<string> POST(string url, object? content = null)
+        public async Task<string> Post(string url, object? content = null)
         {
             try
             {
@@ -230,13 +267,12 @@ namespace UndefinedBot.Core.NetWork
                 return "";
             }
         }
-
         public async Task<string> Get(string url)
         {
             try
             {
                 HttpResponseMessage response = await _httpClient.GetAsync(url);
-                return await response.Content.ReadAsStringAsync();
+                return response.IsSuccessStatusCode ? await response.Content.ReadAsStringAsync() : "";
             }
             catch (TaskCanceledException)
             {
@@ -256,7 +292,9 @@ namespace UndefinedBot.Core.NetWork
         {
             try
             {
-                return await _httpClient.GetByteArrayAsync(url);
+                HttpResponseMessage response = await _httpClient.GetAsync(url);
+                return response.IsSuccessStatusCode ? await response.Content.ReadAsByteArrayAsync() : [];
+                //return await _httpClient.GetByteArrayAsync(url);
             }
             catch (TaskCanceledException)
             {

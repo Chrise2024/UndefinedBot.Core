@@ -12,6 +12,11 @@ namespace UndefinedBot.Core.Command
 
         private static readonly Logger s_argLogger = new("CommandResolver");
 
+        /// <summary>
+        /// Split mssage into tokens
+        /// </summary>
+        /// <param name="msgString">Raw CQMessage string</param>
+        /// <returns>tokens</returns>
         public static (string?,List<string>) Tokenize(string msgString)
         {
             List<string> rawTokens = ParseCqString(msgString);
