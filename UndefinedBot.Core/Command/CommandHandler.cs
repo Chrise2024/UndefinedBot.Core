@@ -29,7 +29,7 @@ namespace UndefinedBot.Core.Command
         public static async Task HandleMsg(JObject msgJson)
         {
             if ((msgJson.Value<string>("post_type")?.Equals("message") ?? false) &&
-                (msgJson.Value<string>("message_type)")?.Equals("group") ?? false) &&
+                (msgJson.Value<string>("message_type")?.Equals("group") ?? false) &&
                 s_workGroup.Contains(msgJson.Value<long>("group_id"))
                 )
             {

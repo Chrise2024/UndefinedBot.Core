@@ -26,7 +26,7 @@ namespace UndefinedBot.Net.Utils
             {
                 try
                 {
-                    var context = await _httpListener.GetContextAsync().WaitAsync(new CancellationToken());
+                    HttpListenerContext context = await _httpListener.GetContextAsync().WaitAsync(new CancellationToken());
                     _ = HandleRequestAsync(context);
                     //catch { }
                 }

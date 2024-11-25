@@ -98,6 +98,14 @@ namespace UndefinedBot.Core.Command
             return RootNode;
         }
     }
-
+    public struct CommandProperty
+    {
+        [JsonProperty("name")] public string Name;
+        [JsonProperty("alias")] public List<string> CommandAlias;
+        [JsonProperty("description")] public string? CommandDescription;
+        [JsonProperty("short_description")] public string? CommandShortDescription;
+        [JsonProperty("usage")] public string? CommandUsage;
+        [JsonProperty("example")] public string? CommandExample;
+    }
     public class CommandSyntaxException(string message) : Exception(message);
 }

@@ -2,9 +2,8 @@
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Newtonsoft.Json.Schema;
-using UndefinedBot.Core;
-using UndefinedBot.Core.Command;
 using UndefinedBot.Core.Utils;
+using UndefinedBot.Core.Command;
 
 namespace UndefinedBot.Net.Utils
 {
@@ -26,6 +25,7 @@ namespace UndefinedBot.Net.Utils
                     if (File.Exists(pluginPropFile))
                     {
                         JObject pluginPropertyJson = FileIO.ReadAsJson(pluginPropFile);
+                        //Console.WriteLine(JsonConvert.SerializeObject(pluginPropertyJson));
                         if (pluginPropertyJson.IsValid(s_pluginPropJsonSchema))
                         {
                             PluginProperty pluginProperty = pluginPropertyJson.ToObject<PluginProperty>();
@@ -70,13 +70,13 @@ namespace UndefinedBot.Net.Utils
                 return [];
             }
         }
-        public static Dictionary<string,CommandInstance> GetCommandReference()
+        public static Dictionary<string, CommandProperty> GetCommandReference()
         {
             string[] crfs = Directory.GetFiles(Path.Join(Program.GetProgramRoot(),"CommandReference"));
-            Dictionary<string, CommandInstance> commandRef = [];
+            Dictionary<string, CommandProperty> commandRef = [];
             foreach (string cf in crfs)
             {
-                List<CommandInstance> cfi = FileIO.ReadAsJson<List<CommandInstance>>(cf) ?? [];
+                List<CommandProperty> cfi = FileIO.ReadAsJson<List<CommandProperty>>(cf) ?? [];
                 cfi.ForEach((i) =>
                 {
                     if (i.Name != null)
@@ -122,13 +122,5 @@ namespace UndefinedBot.Net.Utils
         [JsonProperty("entry_file")] public string EntryFile;
         [JsonProperty("entry_point")] public string EntryPoint;
         [JsonIgnore] public object? Instance;
-    }
-    internal struct CommandProperty
-    {
-        [JsonProperty("name")] public string Name;
-        [JsonProperty("alias")] public List<string> Alias;
-        [JsonProperty("description")] public string? Description;
-        [JsonProperty("short_description")] public string? ShortDescription;
-        [JsonProperty("example")] public string? Example;
     }
 }

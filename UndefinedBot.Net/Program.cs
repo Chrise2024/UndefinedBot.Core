@@ -1,12 +1,5 @@
 ﻿using System.Text;
-using System.Text.RegularExpressions;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
-using UndefinedBot.Core;
 using UndefinedBot.Core.Command;
-using UndefinedBot.Core.Command.Arguments;
-using UndefinedBot.Core.Command.Arguments.ArgumentRange;
-using UndefinedBot.Core.Command.Arguments.ArgumentType;
 using UndefinedBot.Core.Utils;
 using UndefinedBot.Net.Utils;
 
@@ -24,7 +17,7 @@ namespace UndefinedBot.Net
 
         private static List<PluginProperty> s_pluginReference = [];
 
-        private static Dictionary<string, CommandInstance> s_commandReference = [];
+        private static Dictionary<string, CommandProperty> s_commandReference = [];
         static void Main(string[] args)
         {
             Console.OutputEncoding = Encoding.UTF8;
@@ -35,7 +28,7 @@ namespace UndefinedBot.Net
             FileIO.WriteAsJson(Path.Join(s_programRoot, "command_reference.json"), s_commandReference);
             s_mainLogger.Info("Bot Launched");
             Task.Run(s_httpServer.Start);
-            CommandHandler.TriggerEvent.Trigger(new CallingProperty("help", 0, 0, 0, "0", 0), ["aaa","[CQ:reply,id=114514]"]);
+            //CommandHandler.TriggerEvent.Trigger(new CallingProperty("test", 0, 0, 0, "0", 0), ["666"]);
             while (true)
             {
                 string tempString = Console.ReadLine() ?? "";

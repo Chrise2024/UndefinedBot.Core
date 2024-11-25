@@ -15,7 +15,7 @@ namespace Command.Help
 
         private readonly string _commandPrefix;
 
-        private Dictionary<string, CommandInstance> _commandReference = [];
+        private Dictionary<string, CommandProperty> _commandReference = [];
         public HelpCommand(string pluginName)
         {
             _undefinedApi = new(pluginName);
@@ -30,18 +30,18 @@ namespace Command.Help
                 {
                     if (_commandReference.Count == 0)
                     {
-                        _commandReference = JsonConvert.DeserializeObject<Dictionary<string, CommandInstance>>(File.ReadAllText(Path.Join(ctx.RootPath,"command_reference.json"))) ?? [];
+                        _commandReference = JsonConvert.DeserializeObject<Dictionary<string, CommandProperty>>(File.ReadAllText(Path.Join(ctx.RootPath,"command_reference.json"))) ?? [];
                     }
                     if (_baseHelpText.Length == 0)
                     {
                         string text = "";
-                        foreach (var pair in _commandReference)
+                        foreach (KeyValuePair<string, CommandProperty> pair in _commandReference)
                         {
                             text += $"{_commandPrefix}{pair.Value.Name} - {pair.Value.CommandShortDescription ?? ""}\n";
                         }
                         _baseHelpText = "---------------help---------------\n指令列表：\n" +
                                         text +
-                                        "使用#help+具体指令查看使用方法\ne.g. #help help";
+                                        $"使用#help+具体指令查看使用方法\ne.g. {_commandPrefix}help help";
                     }
                     await ctx.Api.SendGroupMsg(
                         ctx.CallingProperties.GroupId,
@@ -53,10 +53,10 @@ namespace Command.Help
                     {
                         if (_commandReference.Count == 0)
                         {
-                            _commandReference = JsonConvert.DeserializeObject<Dictionary<string, CommandInstance>>(File.ReadAllText(Path.Join(ctx.RootPath,"command_reference.json"))) ?? [];
+                            _commandReference = JsonConvert.DeserializeObject<Dictionary<string, CommandProperty>>(File.ReadAllText(Path.Join(ctx.RootPath,"command_reference.json"))) ?? [];
                         }
                         string cmd = StringArgument.GetString("cmd", ctx);
-                        if (_commandReference.TryGetValue(cmd, out var prop))
+                        if (_commandReference.TryGetValue(cmd, out CommandProperty prop))
                         {
                             string? desc = prop.CommandDescription;
                             string? ug = prop.CommandUsage;
