@@ -1,5 +1,4 @@
-﻿using System;
-
+﻿
 namespace UndefinedBot.Core.Utils
 {
     public class Logger(string nameSpace)
@@ -38,8 +37,8 @@ namespace UndefinedBot.Core.Utils
         }
         private void PrintLine(string text)
         {
-            string[] Lines = text.Split('\n',StringSplitOptions.RemoveEmptyEntries);
-            foreach (string line in Lines)
+            string[] lines = text.Split('\n',StringSplitOptions.RemoveEmptyEntries);
+            foreach (string line in lines)
             {
                 Console.WriteLine("[{0}][{1}] {2}", GetFormatTime(), _nameSpace, line);
             }
@@ -73,8 +72,8 @@ namespace UndefinedBot.Core.Utils
         }
         private void PrintLine(string text)
         {
-            string[] Lines = text.Split('\n', StringSplitOptions.RemoveEmptyEntries);
-            foreach (string line in Lines)
+            string[] lines = text.Split('\n', StringSplitOptions.RemoveEmptyEntries);
+            foreach (string line in lines)
             {
                 Console.WriteLine("[{0}][{1}][{2}] {3}", GetFormatTime(), _nameSpace, _commandName, line);
             }
