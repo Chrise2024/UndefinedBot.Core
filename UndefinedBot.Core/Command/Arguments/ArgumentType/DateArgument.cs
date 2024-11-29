@@ -4,7 +4,8 @@ namespace UndefinedBot.Core.Command.Arguments.ArgumentType
 {
     public class DateArgument(IArgumentRange? range = null) : IArgumentType
     {
-        public IArgumentRange? Range { get; } = range;
+        public string TypeName => "Date";
+        public IArgumentRange? Range => range;
         public bool IsValid(string token)
         {
             return DateTime.TryParse(token,out DateTime _);

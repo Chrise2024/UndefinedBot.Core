@@ -5,7 +5,8 @@ namespace UndefinedBot.Core.Command.Arguments.ArgumentType
 {
     public class UinArgument(IArgumentRange? range = null) : IArgumentType
     {
-        public IArgumentRange? Range { get; } = range;
+        public string TypeName => "At";
+        public IArgumentRange? Range => range;
         public bool IsValid(string token)
         {
             return QUin.CqAtRegex().IsMatch(token);
@@ -37,7 +38,7 @@ namespace UndefinedBot.Core.Command.Arguments.ArgumentType
                     .DecodeCqEntity(token)
                     .Properties
                     .TryGetValue("qq", out string? uin)
-                    ? (Int64.TryParse(uin, out long val) 
+                    ? (Int64.TryParse(uin, out long val)
                         ? new QUin(val) :
                         throw new ArgumentInvalidException($"{token} Is Not Valid Uin"))
                     : throw new ArgumentInvalidException($"{token} Is Not Valid Uin");
