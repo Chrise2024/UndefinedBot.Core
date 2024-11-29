@@ -4,7 +4,8 @@ namespace UndefinedBot.Core.Command.Arguments.ArgumentType
 {
     public class IntegerArgument(IArgumentRange? range = null) : IArgumentType
     {
-        public IArgumentRange? Range { get; } = range;
+        public string TypeName => "Integer";
+        public IArgumentRange? Range => range;
         public bool IsValid(string token)
         {
             return long.TryParse(token, out long val) && (Range?.InRange(val) ?? true);

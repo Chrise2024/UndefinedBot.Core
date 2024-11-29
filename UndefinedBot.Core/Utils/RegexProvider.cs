@@ -3,11 +3,9 @@ using System.Text.RegularExpressions;
 
 namespace UndefinedBot.Core.Utils
 {
+    [Obsolete("wasted",true)]
     internal partial class RegexProvider
     {
-        [GeneratedRegex(@"\[CQ:\S+\]")]
-        public static partial Regex GetCQEntityRegex();
-
         [GeneratedRegex(@"\[CQ:at,qq=\d+\S*\]")]
         public static partial Regex GetCQAtRegex();
 

@@ -2,7 +2,7 @@
 {
     public class RangeIn(IEnumerable<object> range) : IArgumentRange
     {
-        private IEnumerable<object> Range { get; } = range;
+        private IEnumerable<object> Range => range;
 
         public bool InRange(object current)
         {

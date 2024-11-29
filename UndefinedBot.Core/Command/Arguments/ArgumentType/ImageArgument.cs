@@ -5,7 +5,8 @@ namespace UndefinedBot.Core.Command.Arguments.ArgumentType
 {
     public class ImageArgument : IArgumentType
     {
-        public IArgumentRange? Range { get; } = null;
+        public string TypeName => "Image";
+        public IArgumentRange? Range => null;
         public bool IsValid(string token)
         {
             return QImage.CqImageRegex().IsMatch(token);
@@ -37,7 +38,7 @@ namespace UndefinedBot.Core.Command.Arguments.ArgumentType
         {
             if (CqImageRegex().IsMatch(token))
             {
-                CQEntity entity = CommandResolver.DecodeCqEntity(token);
+                CqEntity entity = CommandResolver.DecodeCqEntity(token);
                 if (entity.Properties.TryGetValue("file", out string? fl))
                 {
                     return new QImage(fl, entity.Properties.GetValueOrDefault("url"),entity.Properties.GetValueOrDefault("type"));

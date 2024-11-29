@@ -5,7 +5,8 @@ namespace UndefinedBot.Core.Command.Arguments.ArgumentType
 {
     public class ReplyArgument(IArgumentRange? range = null) : IArgumentType
     {
-        public IArgumentRange? Range { get; } = range;
+        public string TypeName => "Reply";
+        public IArgumentRange? Range => range;
         public bool IsValid(string token)
         {
             return QReply.CqReplyRegex().IsMatch(token);
@@ -39,7 +40,7 @@ namespace UndefinedBot.Core.Command.Arguments.ArgumentType
                     .DecodeCqEntity(token)
                     .Properties
                     .TryGetValue("id", out string? msgId)
-                    ? (Int32.TryParse(msgId, out int val) 
+                    ? (Int32.TryParse(msgId, out int val)
                         ? new QReply(val) :
                         throw new ArgumentInvalidException($"{token} Is Not Valid Reply"))
                     : throw new ArgumentInvalidException($"{token} Is Not Valid Reply");
