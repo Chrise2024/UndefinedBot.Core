@@ -3,17 +3,12 @@ using UndefinedBot.Core.Utils;
 
 namespace UndefinedBot.Core.Command
 {
-    internal class CommandResolver
+    internal abstract partial class CommandResolver
     {
-
-        private static readonly CallingProperty s_noneCommandArg = new("", 0,0,0, "",0);
-
-        private static readonly string s_commandPrefix = Core.GetConfigManager().GetCommandPrefix();
-
-        private static readonly Logger s_argLogger = new("CommandResolver");
+        private static readonly string s_commandPrefix = new ConfigManager().GetCommandPrefix();
 
         /// <summary>
-        /// Split mssage into tokens
+        /// Split message into tokens
         /// </summary>
         /// <param name="msgString">Raw CQMessage string</param>
         /// <returns>tokens</returns>
@@ -101,7 +96,7 @@ namespace UndefinedBot.Core.Command
             }
             return
             [
-                ..RegexProvider.GetCQEntityRegex().Replace(
+                ..GetCqEntityRegex().Replace(
                     cqString, match => $" {match.Value} "
                     /*
                     {
@@ -138,7 +133,7 @@ namespace UndefinedBot.Core.Command
 
             ];
         }
-        public static CQEntity DecodeCqEntity(string cqEntityString)
+        public static CqEntity DecodeCqEntity(string cqEntityString)
         {
             Dictionary<string,string> properties = [];
             cqEntityString = cqEntityString[1..^1]
@@ -148,7 +143,7 @@ namespace UndefinedBot.Core.Command
                 .Replace("&#93;", "]")
                 .Replace("&#44;", ",");
             string[] cqPiece = cqEntityString.Split("\r$\r");
-            CQEntity cqEntity = new(cqPiece[0][3..]);
+            CqEntity cqEntity = new(cqPiece[0][3..]);
             for (int i = 1; i < cqPiece.Length; i++)
             {
                 string[] temp = cqPiece[i].Split("=",2,StringSplitOptions.RemoveEmptyEntries);
@@ -193,6 +188,8 @@ namespace UndefinedBot.Core.Command
             return "";
         }
         */
+        [GeneratedRegex(@"\[CQ:\S+\]")]
+        private static partial Regex GetCqEntityRegex();
     }
     public struct CallingProperty(
         string command,
@@ -203,16 +200,16 @@ namespace UndefinedBot.Core.Command
         long time
         )
     {
-        public string Command = command;
-        public long CallerUin = callerUin;
-        public long GroupId = groupId;
-        public int MsgId = msgId;
-        public string SubType = subType;
-        public long Time = time;
+        public readonly string Command = command;
+        public readonly long CallerUin = callerUin;
+        public readonly long GroupId = groupId;
+        public readonly int MsgId = msgId;
+        public readonly string SubType = subType;
+        public readonly long Time = time;
     }
-    public struct CQEntity(string cqType)
+    public struct CqEntity(string cqType)
     {
-        public string CQType = cqType;
+        public string CqType = cqType;
         public Dictionary<string, string> Properties;
     }
 }

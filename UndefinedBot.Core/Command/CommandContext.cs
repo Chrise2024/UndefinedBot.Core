@@ -6,7 +6,7 @@ namespace UndefinedBot.Core.Command
     /// <summary>
     /// Context of command,containing apis, calling info and arguments
     /// </summary>
-    public class CommandContext(string commandName,UndefinedAPI baseApi,CallingProperty cp)
+    public class CommandContext(string commandName,UndefinedApi baseApi,CallingProperty cp)
     {
         public readonly string PluginName = baseApi.PluginName;
         public readonly string CommandName = commandName;
@@ -16,7 +16,7 @@ namespace UndefinedBot.Core.Command
         public readonly CallingProperty CallingProperties = cp;
         public readonly Dictionary<string, string> ArgumentReference = [];
         public readonly CommandLogger Logger = new(baseApi.PluginName,commandName);
-        public readonly ConfigManager Config = baseApi.Config;
+        public readonly Config Config = baseApi.Config;
         public readonly CacheManager Cache = baseApi.Cache;
         public readonly HttpRequest Request = baseApi.Request;
         public readonly HttpApi Api = baseApi.Api;

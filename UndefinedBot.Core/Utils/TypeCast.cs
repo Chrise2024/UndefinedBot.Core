@@ -13,7 +13,7 @@ namespace UndefinedBot.Core.Utils
             {
                 if (jObject.TryGetValue(property.Name, out var token))
                 {
-                    Console.WriteLine(property.Name);
+                    //Console.WriteLine(property.Name);
                     property.SetValue(result, token.ToObject(property.PropertyType));
                 }
             }

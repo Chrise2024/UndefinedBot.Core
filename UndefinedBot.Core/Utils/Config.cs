@@ -20,7 +20,7 @@ namespace UndefinedBot.Core.Utils
             }"
             );
 
-        private readonly string _configPath = Path.Join(Core.GetCoreRoot(), "config.json");
+        private readonly string _configPath = Path.Join(Environment.CurrentDirectory, "config.json");
 
         private Config _config;
 
@@ -35,20 +35,20 @@ namespace UndefinedBot.Core.Utils
         {
             if (!File.Exists(_configPath))
             {
-                FileIO.WriteAsJson<Config>(_configPath, _defaultConfig);
+                FileIO.WriteAsJson(_configPath, _defaultConfig);
                 _config = _defaultConfig;
             }
             else
             {
-                JObject RConfig = FileIO.ReadAsJson(_configPath);
-                if (RConfig.IsValid(_configJsonSchema))
+                JObject rConfig = FileIO.ReadAsJson(_configPath);
+                if (rConfig.IsValid(_configJsonSchema))
                 {
-                    _config = RConfig.ToObject<Config>();
+                    _config = rConfig.ToObject<Config>();
                 }
                 else
                 {
                     _config = _defaultConfig;
-                    FileIO.WriteAsJson<Config>(_configPath, _defaultConfig);
+                    FileIO.WriteAsJson(_configPath, _defaultConfig);
                 }
             }
         }
@@ -68,6 +68,10 @@ namespace UndefinedBot.Core.Utils
         {
             return _config.CommandPrefix;
         }
+        public Config GetConfig()
+        {
+            return _config;
+        }
     }
     public struct Config(
         string httpServerUrl,
@@ -76,9 +80,9 @@ namespace UndefinedBot.Core.Utils
         string commandPrefix
         )
     {
-        [JsonProperty("http_server_url")] public string HttpServerUrl = httpServerUrl;
-        [JsonProperty("http_post_url")] public string HttpPostUrl = httpPostUrl;
-        [JsonProperty("group_id")] public List<long> GroupId = groupId;
-        [JsonProperty("command_prefix")] public string CommandPrefix = commandPrefix;
+        [JsonProperty("http_server_url")] public readonly string HttpServerUrl = httpServerUrl;
+        [JsonProperty("http_post_url")] public readonly string HttpPostUrl = httpPostUrl;
+        [JsonProperty("group_id")] public readonly List<long> GroupId = groupId;
+        [JsonProperty("command_prefix")] public readonly string CommandPrefix = commandPrefix;
     }
 }

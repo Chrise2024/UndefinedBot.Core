@@ -1,5 +1,5 @@
 ﻿using Newtonsoft.Json;
-using UndefinedBot.Core.Command.Arguments.ArgumentType;
+using UndefinedBot.Core.Command.CommandNodes;
 
 namespace UndefinedBot.Core.Command
 {
@@ -11,15 +11,15 @@ namespace UndefinedBot.Core.Command
         [JsonProperty("short_description")] public string? CommandShortDescription { get; private set; }
         [JsonProperty("usage")] public string? CommandUsage { get; private set; }
         [JsonProperty("example")] public string? CommandExample { get; private set; }
-        [JsonIgnore] public ICommandNode RootNode { get; private set; }
+        [JsonIgnore] private RootCommandNode RootNode { get; set; }
         internal CommandInstance(string commandName)
         {
             Name = commandName;
             RootNode = new RootCommandNode(commandName);
         }
-        internal async Task Run(CommandContext ctx,List<string> tokens)
+        internal async Task<ExecuteStatus> Run(CommandContext ctx,List<string> tokens)
         {
-            await RootNode.ExecuteSelf(ctx,tokens);
+            return await RootNode.ExecuteSelf(ctx,tokens);
         }
         /// <summary>
         /// Add command alias
@@ -82,7 +82,7 @@ namespace UndefinedBot.Core.Command
         /// <summary>
         /// Add command action
         /// </summary>
-        /// <param name="action"><see cref="UndefinedBot.Core.Command.CommandNodeAction"/></param>
+        /// <param name="action"><see cref="UndefinedBot.Core.Command.CommandNodes.CommandNodeAction"/></param>
         /// <example>
         /// <code>
         ///     this.Execute(async (ctx) => {
@@ -107,5 +107,4 @@ namespace UndefinedBot.Core.Command
         [JsonProperty("usage")] public string? CommandUsage;
         [JsonProperty("example")] public string? CommandExample;
     }
-    public class CommandSyntaxException(string message) : Exception(message);
 }

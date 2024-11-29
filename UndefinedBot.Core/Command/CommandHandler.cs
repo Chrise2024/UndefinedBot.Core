@@ -5,14 +5,6 @@ using UndefinedBot.Core.Utils;
 namespace UndefinedBot.Core.Command
 {
     public delegate Task CommandEventHandler(CallingProperty cp,List<string> tokens);
-    public class CommandTriggerEvent
-    {
-        public event CommandEventHandler? OnCommand;
-        public void Trigger(CallingProperty cp,List<string> tokens)
-        {
-            OnCommand?.Invoke(cp,tokens);
-        }
-    }
     /**
      * <summary>
      * Process OneBot11 Format Message and Resolve to Broadcast Message Event
@@ -20,11 +12,10 @@ namespace UndefinedBot.Core.Command
      */
     public abstract class CommandHandler
     {
-        private static readonly List<long> s_workGroup = Core.GetConfigManager().GetGroupList();
+        private static readonly List<long> s_workGroup = new ConfigManager().GetGroupList();
 
         private static readonly Logger s_commandHandlerLogger = new("MsgHandler");
-
-        public static readonly CommandTriggerEvent TriggerEvent = new();
+        public static event CommandEventHandler? CommandEvent;
         //public static readonly CacheRefreshEvent CacheEvent = new();
         public static async Task HandleMsg(JObject msgJson)
         {
@@ -49,9 +40,14 @@ namespace UndefinedBot.Core.Command
                     s_commandHandlerLogger.Info(JsonConvert.SerializeObject(cp, Formatting.Indented));
                     s_commandHandlerLogger.Info("Tokens:");
                     s_commandHandlerLogger.Info(JsonConvert.SerializeObject(tokens));
-                    TriggerEvent.Trigger(cp,tokens);
+                    CommandEvent?.Invoke(cp,tokens);
                 }
             }
+        }
+
+        public static void Trigger(CallingProperty cp, List<string> tokens)
+        {
+            CommandEvent?.Invoke(cp,tokens);
         }
     }
     public struct MsgSender
