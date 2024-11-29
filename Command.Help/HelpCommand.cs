@@ -1,13 +1,14 @@
 ﻿using Newtonsoft.Json;
 using UndefinedBot.Core;
 using UndefinedBot.Core.Command;
+using UndefinedBot.Core.Command.CommandNodes;
 using UndefinedBot.Core.Command.Arguments.ArgumentType;
 
 namespace Command.Help
 {
     public class HelpCommand
     {
-        private readonly UndefinedAPI _undefinedApi;
+        private readonly UndefinedApi _undefinedApi;
 
         private readonly string _pluginName;
 
@@ -20,7 +21,7 @@ namespace Command.Help
         {
             _undefinedApi = new(pluginName);
             _pluginName = pluginName;
-            _commandPrefix = _undefinedApi.Config.GetCommandPrefix();
+            _commandPrefix = _undefinedApi.Config.CommandPrefix;
             _undefinedApi.RegisterCommand("help")
                 .Description("指令帮助文档")
                 .ShortDescription("帮助")
