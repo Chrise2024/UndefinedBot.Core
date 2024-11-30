@@ -19,12 +19,16 @@ namespace UndefinedBot.Core.Command.CommandNodes
     }
     public class CommandAbortException(string? message = null) : Exception(message);
 
-    public class InvalidArgumentException(string currentToken, string requiredType) : Exception(null)
+    public class InvalidArgumentException(string currentToken, IEnumerable<string> requiredType) : Exception(null)
     {
         public string ErrorToken => currentToken;
-        public string RequiredType => requiredType;
+        public IEnumerable<string> RequiredType => requiredType;
     }
-    public class TooLessArgumentException() : Exception();
+
+    public class TooLessArgumentException(IEnumerable<string> requiredType) : Exception(null)
+    {
+        public IEnumerable<string> RequiredType => requiredType;
+    }
 
     public class PermissionDeniedException(string currentNode, string currentPermission, string requiredPermission) : Exception(null)
     {

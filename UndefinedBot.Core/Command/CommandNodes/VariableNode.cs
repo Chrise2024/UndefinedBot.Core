@@ -1,5 +1,4 @@
-﻿using Newtonsoft.Json;
-using UndefinedBot.Core.Command.Arguments.ArgumentType;
+﻿using UndefinedBot.Core.Command.Arguments.ArgumentType;
 
 namespace UndefinedBot.Core.Command.CommandNodes
 {
@@ -54,36 +53,36 @@ namespace UndefinedBot.Core.Command.CommandNodes
         {
             if (tokens.Count >= 1)
             {
-                string current = tokens[0];
-                if (ArgumentType.IsValid(current))
+                if (ArgumentType.IsValid(tokens[0]))
                 {
-                    ctx.ArgumentReference[NodeName] = current;
-                    //无子节点，执行自身
-                    if (Child.Count == 0)
+                    ctx.ArgumentReference[NodeName] = tokens[0];
+                    if (NodeAction != null && (tokens.Count == 1 || Child.Count == 0))
                     {
-                        if (NodeAction != null)
+                        //无后续token或无子节点 且 定义了节点Action，执行自身
+                        try
                         {
-                            try
-                            {
-                                await NodeAction(ctx);
-                                return ExecuteStatus.Success;
-                            }
-                            catch(Exception ex)
-                            {
-                                ctx.Logger.Error(ex.Message);
-                                ctx.Logger.Error(ex.StackTrace ?? "");
-                                throw new CommandAbortException($"Node {NodeName} execute failed");
-                            }
+                            await NodeAction(ctx);
+                            return ExecuteStatus.Success;
                         }
-                        else
+                        catch(Exception ex)
                         {
-                            throw new CommandSyntaxException(NodeName);
+                            ctx.Logger.Error(ex.Message);
+                            ctx.Logger.Error(ex.StackTrace ?? "");
+                            throw new CommandAbortException($"Node {NodeName} execute failed");
                         }
                     }
                     else
                     {
-                        if (tokens.Count >= 2)
+                        if (Child.Count > 0)
                         {
+                            //有子节点
+                            if (tokens.Count == 1)
+                            {
+                                //缺token执行子节点
+                                throw new TooLessArgumentException(Child.Select(item =>
+                                    item is SubCommandNode ? $"<{item.NodeName}>" : $"[{item.ArgumentType.TypeName}]"
+                                ));
+                            }
                             //有足够的token执行子节点
                             foreach (ICommandNode node in Child)
                             {
@@ -94,12 +93,14 @@ namespace UndefinedBot.Core.Command.CommandNodes
                                 }
                             }
                             //无可执行子节点，对应token异常
-                            throw new InvalidArgumentException(tokens[1],JsonConvert.SerializeObject(Child.Select(item => item is SubCommandNode ? item.NodeName : item.ArgumentType.TypeName)));
+                            throw new InvalidArgumentException(tokens[1],Child.Select(item =>
+                                item is SubCommandNode ? $"<{item.NodeName}>" : $"[{item.ArgumentType.TypeName}]"
+                            ));
                         }
                         else
                         {
-                            //有子节点但是token不足
-                            throw new TooLessArgumentException();
+                            //未定义节点Action
+                            throw new CommandSyntaxException(NodeName);
                         }
                     }
                 }
