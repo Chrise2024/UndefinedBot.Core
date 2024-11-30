@@ -7,12 +7,12 @@ using UndefinedBot.Core.Command;
 
 namespace UndefinedBot.Net.Utils
 {
-    abstract internal class Initializer
+    internal abstract class Initializer
     {
         private static readonly string s_pluginRoot = Path.Join(Program.GetProgramRoot(),"Plugins");
 
         private static readonly Logger s_initLogger = new("Initialize");
-        static internal List<PluginProperty> LoadPlugins()
+        internal static List<PluginProperty> LoadPlugins()
         {
             if (Directory.Exists(s_pluginRoot))
             {
@@ -25,7 +25,6 @@ namespace UndefinedBot.Net.Utils
                     if (File.Exists(pluginPropFile))
                     {
                         JObject pluginPropertyJson = FileIO.ReadAsJson(pluginPropFile);
-                        //Console.WriteLine(JsonConvert.SerializeObject(pluginPropertyJson));
                         if (pluginPropertyJson.IsValid(s_pluginPropJsonSchema))
                         {
                             PluginProperty pluginProperty = pluginPropertyJson.ToObject<PluginProperty>();
@@ -39,7 +38,7 @@ namespace UndefinedBot.Net.Utils
                                 {
                                     FileIO.SafeDeleteFile(cf);
                                 }
-                                object? pInstance = InitPlugin(entryFile, pluginProperty.EntryPoint, pluginProperty.Name);
+                                object? pInstance = InitPlugin(entryFile, /*pluginProperty.EntryPoint,*/ pluginProperty.Name);
                                 if (pInstance != null)
                                 {
                                     pluginProperty.Instance = pInstance;
@@ -61,7 +60,6 @@ namespace UndefinedBot.Net.Utils
                         }
                     }
                 }
-                //Console.WriteLine(JsonConvert.SerializeObject(PluginRef));
                 return pluginRef;
             }
             else
@@ -82,23 +80,23 @@ namespace UndefinedBot.Net.Utils
                     if (i.Name != null)
                     {
                         commandRef[i.Name] = i;
-                        //CommandRef.Add(i.Name, i);
                     }
                 });
             }
             return commandRef;
         }
-        private static object? InitPlugin(string pluginDllPath,string entryPoint, string pluginName)
+        private static object? InitPlugin(string pluginDllPath,/*string entryPoint,*/ string pluginName)
         {
             try
             {
-                Assembly pluginAssembly = Assembly.LoadFrom(pluginDllPath);
-                IEnumerable<Type> types = pluginAssembly.GetTypes().Where(t => t.IsClass && t.Name == entryPoint);
-                return types.Select(type => Activator.CreateInstance(type, [pluginName])).OfType<object>().FirstOrDefault();
+                return Activator.CreateInstance(Assembly
+                    .LoadFrom(pluginDllPath)
+                    .GetTypes()
+                    .FirstOrDefault(t => t.IsClass && t.GetCustomAttributes()
+                        .Any(item => item.ToString()?.Equals("UndefinedBot.Core.PluginAttribute") ?? false)) ?? throw new Exception(), [pluginName]);
             }
-            catch (Exception ex)
+            catch
             {
-                Console.WriteLine(ex.ToString());
                 return null;
             }
         }
@@ -111,7 +109,7 @@ namespace UndefinedBot.Net.Utils
                           ""entry_file"": { ""type"": ""string"" },
                           ""entry_point"": { ""type"": ""string"" },
                       },
-                    ""required"": [""name"", ""description"",""entry_file"", ""entry_point""]
+                    ""required"": [""name"", ""description"",""entry_file""]
                   }"
             );
     }
@@ -120,7 +118,7 @@ namespace UndefinedBot.Net.Utils
         [JsonProperty("name")] public string Name;
         [JsonProperty("description")] public string Description;
         [JsonProperty("entry_file")] public string EntryFile;
-        [JsonProperty("entry_point")] public string EntryPoint;
+        [JsonProperty("entry_point")] public string? EntryPoint;
         [JsonIgnore] public object? Instance;
     }
 }
