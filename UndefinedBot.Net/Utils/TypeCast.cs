@@ -1,7 +1,7 @@
 ﻿using System.Reflection;
 using Newtonsoft.Json.Linq;
 
-namespace UndefinedBot.Core.Utils
+namespace UndefinedBot.Net.Utils
 {
     public static class JObjectExtensions
     {
@@ -13,7 +13,6 @@ namespace UndefinedBot.Core.Utils
             {
                 if (jObject.TryGetValue(property.Name, out var token))
                 {
-                    Console.WriteLine(property.Name);
                     property.SetValue(result, token.ToObject(property.PropertyType));
                 }
             }

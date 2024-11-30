@@ -94,8 +94,21 @@ namespace UndefinedBot.Core.Command
         /// <returns>self</returns>
         public ICommandNode Execute(CommandNodeAction action)
         {
-            RootNode.SetAction(action);
-            return RootNode;
+            //RootNode.SetAction(action);
+            return RootNode.Execute(action);
+        }
+        /// <summary>
+        /// Add child node to this node
+        /// </summary>
+        /// <param name="nextNode"><see cref="UndefinedBot.Core.Command.CommandNodes.SubCommandNode"/> or <see cref="UndefinedBot.Core.Command.CommandNodes.VariableNode"/></param>
+        /// <returns>This node self</returns>
+        /// <example>
+        /// <code>
+        /// </code>
+        /// </example>
+        public ICommandNode Then(ICommandNode nextNode)
+        {
+            return RootNode.Then(nextNode);
         }
     }
     public struct CommandProperty

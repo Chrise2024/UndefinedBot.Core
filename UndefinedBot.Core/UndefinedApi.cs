@@ -93,11 +93,11 @@ namespace UndefinedBot.Core
                         }
                         catch (InvalidArgumentException iae)
                         {
-                            ctx.Logger.Error($"Invalid argument: {iae.ErrorToken}, require {iae.RequiredType}");
+                            ctx.Logger.Error($"Invalid argument: {iae.ErrorToken}, require {JsonConvert.SerializeObject(iae.RequiredType)}");
                         }
-                        catch (TooLessArgumentException)
+                        catch (TooLessArgumentException tae)
                         {
-                            ctx.Logger.Error("To less arguments");
+                            ctx.Logger.Error($"To less arguments, require {JsonConvert.SerializeObject(tae.RequiredType)}");
                         }
                         catch (PermissionDeniedException pde)
                         {

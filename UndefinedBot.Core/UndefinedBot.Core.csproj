@@ -9,7 +9,7 @@
     <!-- NuGet 包信息 -->
     <PackageId>UndefinedBot.Core</PackageId>
 	<Title>UndefinedBot.Core</Title>
-    <Version>1.1.7.8</Version>
+    <Version>1.1.7.9-beta</Version>
     <Authors>ChriseCecilia</Authors>
     <Description>UndefinedBot SDK</Description>
     <Copyright>Copyright © 2024</Copyright>
