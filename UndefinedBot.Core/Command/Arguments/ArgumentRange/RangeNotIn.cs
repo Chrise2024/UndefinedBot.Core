@@ -8,5 +8,9 @@
         {
             return !Range.Contains(current);
         }
+        public string GetRangeDescription()
+        {
+            return $"Not In {{{string.Join(",",Range)}}}";
+        }
     }
 }

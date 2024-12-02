@@ -28,5 +28,10 @@
                 return false;
             }
         }
+
+        public string GetRangeDescription()
+        {
+            return $"{_minimum} ~ {_maximum}";
+        }
     }
 }
