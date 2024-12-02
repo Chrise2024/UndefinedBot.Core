@@ -1,21 +1,22 @@
-﻿using UndefinedBot.Core.Command.Arguments.ArgumentRange;
+﻿using System.Text.RegularExpressions;
+using UndefinedBot.Core.Command.Arguments.ArgumentRange;
 
 namespace UndefinedBot.Core.Command.Arguments.ArgumentType
 {
-    public class StringArgument(IArgumentRange? range = null) : IArgumentType
+    public partial class StringArgument(IArgumentRange? range = null) : IArgumentType
     {
         public string TypeName => "String";
         public IArgumentRange? Range => range;
         public bool IsValid(string token)
         {
-            return !string.IsNullOrEmpty(token) && (Range?.InRange(token) ?? true);
+            return !string.IsNullOrEmpty(token) && (Range?.InRange(token) ?? true) && !GetCqEntity().IsMatch(token);
         }
 
         public object GetValue(string token)
         {
             return IsValid(token)
                 ? token
-                : throw new ArgumentInvalidException("Null String Literal");
+                : throw new ArgumentInvalidException("Invalid String Literal");
         }
         public static string GetString(string key,CommandContext ctx)
         {
@@ -25,5 +26,7 @@ namespace UndefinedBot.Core.Command.Arguments.ArgumentType
                 ? throw new ArgumentInvalidException("Null String Literal")
                 : token;
         }
+        [GeneratedRegex(@"^\[CQ:\S+\]$")]
+        private partial Regex GetCqEntity();
     }
 }
