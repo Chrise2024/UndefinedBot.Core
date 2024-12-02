@@ -30,8 +30,8 @@ namespace UndefinedBot.Net
             FileIO.WriteAsJson(Path.Join(s_programRoot, "command_reference.json"), s_commandReference);
             s_mainLogger.Info("Bot Launched");
             Task.Run(s_httpServer.Start);
-            CommandHandler.Trigger(new CallingProperty("test",0,0,0,"",0),["sub2","1111"]);
-            /*while (true)
+            //CommandHandler.Trigger(new CallingProperty("test",0,0,0,"",0),["308","166.6"]);
+            while (true)
             {
                 string tempString = Console.ReadLine() ?? "";
                 if (tempString.Equals("stop"))
@@ -40,7 +40,7 @@ namespace UndefinedBot.Net
                     break;
                 }
             }
-            s_mainLogger.Info("Bot Closed");*/
+            s_mainLogger.Info("Bot Closed");
             Console.ReadKey();
         }
         public static string GetProgramRoot()
