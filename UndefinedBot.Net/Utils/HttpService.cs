@@ -1,6 +1,5 @@
 ﻿using System.Net;
 using System.Text.RegularExpressions;
-using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using UndefinedBot.Core.Command;
 using UndefinedBot.Core.Utils;

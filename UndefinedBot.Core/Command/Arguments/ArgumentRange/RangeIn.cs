@@ -1,6 +1,4 @@
-﻿using Newtonsoft.Json;
-
-namespace UndefinedBot.Core.Command.Arguments.ArgumentRange
+﻿namespace UndefinedBot.Core.Command.Arguments.ArgumentRange
 {
     public class RangeIn(IEnumerable<object> range) : IArgumentRange
     {

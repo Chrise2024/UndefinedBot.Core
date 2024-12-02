@@ -1,7 +1,5 @@
 ﻿using System.Text;
-using Newtonsoft.Json;
 using UndefinedBot.Core.Command;
-using UndefinedBot.Core.NetWork;
 using UndefinedBot.Core.Utils;
 using UndefinedBot.Net.Utils;
 
