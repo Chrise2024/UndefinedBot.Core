@@ -70,6 +70,7 @@ namespace UndefinedBot.Net.Utils
         }
         public static Dictionary<string, CommandProperty> GetCommandReference()
         {
+            FileIO.EnsurePath(Path.Join(Program.GetProgramRoot(),"CommandReference"));
             string[] crfs = Directory.GetFiles(Path.Join(Program.GetProgramRoot(),"CommandReference"));
             Dictionary<string, CommandProperty> commandRef = [];
             foreach (string cf in crfs)
@@ -85,7 +86,7 @@ namespace UndefinedBot.Net.Utils
             }
             return commandRef;
         }
-        private static object? InitPlugin(string pluginDllPath,/*string entryPoint,*/ string pluginName)
+        private static object? InitPlugin(string pluginDllPath, string pluginName)
         {
             try
             {
