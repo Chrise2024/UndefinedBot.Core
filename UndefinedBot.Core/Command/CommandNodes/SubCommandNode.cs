@@ -1,4 +1,5 @@
-﻿using UndefinedBot.Core.Command.Arguments.ArgumentType;
+﻿using UndefinedBot.Core.Command.CommandResult;
+using UndefinedBot.Core.Command.Arguments.ArgumentType;
 
 namespace UndefinedBot.Core.Command.CommandNodes
 {
@@ -50,7 +51,7 @@ namespace UndefinedBot.Core.Command.CommandNodes
             NodeAction = action;
             return this;
         }
-        public async Task<ExecuteStatus> ExecuteSelf(CommandContext ctx,List<string> tokens)
+        public async Task<ICommandResult> ExecuteSelf(CommandContext ctx,List<string> tokens)
         {
             if (tokens.Count >= 1)
             {
@@ -62,7 +63,7 @@ namespace UndefinedBot.Core.Command.CommandNodes
                         try
                         {
                             await NodeAction(ctx);
-                            return ExecuteStatus.Success;
+                            return new CommandSuccess();
                         }
                         catch(Exception ex)
                         {
@@ -76,26 +77,38 @@ namespace UndefinedBot.Core.Command.CommandNodes
                         if (Child.Count > 0)
                         {
                             //有子节点
-                            if (tokens.Count == 1)
-                            {
-                                //缺token执行子节点
-                                throw new TooLessArgumentException(Child.Select(item =>
-                                    item is SubCommandNode ? $"<{item.NodeName}>" : $"[{item.ArgumentType.TypeName}]"
-                                ));
-                            }
-                            //有足够的token执行子节点
+                            List<ICommandResult> result = [];
                             foreach (ICommandNode node in Child)
                             {
-                                if (await node.ExecuteSelf(ctx, tokens[1..]) == ExecuteStatus.Success)
+                                ICommandResult res = await node.ExecuteSelf(ctx, tokens[1..]);
+                                if (res is CommandSuccess)
                                 {
                                     //有一个子节点可以执行
-                                    return ExecuteStatus.Success;
+                                    return new CommandSuccess();
                                 }
+                                result.Add(res);
                             }
                             //无可执行子节点，对应token异常
-                            throw new InvalidArgumentException(tokens[1],Child.Select(item =>
-                                item is SubCommandNode ? $"<{item.NodeName}>" : $"[{item.ArgumentType.TypeName}]"
-                            ));
+                            if (tokens.Count == 1)
+                            {
+                                List<string> r = [];
+                                foreach (ICommandResult index in result)
+                                {
+                                    r.AddRange((index as TooLessArgument)?.RequiredType ?? []);
+                                }
+                                return new TooLessArgument(r);
+                            }
+                            else
+                            {
+                                List<string> r = [];
+                                List<InvalidArgument?> il = result.Select(item => item as InvalidArgument).ToList();
+                                foreach (InvalidArgument? index in il)
+                                {
+                                    r.AddRange(index?.RequiredType ?? []);
+                                }
+                                //传递
+                                return new InvalidArgument(il.FirstOrDefault(item => item?.ErrorToken != null)?.ErrorToken ?? "",r);
+                            }
                         }
                         else
                         {
@@ -106,13 +119,17 @@ namespace UndefinedBot.Core.Command.CommandNodes
                 }
                 else
                 {
-                    return ExecuteStatus.InvalidArgument;
+                    return new InvalidArgument(tokens[0],[GetArgumentRequire()]);
                 }
             }
             else
             {
-                return ExecuteStatus.NullArgument;
+                return new TooLessArgument([GetArgumentRequire()]);
             }
+        }
+        public string GetArgumentRequire()
+        {
+            return $"<{NodeName}>";
         }
     }
 }

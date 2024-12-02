@@ -1,4 +1,5 @@
-﻿using UndefinedBot.Core.Command.Arguments.ArgumentType;
+﻿using UndefinedBot.Core.Command.CommandResult;
+using UndefinedBot.Core.Command.Arguments.ArgumentType;
 
 namespace UndefinedBot.Core.Command.CommandNodes
 {
@@ -15,28 +16,28 @@ namespace UndefinedBot.Core.Command.CommandNodes
         internal void SetAction(CommandNodeAction action);
         public ICommandNode Then(ICommandNode nextNode);
         public ICommandNode Execute(CommandNodeAction action);
-        internal Task<ExecuteStatus> ExecuteSelf(CommandContext ctx,List<string> tokens);
+        internal Task<ICommandResult> ExecuteSelf(CommandContext ctx,List<string> tokens);
+        public string GetArgumentRequire();
     }
     public class CommandAbortException(string? message = null) : Exception(message);
-
+    [Obsolete("wasted",true)]
     public class InvalidArgumentException(string currentToken, IEnumerable<string> requiredType) : Exception(null)
     {
         public string ErrorToken => currentToken;
         public IEnumerable<string> RequiredType => requiredType;
     }
-
+    [Obsolete("wasted",true)]
     public class TooLessArgumentException(IEnumerable<string> requiredType) : Exception(null)
     {
         public IEnumerable<string> RequiredType => requiredType;
     }
-
+    [Obsolete("wasted",true)]
     public class PermissionDeniedException(string currentNode, string currentPermission, string requiredPermission) : Exception(null)
     {
         public string CurrentNode => currentNode;
         public string CurrentPermission => currentPermission;
         public string RequiredPermission => requiredPermission;
     }
-
     public class CommandSyntaxException(string currentNode) : Exception(null)
     {
         public string CurrentNode => currentNode;

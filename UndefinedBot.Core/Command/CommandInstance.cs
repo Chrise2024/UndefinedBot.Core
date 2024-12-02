@@ -1,4 +1,5 @@
 ﻿using Newtonsoft.Json;
+using UndefinedBot.Core.Command.CommandResult;
 using UndefinedBot.Core.Command.CommandNodes;
 
 namespace UndefinedBot.Core.Command
@@ -17,7 +18,7 @@ namespace UndefinedBot.Core.Command
             Name = commandName;
             RootNode = new RootCommandNode(commandName);
         }
-        internal async Task<ExecuteStatus> Run(CommandContext ctx,List<string> tokens)
+        internal async Task<ICommandResult> Run(CommandContext ctx,List<string> tokens)
         {
             return await RootNode.ExecuteSelf(ctx,tokens);
         }

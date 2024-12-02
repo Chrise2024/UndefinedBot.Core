@@ -1,10 +1,11 @@
 ﻿using Newtonsoft.Json;
-using UndefinedBot.Core;
 using UndefinedBot.Core.Command.CommandNodes;
+using UndefinedBot.Core.Command.Arguments.ArgumentRange;
 using UndefinedBot.Core.Command.Arguments.ArgumentType;
 
 namespace UndefinedBot.Core.Test
 {
+    [Plugin]
     public class TestCommand
     {
         private readonly UndefinedApi _undefinedApi;
@@ -23,28 +24,24 @@ namespace UndefinedBot.Core.Test
                 {
                     Console.WriteLine("root");
                     Console.WriteLine(JsonConvert.SerializeObject(ctx.ArgumentReference));
-                }).Then(new SubCommandNode("sub1")
-                    .Execute(async (ctx) =>
-                    {
-                        Console.WriteLine("s1");
-                        Console.WriteLine(JsonConvert.SerializeObject(ctx.ArgumentReference));
-                    }))
-                .Then(new SubCommandNode("sub2")
-                    .Execute(async (ctx) =>
-                    {
-                        Console.WriteLine("s2");
-                        Console.WriteLine(JsonConvert.SerializeObject(ctx.ArgumentReference));
-                    }).Then(new VariableNode("var1",new IntegerArgument())
+                }).Then(new VariableNode("var1",new IntegerArgument())
+                    .Then(new VariableNode("var2",new NumberArgument(new RangeBetween<double>(127,255)))
                         .Execute(async (ctx) =>
                         {
-                            Console.WriteLine("s2-v1");
+                            long v1 = IntegerArgument.GetInteger("var1", ctx);
+                            double v2 = NumberArgument.GetNumber("var2", ctx);
+                            Console.WriteLine(v1*v2);
                             Console.WriteLine(JsonConvert.SerializeObject(ctx.ArgumentReference));
-                        }).Then(new VariableNode("val2",new PosIntArgument())
-                            .Execute(async (ctx) =>
-                            {
-                                Console.WriteLine("s2-v2");
-                                Console.WriteLine(JsonConvert.SerializeObject(ctx.ArgumentReference));
-                            }))));
+                        })))
+                .Then(new VariableNode("var3",new IntegerArgument())
+                    .Then(new VariableNode("var4",new IntegerArgument())
+                        .Execute(async (ctx) =>
+                        {
+                            long v3 = IntegerArgument.GetInteger("var3", ctx);
+                            long v4 = IntegerArgument.GetInteger("var4", ctx);
+                            Console.WriteLine(v3+v4);
+                            Console.WriteLine(JsonConvert.SerializeObject(ctx.ArgumentReference));
+                        })));
             _undefinedApi.SubmitCommand();
         }
     }

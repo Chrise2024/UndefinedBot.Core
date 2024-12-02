@@ -2,6 +2,7 @@
 using Newtonsoft.Json;
 using UndefinedBot.Core.Command;
 using UndefinedBot.Core.Command.CommandNodes;
+using UndefinedBot.Core.Command.CommandResult;
 using UndefinedBot.Core.NetWork;
 using UndefinedBot.Core.Utils;
 
@@ -18,11 +19,9 @@ namespace UndefinedBot.Core
             OnCommandFinish?.Invoke();
         }
     }
+
     [AttributeUsage(AttributeTargets.Class, AllowMultiple = true)]
-    public sealed class PluginAttribute : Attribute
-    {
-        public PluginAttribute() { }
-    }
+    public sealed class PluginAttribute : Attribute;
     [Obsolete("wasted",true)]
     internal abstract class Core
     {
@@ -85,24 +84,27 @@ namespace UndefinedBot.Core
                         //While any node matches the token,control flow will execute this node and throw CommandFinishException to exit.
                         try
                         {
-                            await commandInstance.Run(ctx, tokens);
+                            ICommandResult result = await commandInstance.Run(ctx, tokens);
+                            switch (result)
+                            {
+                                case CommandSuccess:
+                                    //ignore
+                                    break;
+                                case InvalidArgument iae:
+                                    ctx.Logger.Error($"Invalid argument: {iae.ErrorToken}, require {JsonConvert.SerializeObject(iae.RequiredType)}");
+                                    break;
+                                case TooLessArgument tae:
+                                    ctx.Logger.Error($"To less arguments, require {JsonConvert.SerializeObject(tae.RequiredType)}");
+                                    break;
+                                case PermissionDenied pde:
+                                    ctx.Logger.Error(
+                                        $"Not enough permission: {pde.CurrentPermission} at {pde.CurrentNode}, require {pde.RequiredPermission}");
+                                    break;
+                            }
                         }
                         catch (CommandAbortException)
                         {
-                            //ignore
-                        }
-                        catch (InvalidArgumentException iae)
-                        {
-                            ctx.Logger.Error($"Invalid argument: {iae.ErrorToken}, require {JsonConvert.SerializeObject(iae.RequiredType)}");
-                        }
-                        catch (TooLessArgumentException tae)
-                        {
-                            ctx.Logger.Error($"To less arguments, require {JsonConvert.SerializeObject(tae.RequiredType)}");
-                        }
-                        catch (PermissionDeniedException pde)
-                        {
-                            ctx.Logger.Error(
-                                $"Not enough permission: {pde.CurrentPermission} at {pde.CurrentNode}, require {pde.RequiredPermission}");
+                            ctx.Logger.Error($"Command Execute Aborted");
                         }
                         catch (Exception ex)
                         {
