@@ -1,56 +1,57 @@
 ﻿using System.Text.RegularExpressions;
 using UndefinedBot.Core.Command.Arguments.ArgumentRange;
 
-namespace UndefinedBot.Core.Command.Arguments.ArgumentType
+namespace UndefinedBot.Core.Command.Arguments.ArgumentType;
+
+public class ReplyArgument(IArgumentRange? range = null) : IArgumentType
 {
-    public class ReplyArgument(IArgumentRange? range = null) : IArgumentType
+    public ArgumentTypes ArgumentType => ArgumentTypes.Reply;
+    public string ArgumentTypeName => "Reply";
+    public IArgumentRange? Range => range;
+    public bool IsValid(ParsedToken token)
     {
-        public string TypeName => "Reply";
-        public IArgumentRange? Range => range;
-        public bool IsValid(string token)
+        return token.TokenType == RawTokenTypes.CqCodeContent && QReply.CqReplyRegex().IsMatch(token.Content);
+    }
+    public object GetValue(ParsedToken token) => GetExactTypeValue(token);
+    public static QReply GetQReply(string key,CommandContext ctx)
+    {
+        if (ctx._argumentReference.TryGetValue(key, out ParsedToken token))
         {
-            return QReply.CqReplyRegex().IsMatch(token);
+
+            return GetExactTypeValue(token);
         }
-        public object GetValue(string token)
-        {
-            return QReply.Parse(token);
-        }
-        public static QReply GetQReply(string key,CommandContext ctx)
-        {
-            string token = ctx.ArgumentReference.GetValueOrDefault(key) ??
-                           throw new ArgumentInvalidException($"Undefined Argument: {key}");
-            return QReply.Parse(token);
-        }
+        throw new ArgumentInvalidException($"Undefined Argument: {key}");
+    }
+    private static QReply GetExactTypeValue(ParsedToken token)
+    {
+        return QReply.Parse(token);
+    }
+}
+
+public partial struct QReply
+{
+    public readonly int MsgId;
+
+    private QReply(int msgId)
+    {
+        MsgId = msgId;
     }
 
-    public partial class QReply
+    public static QReply Parse(ParsedToken token)
     {
-        public readonly int MsgId;
-
-        private QReply(int msgId)
+        if (token.TokenType != RawTokenTypes.CqCodeContent || !CqReplyRegex().IsMatch(token.Content))
         {
-            MsgId = msgId;
+            throw new ArgumentInvalidException($"{token} Is Not Valid Reply");
         }
-
-        public static QReply Parse(string token)
-        {
-            if (CqReplyRegex().IsMatch(token))
-            {
-                return CommandResolver
-                    .DecodeCqEntity(token)
-                    .Properties
-                    .TryGetValue("id", out string? msgId)
-                    ? (Int32.TryParse(msgId, out int val)
-                        ? new QReply(val) :
-                        throw new ArgumentInvalidException($"{token} Is Not Valid Reply"))
-                    : throw new ArgumentInvalidException($"{token} Is Not Valid Reply");
-            }
-            else
-            {
-                throw new ArgumentInvalidException($"{token} Is Not Valid Reply");
-            }
-        }
-        [GeneratedRegex(@"^\[CQ:reply,id=[-]?\d+\]$")]
-        public static partial Regex CqReplyRegex();
+        return CommandResolver
+            .DecodeCqEntity(token.Content)
+            .Properties
+            .TryGetValue("id", out string? msgId)
+            ? (int.TryParse(msgId, out int val)
+                ? new QReply(val) :
+                throw new ArgumentInvalidException($"{token} Is Not Valid Reply"))
+            : throw new ArgumentInvalidException($"{token} Is Not Valid Reply");
     }
+    [GeneratedRegex(@"^\[CQ:reply,id=[-]?\d+\]$")]
+    public static partial Regex CqReplyRegex();
 }

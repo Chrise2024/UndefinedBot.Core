@@ -1,8 +1,7 @@
-﻿namespace UndefinedBot.Core.Command.Arguments.ArgumentRange
+﻿namespace UndefinedBot.Core.Command.Arguments.ArgumentRange;
+
+public interface IArgumentRange
 {
-    public interface IArgumentRange
-    {
-        public bool InRange(object current);
-        public string GetRangeDescription();
-    }
+    public bool InRange(object current);
+    public string GetRangeDescription();
 }

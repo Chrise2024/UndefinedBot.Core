@@ -2,84 +2,80 @@
 using Newtonsoft.Json;
 using UndefinedBot.Core.Utils;
 
-namespace UndefinedBot.Core.NetWork
+namespace UndefinedBot.Core.NetWork;
+
+public class HttpRequest
 {
-    public class HttpRequest
+    private readonly HttpClient _httpClient = new()
     {
-        private readonly HttpClient _httpClient = new()
-        {
-            Timeout = TimeSpan.FromSeconds(10)
-        };
+        Timeout = TimeSpan.FromSeconds(10)
+    };
 
-        private readonly Logger _httpRequestLogger = new("HttpRequest");
+    private readonly GeneralLogger _httpRequestLogger = new("HttpRequest");
 
-        public async Task<string> Post(string url, object? content = null)
+    public async Task<string> Post(string url, object? content = null)
+    {
+        try
         {
-            try
-            {
-                HttpResponseMessage response = await _httpClient.PostAsync(url, content == null ? null : new StringContent(
-                       JsonConvert.SerializeObject(content),
-                       Encoding.UTF8,
-                       "application/json"
-                   ));
-                return await response.Content.ReadAsStringAsync();
-            }
-            catch (TaskCanceledException)
-            {
-                _httpRequestLogger.Error("Task Canceled: ");
-                return "";
-            }
-            catch (Exception ex)
-            {
-                _httpRequestLogger.Error("Error Occured, Error Information:");
-                _httpRequestLogger.Error(ex.Message);
-                _httpRequestLogger.Error(ex.StackTrace ?? "");
-                return "";
-            }
+            HttpResponseMessage response = await _httpClient.PostAsync(url, content == null ? null : new StringContent(
+                JsonConvert.SerializeObject(content),
+                Encoding.UTF8,
+                "application/json"
+            ));
+            return response.IsSuccessStatusCode ? await response.Content.ReadAsStringAsync() : "";
         }
-        public async Task<string> Get(string url)
+        catch (TaskCanceledException)
         {
-            try
-            {
-                HttpResponseMessage response = await _httpClient.GetAsync(url);
-                return response.IsSuccessStatusCode ? await response.Content.ReadAsStringAsync() : "";
-            }
-            catch (TaskCanceledException)
-            {
-                _httpRequestLogger.Error("Task Canceled: ");
-                return "";
-            }
-            catch (Exception ex)
-            {
-                _httpRequestLogger.Error("Error Occured, Error Information:");
-                _httpRequestLogger.Error(ex.Message);
-                _httpRequestLogger.Error(ex.StackTrace ?? "");
-                return "";
-            }
+            _httpRequestLogger.Error("Task Canceled: ");
+            return "";
         }
-
-        public async Task<byte[]> GetBinary(string url)
+        catch (Exception ex)
         {
-            try
-            {
-                HttpResponseMessage response = await _httpClient.GetAsync(url);
-                return response.IsSuccessStatusCode ? await response.Content.ReadAsByteArrayAsync() : [];
-                //return await _httpClient.GetByteArrayAsync(url);
-            }
-            catch (TaskCanceledException)
-            {
-                _httpRequestLogger.Error("Task Canceled: ");
-                return [];
-            }
-            catch (Exception ex)
-            {
-                _httpRequestLogger.Error("Error Occured, Error Information:");
-                _httpRequestLogger.Error(ex.Message);
-                _httpRequestLogger.Error(ex.StackTrace ?? "");
-                return [];
-            }
+            PrintExceptionInfo(ex);
+            return "";
         }
     }
+    public async Task<string> Get(string url)
+    {
+        try
+        {
+            HttpResponseMessage response = await _httpClient.GetAsync(url);
+            return response.IsSuccessStatusCode ? await response.Content.ReadAsStringAsync() : "";
+        }
+        catch (TaskCanceledException)
+        {
+            _httpRequestLogger.Error("Task Canceled: ");
+            return "";
+        }
+        catch (Exception ex)
+        {
+            PrintExceptionInfo(ex);
+            return "";
+        }
+    }
+
+    public async Task<byte[]> GetBinary(string url)
+    {
+        try
+        {
+            HttpResponseMessage response = await _httpClient.GetAsync(url);
+            return response.IsSuccessStatusCode ? await response.Content.ReadAsByteArrayAsync() : [];
+        }
+        catch (TaskCanceledException)
+        {
+            _httpRequestLogger.Error("Task Canceled: ");
+            return [];
+        }
+        catch (Exception ex)
+        {
+            PrintExceptionInfo(ex);
+            return [];
+        }
+    }
+    private void PrintExceptionInfo(Exception ex)
+    {
+        _httpRequestLogger.Error("Error Occured, Error Information:");
+        _httpRequestLogger.Error(ex.Message);
+        _httpRequestLogger.Error(ex.StackTrace ?? "");
+    }
 }
-
-

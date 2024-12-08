@@ -1,28 +1,33 @@
 ﻿using UndefinedBot.Core.Command.Arguments.ArgumentRange;
 
-namespace UndefinedBot.Core.Command.Arguments.ArgumentType
+namespace UndefinedBot.Core.Command.Arguments.ArgumentType;
+
+public class IntegerArgument(IArgumentRange? range = null) : IArgumentType
 {
-    public class IntegerArgument(IArgumentRange? range = null) : IArgumentType
+    public ArgumentTypes ArgumentType => ArgumentTypes.Integer;
+    public string ArgumentTypeName => "Integer";
+    public IArgumentRange? Range => range;
+    public bool IsValid(ParsedToken token)
     {
-        public string TypeName => "Integer";
-        public IArgumentRange? Range => range;
-        public bool IsValid(string token)
+        return token.TokenType == RawTokenTypes.NormalContent &&
+               long.TryParse(token.Content, out long val) &&
+               (Range?.InRange(val) ?? true);
+    }
+
+    public object GetValue(ParsedToken token) => GetExactTypeValue(token);
+    public static long GetInteger(string key,CommandContext ctx)
+    {
+        if (ctx._argumentReference.TryGetValue(key, out ParsedToken token))
         {
-            return long.TryParse(token, out long val) && (Range?.InRange(val) ?? true);
+            return GetExactTypeValue(token);
         }
-        public object GetValue(string token)
-        {
-            return long.TryParse(token, out long val)
-                ? val
-                : throw new ArgumentInvalidException($"{token} Is Not Valid Integer");
-        }
-        public static long GetInteger(string key,CommandContext ctx)
-        {
-            string token = ctx.ArgumentReference.GetValueOrDefault(key) ??
-                           throw new ArgumentInvalidException($"Undefined Argument: {key}");
-            return long.TryParse(token, out long val)
-                ? val
-                : throw new ArgumentInvalidException($"{token} Is Not Valid Integer");
-        }
+        throw new ArgumentInvalidException($"Undefined Argument: {key}");
+    }
+
+    private static long GetExactTypeValue(ParsedToken token)
+    {
+        return long.TryParse(token.Content, out long val)
+            ? val
+            : throw new ArgumentInvalidException($"{token} Is Not Valid Integer");
     }
 }

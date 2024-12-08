@@ -15,7 +15,9 @@
 
     <ItemGroup>
       <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
-      <PackageReference Include="UndefinedBot.Core" Version="1.1.8.2" />
+    </ItemGroup>
+    <ItemGroup>
+        <ProjectReference Include="..\UndefinedBot.Core\UndefinedBot.Core.csproj" />
     </ItemGroup>
 
 </Project>

@@ -1,37 +1,36 @@
-﻿namespace UndefinedBot.Core.Command.Arguments.ArgumentRange
-{
-    public class RangeBetween<T> : IArgumentRange where T : IComparable
-    {
-        private T _maximum { get; }
-        private T _minimum { get; }
-        public RangeBetween(T range1, T range2)
-        {
-            if (range1.CompareTo(range2) > 0)
-            {
-                _maximum = range1;
-                _minimum = range2;
-            }
-            else
-            {
-                _maximum = range2;
-                _minimum = range1;
-            }
-        }
-        public bool InRange(object current)
-        {
-            try
-            {
-                return _maximum.CompareTo((T)current) > 0 && _minimum.CompareTo((T)current) < 0;
-            }
-            catch
-            {
-                return false;
-            }
-        }
+﻿namespace UndefinedBot.Core.Command.Arguments.ArgumentRange;
 
-        public string GetRangeDescription()
+public readonly struct RangeBetween<T> : IArgumentRange where T : IComparable
+{
+    public T Maximum { get; }
+    public T Minimum { get; }
+    public RangeBetween(T range1, T range2)
+    {
+        if (range1.CompareTo(range2) > 0)
         {
-            return $"{_minimum} ~ {_maximum}";
+            Maximum = range1;
+            Minimum = range2;
         }
+        else
+        {
+            Maximum = range2;
+            Minimum = range1;
+        }
+    }
+    public bool InRange(object current)
+    {
+        try
+        {
+            return Maximum.CompareTo((T)current) > 0 && Minimum.CompareTo((T)current) < 0;
+        }
+        catch
+        {
+            return false;
+        }
+    }
+
+    public string GetRangeDescription()
+    {
+        return $"{Minimum} ~ {Maximum}";
     }
 }

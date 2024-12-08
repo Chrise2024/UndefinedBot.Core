@@ -4,252 +4,166 @@ using Newtonsoft.Json.Linq;
 using UndefinedBot.Core.Utils;
 using UndefinedBot.Core.Command;
 
-namespace UndefinedBot.Core.NetWork
+namespace UndefinedBot.Core.NetWork;
+
+public class HttpApi(string httpPostUrl)
 {
-    public class HttpApi(string httpPostUrl)
+    private readonly HttpClient _httpClient = new()
     {
-        private readonly string _httpPostUrl = httpPostUrl;
+        Timeout = TimeSpan.FromSeconds(20)
+    };
 
-        private readonly HttpClient _httpClient = new()
+    private readonly GeneralLogger _httpApiLogger = new("HttpRequest");
+    /// <summary>
+    /// Send Message to Group
+    /// </summary>
+    /// <param name="targetGroupId">Group Id to send</param>
+    /// <param name="msgChain">Onebot11 MessageChain</param>
+    public async Task SendGroupMsg(object targetGroupId,List<JObject> msgChain)
+    {
+        await ApiPostRequestWithoutResponse("/send_group_msg", new
         {
-            Timeout = TimeSpan.FromSeconds(20)
-        };
+            group_id = targetGroupId,
+            message = msgChain
+        });
+    }
+    /// <summary>
+    /// Send Forward to Group
+    /// </summary>
+    /// <param name="targetGroupId">Group Id to send</param>
+    /// <param name="forwardSummaryData">Onebot11 Forward MessageChain</param>
+    public async Task SendGroupForward(object targetGroupId,ForwardSummaryData forwardSummaryData)
+    {
+        JObject reqJson = JObject.FromObject(forwardSummaryData);
+        reqJson["group_id"] = $"{targetGroupId}";
+        await ApiPostRequestWithoutResponse("/send_group_forward_msg", reqJson);
+    }
+    /// <summary>
+    /// Recall Message in Group
+    /// </summary>
+    /// <param name="msgId">Message Id of Message to Recall</param>
+    public async void RecallGroupMsg(object msgId)
+    {
+        await ApiPostRequestWithoutResponse("/delete_msg", new
+        {
+            message_id = msgId
+        });
+    }
+    /// <summary>
+    /// Get Message
+    /// </summary>
+    /// <param name="msgId">Message Id of Message to get</param>
+    /// <returns>MsgBody</returns>
+    public async Task<MsgBody> GetMsg(object msgId)
+    {
+        return await ApiPostRequestWithResponse<MsgBody>("/get_msg", new
+        {
+            message_id = msgId
+        });
+    }
 
-        private readonly Logger _httpApiLogger = new("HttpRequest");
-        /// <summary>
-        /// Send Message to Group
-        /// </summary>
-        /// <param name="targetGroupId">Group Id to send</param>
-        /// <param name="msgChain">Onebot11 MessageChain</param>
-        /// <typeparam name="T">string or long</typeparam>
-        public async Task SendGroupMsg<T>(T targetGroupId,List<JObject> msgChain)
+    /// <summary>
+    /// Get group member info
+    /// </summary>
+    /// <param name="targetGroupId">Group Id</param>
+    /// <param name="targetUin">User Id to get</param>
+    /// <returns>GroupMember</returns>
+    public async Task<GroupMember> GetGroupMember(object targetGroupId, object targetUin)
+    {
+        return await ApiPostRequestWithResponse<GroupMember>("/get_group_member_info", new
         {
-            try
-            {
-                object reqJson = new
-                {
-                    group_id = targetGroupId,
-                    message = msgChain
-                };
-                await _httpClient.PostAsync(_httpPostUrl + "/send_group_msg",
-                   new StringContent(
-                       JsonConvert.SerializeObject(reqJson),
-                       Encoding.UTF8,
-                       "application/json"
-                   )
-                );
-            }
-            catch (TaskCanceledException)
-            {
-                _httpApiLogger.Warn("Task Canceled: ");
-            }
-            catch (Exception ex)
-            {
-                _httpApiLogger.Error("Error Occured, Error Information:");
-                _httpApiLogger.Error(ex.Message);
-                _httpApiLogger.Error(ex.StackTrace ?? "");
-            }
-        }
-        /// <summary>
-        /// Send Forward to Group
-        /// </summary>
-        /// <param name="targetGroupId">Group Id to send</param>
-        /// <param name="forwardNodes">Onebot11 MessageChain</param>
-        /// <typeparam name="T">string or long</typeparam>
-        public async Task SendGroupForward<T>(T targetGroupId,List<ForwardNode> forwardNodes)
+            group_id = targetGroupId,
+            user_id = targetUin,
+            no_cache = false
+        });
+    }
+
+    /// <summary>
+    /// Get group member list
+    /// </summary>
+    /// <param name="targetGroupId">Group Id to get</param>
+    /// <returns>A list contains GroupMember</returns>
+    public async Task<List<GroupMember>> GetGroupMemberList(object targetGroupId)
+    {
+        return await ApiPostRequestWithResponse<List<GroupMember>>("/get_group_member_list", new
         {
-            try
-            {
-                object reqJson = new
-                {
-                    group_id = targetGroupId,
-                    message = forwardNodes
-                };
-                await _httpClient.PostAsync(_httpPostUrl + "/send_group_forward_msg",
+            group_id = targetGroupId,
+            no_cache = false
+        }) ?? [];
+    }
+    public async Task<bool> CheckUin(long targetGroupId, long targetUin)
+    {
+        return ((await GetGroupMember(targetGroupId, targetUin)).GroupId ?? 0) != 0;
+    }
+    private async Task<T?> ApiPostRequestWithResponse<T>(string subUrl, object? content = null)
+    {
+        try
+        {
+            HttpResponseMessage response = await _httpClient.PostAsync(httpPostUrl + subUrl,
+                content != null ?
                     new StringContent(
-                        JsonConvert.SerializeObject(reqJson),
+                        JsonConvert.SerializeObject(content),
                         Encoding.UTF8,
                         "application/json"
-                    )
-                );
-            }
-            catch (TaskCanceledException)
-            {
-                _httpApiLogger.Warn("Task Canceled: ");
-            }
-            catch (Exception ex)
-            {
-                _httpApiLogger.Error("Error Occured, Error Information:");
-                _httpApiLogger.Error(ex.Message);
-                _httpApiLogger.Error(ex.StackTrace ?? "");
-            }
+                    ) : null
+            );
+            return response.IsSuccessStatusCode ? JsonConvert.DeserializeObject<T>(await response.Content.ReadAsStringAsync()) : default;
         }
-        /// <summary>
-        /// Recall Message in Group
-        /// </summary>
-        /// <param name="msgId">Message Id of Message to Recall</param>
-        /// <typeparam name="T">string or int</typeparam>
-        public async void RecallGroupMsg<T>(T msgId)
+        catch (TaskCanceledException)
         {
-            try
-            {
-                object reqJson = new
-                {
-                    message_id = msgId
-                };
-                await _httpClient.PostAsync(_httpPostUrl + "/delete_msg",
-                   new StringContent(
-                       JsonConvert.SerializeObject(reqJson),
-                       Encoding.UTF8,
-                       "application/json"
-                   )
-                );
-            }
-            catch (TaskCanceledException)
-            {
-                _httpApiLogger.Warn("Task Canceled: ");
-            }
-            catch (Exception ex)
-            {
-                _httpApiLogger.Error("Error Occured, Error Information:");
-                _httpApiLogger.Error(ex.Message);
-                _httpApiLogger.Error(ex.StackTrace ?? "");
-            }
+            _httpApiLogger.Error("Task Canceled: ");
+            return default;
         }
-        /// <summary>
-        /// Get Message
-        /// </summary>
-        /// <param name="msgId">Message Id of Message to get</param>
-        /// <typeparam name="T">string or int</typeparam>
-        /// <returns>MsgBody</returns>
-        public async Task<MsgBody> GetMsg<T>(T msgId)
+        catch (Exception ex)
         {
-            try
-            {
-                object reqJson = new
-                {
-                    message_id = msgId
-                };
-                HttpResponseMessage response = await _httpClient.PostAsync(_httpPostUrl + "/get_msg",
-                   new StringContent(
-                       JsonConvert.SerializeObject(reqJson),
-                       Encoding.UTF8,
-                       "application/json"
-                   )
-                );
-                return JObject.Parse(response.Content.ReadAsStringAsync().Result)["data"]?.ToObject<MsgBody>() ?? new MsgBody();
-            }
-            catch (TaskCanceledException)
-            {
-                _httpApiLogger.Error("Task Canceled: ");
-                return new MsgBody();
-            }
-            catch (Exception ex)
-            {
-                _httpApiLogger.Error("Error Occured, Error Information:");
-                _httpApiLogger.Error(ex.Message);
-                _httpApiLogger.Error(ex.StackTrace ?? "");
-                return new MsgBody();
-            }
+            PrintExceptionInfo(ex);
+            return default;
         }
-        /// <summary>
-        /// Get group member info
-        /// </summary>
-        /// <param name="targetGroupId">Group Id</param>
-        /// <param name="targetUin">User Id to get</param>
-        /// <typeparam name="T1">string or long</typeparam>
-        /// <typeparam name="T2">string or long</typeparam>
-        /// <returns>GroupMember</returns>
-        public async Task<GroupMember> GetGroupMember<T1, T2>(T1 targetGroupId, T2 targetUin)
+    }
+    private async Task ApiPostRequestWithoutResponse(string subUrl, object? content = null)
+    {
+        try
         {
-            try
-            {
-                object reqJson = new
-                {
-                    group_id = targetGroupId,
-                    user_id = targetUin,
-                    no_cache = false
-                };
-                HttpResponseMessage response = await _httpClient.PostAsync(_httpPostUrl + "/get_group_member_info",
-                   new StringContent(
-                       JsonConvert.SerializeObject(reqJson),
-                       Encoding.UTF8,
-                       "application/json"
-                   )
-                );
-                return JObject.Parse(response.Content.ReadAsStringAsync().Result)["data"]?.ToObject<GroupMember>() ?? new GroupMember();
-            }
-            catch (TaskCanceledException)
-            {
-                _httpApiLogger.Error("Task Canceled: ");
-                return new GroupMember();
-            }
-            catch (Exception ex)
-            {
-                _httpApiLogger.Error("Error Occured, Error Information:");
-                _httpApiLogger.Error(ex.Message);
-                _httpApiLogger.Error(ex.StackTrace ?? "");
-                return new GroupMember();
-            }
-        }
-
-        /// <summary>
-        /// Get group member list
-        /// </summary>
-        /// <param name="targetGroupId">Group Id to get</param>
-        /// <typeparam name="T">string or long</typeparam>
-        /// <returns>A list contains GroupMember</returns>
-        public async Task<List<GroupMember>> GetGroupMemberList<T>(T targetGroupId)
-        {
-            try
-            {
-                object reqJson = new
-                {
-                    group_id = targetGroupId,
-                    no_cache = false
-                };
-                HttpResponseMessage response = await _httpClient.PostAsync(_httpPostUrl + "/get_group_member_list",
+            _ = await _httpClient.PostAsync(httpPostUrl + subUrl,
+                content != null ?
                     new StringContent(
-                        JsonConvert.SerializeObject(reqJson),
+                        JsonConvert.SerializeObject(content),
                         Encoding.UTF8,
                         "application/json"
-                    )
-                );
-                return JObject.Parse(response.Content.ReadAsStringAsync().Result)["data"]?.ToObject<List<GroupMember>>() ?? [];
-            }
-            catch (TaskCanceledException)
-            {
-                _httpApiLogger.Error("Task Canceled: ");
-                return [];
-            }
-            catch (Exception ex)
-            {
-                _httpApiLogger.Error(ex.Message);
-                _httpApiLogger.Error(ex.StackTrace ?? "");
-                return [];
-            }
+                    ) : null
+            );
         }
-        public async Task<bool> CheckUin(long targetGroupId, long targetUin)
+        catch (TaskCanceledException)
         {
-            return ((await GetGroupMember(targetGroupId, targetUin)).GroupId ?? 0) != 0;
+            _httpApiLogger.Error("Task Canceled: ");
+        }
+        catch (Exception ex)
+        {
+            PrintExceptionInfo(ex);
         }
     }
-    public struct GroupMember
+    private void PrintExceptionInfo(Exception ex)
     {
-        [JsonProperty("group_id")] public long? GroupId;
-        [JsonProperty("user_id")] public long? UserId;
-        [JsonProperty("nickname")] public string? Nickname;
-        [JsonProperty("card")] public string? Card;
-        [JsonProperty("sex")] public string? Sex;
-        [JsonProperty("age")] public int? Age;
-        [JsonProperty("area")] public string? Area;
-        [JsonProperty("join_time")] public int? JoinTime;
-        [JsonProperty("last_sent_time")] public int? LastSentTime;
-        [JsonProperty("level")] public string? Level;
-        [JsonProperty("role")] public string? Role;
-        [JsonProperty("unfriendly")] public bool? Unfriendly;
-        [JsonProperty("title")] public string? Title;
-        [JsonProperty("title_expire_time")] public int? TitleExpireTime;
-        [JsonProperty("card_changeable")] public bool? CardChangeable;
+        _httpApiLogger.Error("Error Occured, Error Information:");
+        _httpApiLogger.Error(ex.Message);
+        _httpApiLogger.Error(ex.StackTrace ?? "");
     }
+}
+public struct GroupMember
+{
+    [JsonProperty("group_id")] public long? GroupId;
+    [JsonProperty("user_id")] public long? UserId;
+    [JsonProperty("nickname")] public string? Nickname;
+    [JsonProperty("card")] public string? Card;
+    [JsonProperty("sex")] public string? Sex;
+    [JsonProperty("age")] public int? Age;
+    [JsonProperty("area")] public string? Area;
+    [JsonProperty("join_time")] public int? JoinTime;
+    [JsonProperty("last_sent_time")] public int? LastSentTime;
+    [JsonProperty("level")] public string? Level;
+    [JsonProperty("role")] public string? Role;
+    [JsonProperty("unfriendly")] public bool? Unfriendly;
+    [JsonProperty("title")] public string? Title;
+    [JsonProperty("title_expire_time")] public int? TitleExpireTime;
+    [JsonProperty("card_changeable")] public bool? CardChangeable;
 }

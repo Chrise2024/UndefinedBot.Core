@@ -1,17 +1,16 @@
-﻿namespace UndefinedBot.Core.Command.Arguments.ArgumentRange
+﻿namespace UndefinedBot.Core.Command.Arguments.ArgumentRange;
+
+public readonly struct RangeIn(IEnumerable<object> range) : IArgumentRange
 {
-    public class RangeIn(IEnumerable<object> range) : IArgumentRange
+    private object[] Range => range.ToArray();
+
+    public bool InRange(object current)
     {
-        private IEnumerable<object> Range => range;
+        return Range.Contains(current);
+    }
 
-        public bool InRange(object current)
-        {
-            return Range.Contains(current);
-        }
-
-        public string GetRangeDescription()
-        {
-            return $"In {{{string.Join(",",Range)}}}";
-        }
+    public string GetRangeDescription()
+    {
+        return $"In {{{string.Join(",",Range)}}}";
     }
 }
