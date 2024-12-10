@@ -1,5 +1,7 @@
-﻿using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
+﻿using System.Text.Json;
+using System.Text.Json.Nodes;
+using System.Text.Json.Serialization;
+using UndefinedBot.Core.Command.Arguments.ArgumentType;
 
 namespace UndefinedBot.Core.Utils;
 
@@ -20,6 +22,11 @@ public enum ImageSubType
 
 public class MsgBuilder
 {
+    private readonly JsonNode _textElementBase = JsonNode.Parse("""{"type": "text", "data": {"text": ""}}""")!;
+    private readonly JsonNode _faceElementBase = JsonNode.Parse("""{"type": "face", "data": {"id": ""}}""")!;
+    private readonly JsonNode _imageElementBase = JsonNode.Parse("""{"type": "image", "data": {"file": "", "subType": ""}}""")!;
+    private readonly JsonNode _atElementBase = JsonNode.Parse("""{"type": "at", "data": {"qq": ""}}""")!;
+    private readonly JsonNode _replyElementBase = JsonNode.Parse("""{"type": "reply", "data": {"id": ""}}""")!;
     private MsgBuilder()
     {
     }
@@ -29,17 +36,21 @@ public class MsgBuilder
         return new MsgBuilder();
     }
 
-    private readonly List<JObject> _msgChain = [];
+    private readonly List<JsonNode> _msgChain = [];
 
     public MsgBuilder Text(string text)
     {
-        _msgChain.Add(new JObject() { { "type", "text" }, { "data", new JObject() { { "text", text } } }, });
+        JsonNode temp = _textElementBase.DeepClone();
+        temp["data"]!["text"] = text;
+        _msgChain.Add(temp);
         return this;
     }
 
     public MsgBuilder QFace(string face)
     {
-        _msgChain.Add(new JObject() { { "type", "text" }, { "data", new JObject() { { "id", face } } }, });
+        JsonNode temp = _faceElementBase.DeepClone();
+        temp["data"]!["face"] = face;
+        _msgChain.Add(temp);
         return this;
     }
 
@@ -52,27 +63,37 @@ public class MsgBuilder
             ImageSendType.Base64 => "base64://",
             _ => ""
         };
-        _msgChain.Add(new JObject()
-        {
-            { "type", "image" },
-            { "data", new JObject() { { "file", $"{urlPrefix}{imageContent}" }, { "subType", (int)subtype } } },
-        });
+        JsonNode temp = _imageElementBase.DeepClone();
+        temp["data"]!["file"] = $"{urlPrefix}{imageContent}";
+        temp["data"]!["subType"] = $"{(int)subtype}";
+        _msgChain.Add(temp);
         return this;
     }
 
     public MsgBuilder At(long atUin)
     {
-        _msgChain.Add(new JObject() { { "type", "at" }, { "data", new JObject() { { "qq", atUin } } }, });
+        JsonNode temp = _atElementBase.DeepClone();
+        temp["data"]!["at"] = $"{atUin}";
+        _msgChain.Add(temp);
+        return this;
+    }
+    public MsgBuilder At(QUin atUin)
+    {
+        JsonNode temp = _atElementBase.DeepClone();
+        temp["data"]!["at"] = $"{atUin.Uin}";
+        _msgChain.Add(temp);
         return this;
     }
 
     public MsgBuilder Reply(int msgId)
     {
-        _msgChain.Add(new JObject() { { "type", "reply" }, { "data", new JObject() { { "id", $"{msgId}" } } }, });
+        JsonNode temp = _replyElementBase.DeepClone();
+        temp["data"]!["id"] = $"{msgId}";
+        _msgChain.Add(temp);
         return this;
     }
 
-    public List<JObject> Build()
+    public List<JsonNode> Build()
     {
         return _msgChain;
     }
@@ -119,19 +140,28 @@ public class ForwardBuilder
 
 public class ForwardNode(string name, string uin, ForwardBuilder instance)
 {
-    [JsonProperty("type")] public readonly string Type = "node";
-    [JsonProperty("data")] public readonly ForwardNodeData Data = new(name, uin, []);
+    private readonly JsonNode _textElementBase = JsonNode.Parse("""{"type": "text", "data": {"text": ""}}""")!;
+    private readonly JsonNode _faceElementBase = JsonNode.Parse("""{"type": "face", "data": {"id": ""}}""")!;
+    private readonly JsonNode _imageElementBase = JsonNode.Parse("""{"type": "image", "data": {"file": "", "subType": ""}}""")!;
+    private readonly JsonNode _atElementBase = JsonNode.Parse("""{"type": "at", "data": {"qq": ""}}""")!;
+    private readonly JsonNode _replyElementBase = JsonNode.Parse("""{"type": "reply", "data": {"id": ""}}""")!;
+    [JsonPropertyName("type")] public readonly string Type = "node";
+    [JsonPropertyName("data")] private readonly ForwardNodeData _data = new(name, uin, []);
     [JsonIgnore] private readonly ForwardBuilder _parentInstance = instance;
 
     public ForwardNode Text(string text)
     {
-        Data.Content.Add(new JObject() { { "type", "text" }, { "data", new JObject() { { "text", text } } }, });
+        JsonNode temp = _textElementBase.DeepClone();
+        temp["data"]!["text"] = text;
+        _data.Content.Add(temp);
         return this;
     }
 
     public ForwardNode QFace(string face)
     {
-        Data.Content.Add(new JObject() { { "type", "text" }, { "data", new JObject() { { "id", face } } }, });
+        JsonNode temp = _faceElementBase.DeepClone();
+        temp["data"]!["face"] = face;
+        _data.Content.Add(temp);
         return this;
     }
 
@@ -144,23 +174,25 @@ public class ForwardNode(string name, string uin, ForwardBuilder instance)
             ImageSendType.Base64 => "base64://",
             _ => ""
         };
-        Data.Content.Add(new JObject()
-        {
-            { "type", "image" },
-            { "data", new JObject() { { "file", $"{urlPrefix}{imageContent}" }, { "subType", (int)subtype } } },
-        });
+        JsonNode temp = _imageElementBase.DeepClone();
+        temp["data"]!["file"] = $"{urlPrefix}{imageContent}";
+        temp["data"]!["subType"] = $"{(int)subtype}";
+        _data.Content.Add(temp);
         return this;
     }
 
     public ForwardNode At(long atUin)
     {
-        Data.Content.Add(new JObject() { { "type", "at" }, { "data", new JObject() { { "qq", atUin } } }, });
+        JsonNode temp = _atElementBase.DeepClone();
+        temp["data"]!["at"] = $"{atUin}";
         return this;
     }
 
     public ForwardNode Reply(int msgId)
     {
-        Data.Content.Add(new JObject() { { "type", "reply" }, { "data", new JObject() { { "id", $"{msgId}" } } }, });
+        JsonNode temp = _replyElementBase.DeepClone();
+        temp["data"]!["id"] = $"{msgId}";
+        _data.Content.Add(temp);
         return this;
     }
 
@@ -174,18 +206,18 @@ public struct ForwardSummaryData(List<ForwardNode> content,
     string? prompt = null
     )
 {
-    [JsonProperty("message")] public List<ForwardNode> Message = content;
-    [JsonProperty("news")] public List<ForwardSummaryNewsEntity>? News = news?.ToList();
-    [JsonProperty("prompt")] public string? Prompt = prompt;
+    [JsonPropertyName("message")] public List<ForwardNode> Message = content;
+    [JsonPropertyName("news")] public List<ForwardSummaryNewsEntity>? News = news?.ToList();
+    [JsonPropertyName("prompt")] public string? Prompt = prompt;
 }
 
 public struct ForwardSummaryNewsEntity(string text)
 {
-    [JsonProperty("text")] public readonly string Text = text;
+    [JsonPropertyName("text")] public readonly string Text = text;
 }
-public struct ForwardNodeData(string name, string uin, List<JObject> content)
+public readonly struct ForwardNodeData(string name, string uin, List<JsonNode> content)
 {
-    [JsonProperty("name")] public string Name = name;
-    [JsonProperty("uin")] public string Uin = uin;
-    [JsonProperty("content")] public List<JObject> Content = content;
+    [JsonPropertyName("name")] public readonly string Name = name;
+    [JsonPropertyName("uin")] public readonly string Uin = uin;
+    [JsonPropertyName("content")] public readonly List<JsonNode> Content = content;
 }

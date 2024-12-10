@@ -1,11 +1,11 @@
 ﻿using System.Data;
-using Newtonsoft.Json.Linq;
+using System.Text.Json;
 
 namespace UndefinedBot.Core.Utils;
 
 public class CacheManager
 {
-    private readonly JObject _storageCache = [];
+    private readonly Dictionary<string,object> _storageCache = [];
     private readonly Dictionary<string, FileCacheProperty> _fileCache = [];
     private readonly GeneralLogger _cacheLogger;
     private readonly string _cacheRootPath;
@@ -20,33 +20,17 @@ public class CacheManager
     public void UpdateCache()
     {
         long curTime = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
-        List<string> dels = [];
-        foreach (var pair in _storageCache)
+
+
+        foreach (var pair in _storageCache.Where(pair => ((pair.Value as StorageCacheProperty<object>)?.ExpiredTime ?? 0) < curTime))
         {
-            if ((pair.Value?.ToObject<StorageCacheProperty<object>>()?.ExpiredTime ?? 0) < curTime)
-            {
-                dels.Add(pair.Key);
-            }
+            _storageCache.Remove(pair.Key);
         }
 
-        foreach (string del in dels)
+        foreach (var pair in _fileCache.Where(pair => pair.Value.ExpiredTime < curTime))
         {
-            _storageCache.Remove(del);
-        }
-
-        dels.Clear();
-        foreach (var pair in _fileCache)
-        {
-            if (pair.Value.ExpiredTime < curTime)
-            {
-                FileIO.SafeDeleteFile(pair.Value.FilePath);
-                dels.Add(pair.Key);
-            }
-        }
-
-        foreach (string del in dels)
-        {
-            _fileCache.Remove(del);
+            FileIO.SafeDeleteFile(pair.Value.FilePath);
+            _fileCache.Remove(pair.Key);
         }
     }
 
@@ -73,8 +57,8 @@ public class CacheManager
         try
         {
             _storageCache[cacheName] =
-                JToken.FromObject(new StorageCacheProperty<T>(cacheContent ?? throw new NoNullAllowedException(),
-                    cacheDuration));
+                JsonSerializer.SerializeToNode(new StorageCacheProperty<T>(cacheContent ?? throw new NoNullAllowedException(),
+                    cacheDuration))!;
             return true;
         }
         catch (Exception ex)
@@ -90,7 +74,7 @@ public class CacheManager
     {
         try
         {
-            StorageCacheProperty<T> sp = _storageCache.Value<StorageCacheProperty<T>>(cacheName) ??
+            StorageCacheProperty<T> sp = _storageCache[cacheName] as StorageCacheProperty<T> ??
                                          throw new NullReferenceException();
             sp.Content = newContent;
             //_storageCache[cacheName] = JToken.FromObject(new StorageCacheProperty<T>(cacheContent ?? throw new NoNullAllowedException(),cacheDuration));
@@ -112,8 +96,7 @@ public class CacheManager
 
     public T? GetStorage<T>(string cacheName)
     {
-        StorageCacheProperty<T>? sp = _storageCache.Value<StorageCacheProperty<T>>(cacheName);
-        return sp != null ? sp.Content : default;
+        return _storageCache[cacheName] is StorageCacheProperty<T> sp ? sp.Content : default;
     }
 }
 

@@ -1,4 +1,4 @@
-﻿using Newtonsoft.Json;
+﻿using System.Text.Json.Serialization;
 using UndefinedBot.Core.Command.CommandResult;
 using UndefinedBot.Core.Command.CommandNodes;
 using UndefinedBot.Core.Command.Arguments;
@@ -7,12 +7,12 @@ namespace UndefinedBot.Core.Command;
 
 public class CommandInstance
 {
-    [JsonProperty("name")] public string Name { get; private set; }
-    [JsonProperty("alias")] public List<string> CommandAlias { get; private set; } = [];
-    [JsonProperty("description")] public string? CommandDescription { get; private set; }
-    [JsonProperty("short_description")] public string? CommandShortDescription { get; private set; }
-    [JsonProperty("usage")] public string? CommandUsage { get; private set; }
-    [JsonProperty("example")] public string? CommandExample { get; private set; }
+    [JsonPropertyName("name")] public string Name { get; private set; }
+    [JsonPropertyName("alias")] public List<string> CommandAlias { get; private set; } = [];
+    [JsonPropertyName("description")] public string? CommandDescription { get; private set; }
+    [JsonPropertyName("short_description")] public string? CommandShortDescription { get; private set; }
+    [JsonPropertyName("usage")] public string? CommandUsage { get; private set; }
+    [JsonPropertyName("example")] public string? CommandExample { get; private set; }
     [JsonIgnore] private RootCommandNode RootNode { get; set; }
 
     internal CommandInstance(string commandName)
@@ -124,12 +124,12 @@ public class CommandInstance
     }
 }
 
-public struct CommandProperty
+public readonly struct CommandProperty
 {
-    [JsonProperty("name")] public string Name;
-    [JsonProperty("alias")] public List<string> CommandAlias;
-    [JsonProperty("description")] public string? CommandDescription;
-    [JsonProperty("short_description")] public string? CommandShortDescription;
-    [JsonProperty("usage")] public string? CommandUsage;
-    [JsonProperty("example")] public string? CommandExample;
+    [JsonPropertyName("name")] public readonly string Name;
+    [JsonPropertyName("alias")] public readonly List<string> CommandAlias;
+    [JsonPropertyName("description")] public readonly string? CommandDescription;
+    [JsonPropertyName("short_description")] public readonly string? CommandShortDescription;
+    [JsonPropertyName("usage")] public readonly string? CommandUsage;
+    [JsonPropertyName("example")] public readonly string? CommandExample;
 }

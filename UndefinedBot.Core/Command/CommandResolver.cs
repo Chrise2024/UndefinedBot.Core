@@ -23,9 +23,8 @@ internal abstract partial class CommandResolver
         {
             return (null, []);
         }
-        string cmd = unsortedTokens[commandTokenIndex].Content.Replace(s_commandPrefix, "");
         unsortedTokens.RemoveAt(commandTokenIndex);
-        return (cmd,unsortedTokens);
+        return (unsortedTokens[commandTokenIndex].Content[s_commandPrefix.Length..],unsortedTokens);
 
     }
     private static List<ParsedToken> SplitRawCqMessage(string cqString)
@@ -36,17 +35,16 @@ internal abstract partial class CommandResolver
         }
 
         return GetCqEntityRegex()
-            .Replace(cqString, match => $" {match.Value} ")
+            .Replace(cqString, match => $" \r0CQ{match.Value} ")
             .Split(" ", StringSplitOptions.RemoveEmptyEntries)
             .Select(item =>
-                GetCqEntityRegex().IsMatch(item)
-                    ? new ParsedToken(RawTokenTypes.CqCodeContent, item)
+                item.StartsWith("\r0CQ[")
+                    ? new ParsedToken(RawTokenTypes.CqCodeContent, item[4..])
                     : new ParsedToken(RawTokenTypes.NormalContent, item)
             ).ToList();
     }
     public static CqEntity DecodeCqEntity(string cqEntityString)
     {
-        Dictionary<string,string> properties = [];
         string[] cqPieces = cqEntityString[1..^1]
             .Replace(",", "\r$\r")
             .Replace("&amp;", "&")
@@ -54,20 +52,17 @@ internal abstract partial class CommandResolver
             .Replace("&#93;", "]")
             .Replace("&#44;", ",")
             .Split("\r$\r");
-        foreach (string cqPiece in cqPieces[1..])
-        {
-            string[] temp = cqPiece.Split("=",2,StringSplitOptions.RemoveEmptyEntries);
-            if (temp.Length > 1)
-            {
-                properties[temp[0]] = temp[1];
-            }
-        }
-        return new CqEntity(cqPieces[0][3..],properties);
+        return new CqEntity(
+            cqPieces[0][3..],
+            cqPieces[1..].Select(item => item.Split("=", 2, StringSplitOptions.RemoveEmptyEntries))
+                .Where(item => item.Length == 2)
+                .ToDictionary(item => item[0], item => item[1])
+            );
     }
     [GeneratedRegex(@"\[CQ:\S+\]")]
     private static partial Regex GetCqEntityRegex();
 }
-public struct CallingProperty(
+public readonly struct CallingProperty(
     string command,
     long callerUin,
     long groupId,
@@ -83,8 +78,8 @@ public struct CallingProperty(
     public readonly string SubType = subType;
     public readonly long Time = time;
 }
-public struct CqEntity(string cqType,Dictionary<string, string> properties)
+public readonly struct CqEntity(string cqType,Dictionary<string, string> properties)
 {
-    public string CqType = cqType;
-    public Dictionary<string, string> Properties = properties;
+    public readonly string CqType = cqType;
+    public readonly Dictionary<string, string> Properties = properties;
 }

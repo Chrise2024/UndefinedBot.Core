@@ -1,5 +1,6 @@
-﻿using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
+﻿using System.Text.Json;
+using System.Text.Json.Nodes;
+using System.Text.Json.Serialization;
 using UndefinedBot.Core.Utils;
 using UndefinedBot.Core.Command.Arguments;
 
@@ -16,16 +17,17 @@ public abstract class CommandHandler
     private static readonly List<long> s_workGroup = new ConfigManager().GetGroupList();
 
     private static readonly GeneralLogger s_commandHandlerLogger = new("MsgHandler");
+    private static readonly JsonSerializerOptions s_jsonOption = new(){ WriteIndented = true };
     internal static event CommandEventHandler? CommandEvent;
     //public static readonly CacheRefreshEvent CacheEvent = new();
-    public static async Task HandleMsg(JObject msgJson)
+    public static async Task HandleMsg(JsonNode msgJson)
     {
-        if ((msgJson.Value<string>("post_type")?.Equals("message") ?? false) &&
-            (msgJson.Value<string>("message_type")?.Equals("group") ?? false) &&
-            s_workGroup.Contains(msgJson.Value<long>("group_id"))
+        if ((msgJson["post_type"]?.GetValue<string>().Equals("message") ?? false) &&
+            (msgJson["message_type"]?.GetValue<string>().Equals("group") ?? false) &&
+            s_workGroup.Contains(msgJson["group_id"]?.GetValue<long>() ?? 0)
            )
         {
-            MsgBody msgBody = msgJson.ToObject<MsgBody>();
+            MsgBody msgBody = msgJson.Deserialize<MsgBody>();
             (string? cmdName, List<ParsedToken> tokens) = CommandResolver.Tokenize(msgBody.RawMessage ?? "");
             if (cmdName != null)
             {
@@ -38,9 +40,9 @@ public abstract class CommandHandler
                     msgBody.Time
                 );
                 s_commandHandlerLogger.Info("Executing...\nProperties:");
-                s_commandHandlerLogger.Info(JsonConvert.SerializeObject(cp, Formatting.Indented));
+                s_commandHandlerLogger.Info(JsonSerializer.Serialize(cp, s_jsonOption));
                 s_commandHandlerLogger.Info("Tokens:");
-                s_commandHandlerLogger.Info(JsonConvert.SerializeObject(tokens));
+                s_commandHandlerLogger.Info(JsonSerializer.Serialize(tokens));
                 CommandEvent?.Invoke(cp,tokens);
             }
         }
@@ -53,23 +55,23 @@ public abstract class CommandHandler
 }
 public struct MsgSender
 {
-    [JsonProperty("user_id")] public long UserId;
-    [JsonProperty("nickname")] public string Nickname;
-    [JsonProperty("sex")] public string Sex;
-    [JsonProperty("age")] public int Age;
+    [JsonPropertyName("user_id")] public long UserId;
+    [JsonPropertyName("nickname")] public string Nickname;
+    [JsonPropertyName("sex")] public string Sex;
+    [JsonPropertyName("age")] public int Age;
 }
 public struct MsgBody
 {
-    [JsonProperty("time")] public long Time;
-    [JsonProperty("self_id")] public long SelfId;
-    [JsonProperty("post_type")] public string PostType;
-    [JsonProperty("message_type")] public string MessageType;
-    [JsonProperty("sub_type")] public string SubType;
-    [JsonProperty("message_id")] public int MessageId;
-    [JsonProperty("group_id")] public long GroupId;
-    [JsonProperty("user_id")] public long UserId;
-    [JsonProperty("message")] public List<JObject> Message;
-    [JsonProperty("raw_message")] public string RawMessage;
-    [JsonProperty("font")] public int Font;
-    [JsonProperty("sender")] public MsgSender Sender;
+    [JsonPropertyName("time")] public long Time;
+    [JsonPropertyName("self_id")] public long SelfId;
+    [JsonPropertyName("post_type")] public string PostType;
+    [JsonPropertyName("message_type")] public string MessageType;
+    [JsonPropertyName("sub_type")] public string SubType;
+    [JsonPropertyName("message_id")] public int MessageId;
+    [JsonPropertyName("group_id")] public long GroupId;
+    [JsonPropertyName("user_id")] public long UserId;
+    [JsonPropertyName("message")] public List<JsonNode> Message;
+    [JsonPropertyName("raw_message")] public string RawMessage;
+    [JsonPropertyName("font")] public int Font;
+    [JsonPropertyName("sender")] public MsgSender Sender;
 }

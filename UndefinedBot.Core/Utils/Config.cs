@@ -1,32 +1,15 @@
-﻿using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
-using Newtonsoft.Json.Schema;
+﻿using System.Text.Json.Serialization;
 
 namespace UndefinedBot.Core.Utils;
 
 public class ConfigManager
 {
-    private readonly JSchema _configJsonSchema = JSchema.Parse(
-        """
-
-                    {
-                    "type": "object",
-                    "properties": {
-                            "http_server_url": { "type": "string" , "format": "uri" },
-                            "http_post_url": { "type": "string" , "format": "uri" },
-                            "group_id": { "type": "array", "items": { "type": "integer" } },
-                            "command_prefix": { "type": "string" }
-                        },
-                        "required": ["http_server_url", "http_post_url", "group_id", "command_prefix"]
-                    }
-        """
-    );
 
     private readonly string _configPath = Path.Join(Environment.CurrentDirectory, "config.json");
 
-    private Config _config;
+    private readonly Config _config;
 
-    private readonly Config _defaultConfig = new("http://127.0.0.1:8087/", "http://127.0.0.1:8085", [], "#");
+    private readonly Config _defaultConfig = new();
 
     /*
      * 8087为Bot上报消息的Url，即当前程序开启的Http Server地址
@@ -35,23 +18,23 @@ public class ConfigManager
 
     public ConfigManager()
     {
-        if (!File.Exists(_configPath))
+        if (File.Exists(_configPath))
         {
-            FileIO.WriteAsJson(_configPath, _defaultConfig);
-            _config = _defaultConfig;
-        }
-        else
-        {
-            JObject rConfig = FileIO.ReadAsJson(_configPath);
-            if (rConfig.IsValid(_configJsonSchema))
-            {
-                _config = rConfig.ToObject<Config>();
-            }
-            else
+            Config rConfig = FileIO.ReadAsJson<Config>(_configPath);
+            if (rConfig.Equals(default(Config)))
             {
                 _config = _defaultConfig;
                 FileIO.WriteAsJson(_configPath, _defaultConfig);
             }
+            else
+            {
+                _config = rConfig;
+            }
+        }
+        else
+        {
+            FileIO.WriteAsJson(_configPath, _defaultConfig);
+            _config = _defaultConfig;
         }
     }
 
@@ -81,15 +64,15 @@ public class ConfigManager
     }
 }
 
-public struct Config(
-    string httpServerUrl,
-    string httpPostUrl,
-    List<long> groupId,
-    string commandPrefix
+public readonly struct Config(
+    string httpServerUrl = "",
+    string httpPostUrl = "",
+    List<long>? groupId = null,
+    string commandPrefix = "!"
 )
 {
-    [JsonProperty("http_server_url")] public readonly string HttpServerUrl = httpServerUrl;
-    [JsonProperty("http_post_url")] public readonly string HttpPostUrl = httpPostUrl;
-    [JsonProperty("group_id")] public readonly List<long> GroupId = groupId;
-    [JsonProperty("command_prefix")] public readonly string CommandPrefix = commandPrefix;
+    [JsonPropertyName("http_server_url")] public readonly string HttpServerUrl = httpServerUrl;
+    [JsonPropertyName("http_post_url")] public readonly string HttpPostUrl = httpPostUrl;
+    [JsonPropertyName("group_id")] public readonly List<long> GroupId = groupId ?? [];
+    [JsonPropertyName("command_prefix")] public readonly string CommandPrefix = commandPrefix;
 }

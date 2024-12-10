@@ -1,4 +1,4 @@
-﻿using Newtonsoft.Json;
+﻿using System.Text.Json;
 using UndefinedBot.Core;
 using UndefinedBot.Core.Command;
 using UndefinedBot.Core.Command.CommandNodes;
@@ -33,7 +33,7 @@ public class HelpCommand
                 if (_commandReference.Count == 0)
                 {
                     _commandReference =
-                        JsonConvert.DeserializeObject<Dictionary<string, CommandProperty>>(
+                        JsonSerializer.Deserialize<Dictionary<string,CommandProperty>>(
                             File.ReadAllText(Path.Join(ctx.RootPath, "command_reference.json"))) ?? [];
                 }
 
@@ -60,7 +60,7 @@ public class HelpCommand
                     if (_commandReference.Count == 0)
                     {
                         _commandReference =
-                            JsonConvert.DeserializeObject<Dictionary<string, CommandProperty>>(
+                            JsonSerializer.Deserialize<Dictionary<string,CommandProperty>>(
                                 File.ReadAllText(Path.Join(ctx.RootPath, "command_reference.json"))) ?? [];
                     }
 
@@ -79,7 +79,7 @@ public class HelpCommand
                                           (desc == null ? "" : $"{prop.Name} - {desc}\n") +
                                           (ug == null ? "" : $"使用方法: \n{string.Format(ug, _commandPrefix)}\n") +
                                           (eg == null ? "" : $"e.g.\n{string.Format(eg, _commandPrefix)}\n") +
-                                          $"可用指令别名: \n{JsonConvert.SerializeObject(prop.CommandAlias)}").Build()
+                                          $"可用指令别名: \n{JsonSerializer.Serialize(prop.CommandAlias)}").Build()
                             );
                         }
                     }

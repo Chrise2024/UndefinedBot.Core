@@ -1,6 +1,7 @@
-﻿using System.Net;
+﻿using System.Diagnostics.CodeAnalysis;
+using System.Net;
+using System.Text.Json.Nodes;
 using System.Text.RegularExpressions;
-using Newtonsoft.Json.Linq;
 using UndefinedBot.Core.Command;
 using UndefinedBot.Core.Utils;
 
@@ -13,7 +14,7 @@ internal class HttpServer
 
     private readonly GeneralLogger _httpServerLogger = new("HttpServer");
 
-    public HttpServer(string prefix)
+    public HttpServer([StringSyntax("Uri")]string prefix)
     {
         _httpListener.Prefixes.Add(prefix);
     }
@@ -25,9 +26,8 @@ internal class HttpServer
         {
             try
             {
-                HttpListenerContext context = await _httpListener.GetContextAsync().WaitAsync(new CancellationToken());
+                HttpListenerContext context = await _httpListener.GetContextAsync();
                 _ = HandleRequestAsync(context);
-                //catch { }
             }
             catch(Exception ex)
             {
@@ -51,7 +51,7 @@ internal class HttpServer
             sr.Close();
             context.Response.StatusCode = 200;
             context.Response.Close();
-            await CommandHandler.HandleMsg(JObject.Parse(reqString));
+            await CommandHandler.HandleMsg(JsonNode.Parse(reqString) ?? throw new Exception("Parse Failed"));
         }
         catch (Exception ex)
         {

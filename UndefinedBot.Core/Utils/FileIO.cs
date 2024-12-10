@@ -1,31 +1,39 @@
-﻿using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
+﻿using System.Text.Json;
+using System.Text.Json.Nodes;
 
 namespace UndefinedBot.Core.Utils;
 
 internal abstract class FileIO
 {
-    public static void EnsurePath(string? tPath)
+    private static readonly JsonSerializerOptions s_jsonOption = new(){ WriteIndented = true };
+    public static bool EnsurePath(string? tPath)
     {
         if (tPath == null)
         {
-            return;
+            return false;
         }
 
-        if (!Path.Exists(tPath))
+        if (Path.Exists(tPath))
         {
-            Directory.CreateDirectory(tPath);
+            return true;
         }
+
+        Directory.CreateDirectory(tPath);
+        return false;
+
     }
 
-    public static void EnsureFile(string tPath, string initData = "")
+    public static bool EnsureFile(string tPath, string initData = "")
     {
-        if (!File.Exists(tPath))
+        if (File.Exists(tPath))
         {
-            EnsurePath(Path.GetDirectoryName(tPath));
-            File.Create(tPath).Close();
-            WriteFile(tPath, initData.Length != 0 ? initData : string.Empty);
+            return true;
         }
+
+        EnsurePath(Path.GetDirectoryName(tPath));
+        File.Create(tPath).Close();
+        WriteFile(tPath, initData.Length != 0 ? initData : string.Empty);
+        return false;
     }
 
     public static void SafeDeleteFile(string tPath)
@@ -88,14 +96,14 @@ internal abstract class FileIO
         }
     }
 
-    public static JObject ReadAsJson(string tPath)
+    public static JsonNode? ReadAsJson(string tPath)
     {
         try
         {
             string content = ReadFile(tPath);
             if (content.Length != 0)
             {
-                return JObject.Parse(content);
+                return JsonNode.Parse(content);
             }
         }
         catch
@@ -103,7 +111,7 @@ internal abstract class FileIO
             // ignored
         }
 
-        return [];
+        return null;
     }
 
     public static T? ReadAsJson<T>(string tPath)
@@ -113,7 +121,7 @@ internal abstract class FileIO
             string content = ReadFile(tPath);
             if (content.Length != 0)
             {
-                return JsonConvert.DeserializeObject<T>(content);
+                return JsonSerializer.Deserialize<T>(content);
             }
         }
         catch
@@ -121,18 +129,12 @@ internal abstract class FileIO
             // ignored
         }
 
-        return new JObject().ToObject<T>();
+        return default;
     }
 
     public static void WriteAsJson<T>(string tPath, T content)
     {
         EnsureFile(tPath);
-        WriteFile(tPath, JsonConvert.SerializeObject(content, Formatting.Indented));
-    }
-
-    public static void WriteAsJson(string tPath, JObject content)
-    {
-        EnsureFile(tPath);
-        WriteFile(tPath, JsonConvert.SerializeObject(content, Formatting.Indented));
+        WriteFile(tPath, JsonSerializer.Serialize(content, s_jsonOption));
     }
 }

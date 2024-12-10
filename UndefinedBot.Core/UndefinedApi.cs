@@ -1,6 +1,6 @@
 ﻿using System.Reflection;
 using System.Runtime.CompilerServices;
-using Newtonsoft.Json;
+using System.Text.Json;
 using UndefinedBot.Core.Command;
 using UndefinedBot.Core.Command.CommandNodes;
 using UndefinedBot.Core.Command.CommandResult;
@@ -25,6 +25,7 @@ public class CommandFinishEvent
 
 [AttributeUsage(AttributeTargets.Class, AllowMultiple = true)]
 public sealed class PluginAttribute : Attribute;
+
 [Obsolete("wasted",true)]
 internal abstract class Core
 {
@@ -94,10 +95,10 @@ public class UndefinedApi
                                 //ignore
                                 break;
                             case InvalidArgument iae:
-                                ctx.Logger.Error($"Invalid argument: {iae.ErrorToken}, require {JsonConvert.SerializeObject(iae.RequiredType)}");
+                                ctx.Logger.Error($"Invalid argument: {iae.ErrorToken}, require {JsonSerializer.Serialize(iae.RequiredType)}");
                                 break;
                             case TooLessArgument tae:
-                                ctx.Logger.Error($"To less arguments, require {JsonConvert.SerializeObject(tae.RequiredType)}");
+                                ctx.Logger.Error($"To less arguments, require {JsonSerializer.Serialize(tae.RequiredType)}");
                                 break;
                             case PermissionDenied pde:
                                 ctx.Logger.Error(

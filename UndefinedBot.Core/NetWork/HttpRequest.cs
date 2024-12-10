@@ -1,5 +1,6 @@
-﻿using System.Text;
-using Newtonsoft.Json;
+﻿using System.Diagnostics.CodeAnalysis;
+using System.Text;
+using System.Text.Json;
 using UndefinedBot.Core.Utils;
 
 namespace UndefinedBot.Core.NetWork;
@@ -13,12 +14,12 @@ public class HttpRequest
 
     private readonly GeneralLogger _httpRequestLogger = new("HttpRequest");
 
-    public async Task<string> Post(string url, object? content = null)
+    public async Task<string> Post([StringSyntax("Uri")]string url, object? content = null)
     {
         try
         {
             HttpResponseMessage response = await _httpClient.PostAsync(url, content == null ? null : new StringContent(
-                JsonConvert.SerializeObject(content),
+                JsonSerializer.Serialize(content),
                 Encoding.UTF8,
                 "application/json"
             ));
@@ -35,7 +36,7 @@ public class HttpRequest
             return "";
         }
     }
-    public async Task<string> Get(string url)
+    public async Task<string> Get([StringSyntax("Uri")]string url)
     {
         try
         {
@@ -54,7 +55,7 @@ public class HttpRequest
         }
     }
 
-    public async Task<byte[]> GetBinary(string url)
+    public async Task<byte[]> GetBinary([StringSyntax("Uri")]string url)
     {
         try
         {

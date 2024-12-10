@@ -1,12 +1,14 @@
-﻿using System.Text;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
+﻿using System.Diagnostics.CodeAnalysis;
+using System.Text;
+using System.Text.Json;
+using System.Text.Json.Nodes;
+using System.Text.Json.Serialization;
 using UndefinedBot.Core.Utils;
 using UndefinedBot.Core.Command;
 
 namespace UndefinedBot.Core.NetWork;
 
-public class HttpApi(string httpPostUrl)
+public class HttpApi([StringSyntax("Uri")]string httpPostUrl)
 {
     private readonly HttpClient _httpClient = new()
     {
@@ -19,7 +21,7 @@ public class HttpApi(string httpPostUrl)
     /// </summary>
     /// <param name="targetGroupId">Group Id to send</param>
     /// <param name="msgChain">Onebot11 MessageChain</param>
-    public async Task SendGroupMsg(object targetGroupId,List<JObject> msgChain)
+    public async Task SendGroupMsg(object targetGroupId,List<JsonNode> msgChain)
     {
         await ApiPostRequestWithoutResponse("/send_group_msg", new
         {
@@ -34,7 +36,8 @@ public class HttpApi(string httpPostUrl)
     /// <param name="forwardSummaryData">Onebot11 Forward MessageChain</param>
     public async Task SendGroupForward(object targetGroupId,ForwardSummaryData forwardSummaryData)
     {
-        JObject reqJson = JObject.FromObject(forwardSummaryData);
+        //JsonNode reqJson = JsonNode.FromObject(forwardSummaryData);
+        JsonNode reqJson = JsonSerializer.SerializeToNode(forwardSummaryData)!;
         reqJson["group_id"] = $"{targetGroupId}";
         await ApiPostRequestWithoutResponse("/send_group_forward_msg", reqJson);
     }
@@ -102,12 +105,12 @@ public class HttpApi(string httpPostUrl)
             HttpResponseMessage response = await _httpClient.PostAsync(httpPostUrl + subUrl,
                 content != null ?
                     new StringContent(
-                        JsonConvert.SerializeObject(content),
+                        JsonSerializer.Serialize(content),
                         Encoding.UTF8,
                         "application/json"
                     ) : null
             );
-            return response.IsSuccessStatusCode ? JsonConvert.DeserializeObject<T>(await response.Content.ReadAsStringAsync()) : default;
+            return response.IsSuccessStatusCode ? JsonSerializer.Deserialize<T>(await response.Content.ReadAsStringAsync()) : default;
         }
         catch (TaskCanceledException)
         {
@@ -127,7 +130,7 @@ public class HttpApi(string httpPostUrl)
             _ = await _httpClient.PostAsync(httpPostUrl + subUrl,
                 content != null ?
                     new StringContent(
-                        JsonConvert.SerializeObject(content),
+                        JsonSerializer.Serialize(content),
                         Encoding.UTF8,
                         "application/json"
                     ) : null
@@ -151,19 +154,19 @@ public class HttpApi(string httpPostUrl)
 }
 public struct GroupMember
 {
-    [JsonProperty("group_id")] public long? GroupId;
-    [JsonProperty("user_id")] public long? UserId;
-    [JsonProperty("nickname")] public string? Nickname;
-    [JsonProperty("card")] public string? Card;
-    [JsonProperty("sex")] public string? Sex;
-    [JsonProperty("age")] public int? Age;
-    [JsonProperty("area")] public string? Area;
-    [JsonProperty("join_time")] public int? JoinTime;
-    [JsonProperty("last_sent_time")] public int? LastSentTime;
-    [JsonProperty("level")] public string? Level;
-    [JsonProperty("role")] public string? Role;
-    [JsonProperty("unfriendly")] public bool? Unfriendly;
-    [JsonProperty("title")] public string? Title;
-    [JsonProperty("title_expire_time")] public int? TitleExpireTime;
-    [JsonProperty("card_changeable")] public bool? CardChangeable;
+    [JsonPropertyName("group_id")] public long? GroupId;
+    [JsonPropertyName("user_id")] public long? UserId;
+    [JsonPropertyName("nickname")] public string? Nickname;
+    [JsonPropertyName("card")] public string? Card;
+    [JsonPropertyName("sex")] public string? Sex;
+    [JsonPropertyName("age")] public int? Age;
+    [JsonPropertyName("area")] public string? Area;
+    [JsonPropertyName("join_time")] public int? JoinTime;
+    [JsonPropertyName("last_sent_time")] public int? LastSentTime;
+    [JsonPropertyName("level")] public string? Level;
+    [JsonPropertyName("role")] public string? Role;
+    [JsonPropertyName("unfriendly")] public bool? Unfriendly;
+    [JsonPropertyName("title")] public string? Title;
+    [JsonPropertyName("title_expire_time")] public int? TitleExpireTime;
+    [JsonPropertyName("card_changeable")] public bool? CardChangeable;
 }
