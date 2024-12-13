@@ -10,7 +10,7 @@ internal abstract class Initializer
     private static readonly string s_pluginRoot = Path.Join(Program.GetProgramRoot(),"Plugins");
 
     private static readonly GeneralLogger s_initLogger = new("Initialize");
-    internal static List<PluginProperty> LoadPlugins()
+    internal static List<PluginProperties> LoadPlugins()
     {
         if (!Directory.Exists(s_pluginRoot))
         {
@@ -19,7 +19,7 @@ internal abstract class Initializer
         }
 
         string[] pluginFolders = Directory.GetDirectories(s_pluginRoot);
-        List<PluginProperty> pluginRef = [];
+        List<PluginProperties> pluginRef = [];
         foreach (string pf in pluginFolders)
         {
             string pluginPropFile = Path.Join(pf, "plugin.json");
@@ -29,14 +29,14 @@ internal abstract class Initializer
                 continue;
             }
 
-            PluginProperty pluginProperty = FileIO.ReadAsJson<PluginProperty>(pluginPropFile);
-            if (!pluginProperty.Equals(default(PluginProperty)))
+            PluginProperties pluginProperties = FileIO.ReadAsJson<PluginProperties>(pluginPropFile);
+            if (!pluginProperties.Equals(default))
             {
                 s_initLogger.Warn($"Plugin: <{pf}> Invalid plugin.json");
                 continue;
             }
 
-            string entryFile = Path.Join(pf, pluginProperty.EntryFile);
+            string entryFile = Path.Join(pf, pluginProperties.EntryFile);
             if (!File.Exists(entryFile))
             {
                 s_initLogger.Warn($"Plugin: <{pf}> EntryFile: <{entryFile}> Not Found");
@@ -44,18 +44,18 @@ internal abstract class Initializer
             }
 
             FileIO.SafeDeleteFile(pluginUcFile);
-            string pluginCachePath = Path.Join(Program.GetProgramCache(), pluginProperty.Name);
+            string pluginCachePath = Path.Join(Program.GetProgramCache(), pluginProperties.Name);
             FileIO.EnsurePath(pluginCachePath);
             foreach (string cf in Directory.GetFiles(pluginCachePath))
             {
                 FileIO.SafeDeleteFile(cf);
             }
 
-            object? pInstance = InitPlugin(entryFile, pluginProperty.Name);
+            object? pInstance = CreatePluginInstance(entryFile, pluginProperties.Name);
             if (pInstance != null)
             {
-                pluginProperty.Instance = pInstance;
-                pluginRef.Add(pluginProperty);
+                pluginProperties.Instance = pInstance;
+                pluginRef.Add(pluginProperties);
             }
             else
             {
@@ -64,7 +64,7 @@ internal abstract class Initializer
         }
         return pluginRef;
     }
-    public static Dictionary<string, CommandProperty> GetCommandReference()
+    public static Dictionary<string, CommandProperties> GetCommandReference()
     {
         if (!FileIO.EnsurePath(Path.Join(Program.GetProgramRoot(), "CommandReference")))
         {
@@ -72,22 +72,25 @@ internal abstract class Initializer
         }
         return Directory
             .GetFiles(Path.Join(Program.GetProgramRoot(),"CommandReference"))
-            .Select(cfp => FileIO.ReadAsJson<List<CommandProperty>>(cfp) ?? [])
+            .Select(cfp => FileIO.ReadAsJson<List<CommandProperties>>(cfp) ?? [])
             .SelectMany(item => item)
-            .Where(item => !item.Equals(default(CommandProperty)))
+            .Where(item => !item.Equals(default(CommandProperties)))
             .ToDictionary(item => item.Name, item => item);
     }
-    private static object? InitPlugin(string pluginDllPath, string pluginName)
+    private static object? CreatePluginInstance(string pluginDllPath, string pluginName)
     {
         try
         {
-            return Activator.CreateInstance(Assembly
+            return Activator.CreateInstance(
+                Assembly
                 .LoadFrom(pluginDllPath)
                 .GetTypes()
-                .FirstOrDefault(t =>
+                .ToList()
+                .Find(t =>
                     t.IsClass &&
                     t.GetCustomAttributes()
-                        .Any(item => item.ToString()?.Equals("UndefinedBot.Core.PluginAttribute") ?? false)) ?? throw new Exception(),
+                        .Any(item => item.ToString() == "UndefinedBot.Core.PluginAttribute")
+                    ) ?? throw new Exception(),
                 [pluginName]
                 );
         }
@@ -97,11 +100,19 @@ internal abstract class Initializer
         }
     }
 }
-internal struct PluginProperty
+internal struct PluginProperties : IEquatable<PluginProperties>
 {
     [JsonPropertyName("name")] public string Name;
     [JsonPropertyName("description")] public string Description;
     [JsonPropertyName("entry_file")] public string EntryFile;
     [JsonPropertyName("entry_point")] public string? EntryPoint;
     [JsonIgnore] public object? Instance;
+    [JsonIgnore] private static PluginProperties _defaultValue = default;
+
+    public bool Equals(PluginProperties other)
+    {
+        return Name == other.Name &&
+               Description == other.Description &&
+               EntryFile == other.EntryFile;
+    }
 }

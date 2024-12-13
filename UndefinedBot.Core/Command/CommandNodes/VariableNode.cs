@@ -104,15 +104,15 @@ public class VariableNode(string name,IArgumentType argumentType):ICommandNode
         if (tokens.Count == 1)
         {
             return new TooLessArgument(
-                result.OfType<TooLessArgument>().SelectMany(item => item.RequiredType)
+                result.OfType<TooLessArgument>().SelectMany(item => item.RequiredType).ToList()
             );
         }
 
         //传递
-        InvalidArgument[] il = result.OfType<InvalidArgument>().ToArray();
+        List<InvalidArgument> il = result.OfType<InvalidArgument>().ToList();
         return new InvalidArgument(
-            il.FirstOrDefault()?.ErrorToken ?? "",
-            il.SelectMany(item => item.RequiredType)
+            il.Count == 0 ? "" : il[0].ErrorToken,
+            il.SelectMany(item => item.RequiredType).ToList()
         );
     }
     public string GetArgumentRequire()

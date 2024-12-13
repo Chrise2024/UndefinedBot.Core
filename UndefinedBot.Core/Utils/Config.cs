@@ -69,10 +69,18 @@ public readonly struct Config(
     string httpPostUrl = "",
     List<long>? groupId = null,
     string commandPrefix = "!"
-)
+) : IEquatable<Config>
 {
     [JsonPropertyName("http_server_url")] public readonly string HttpServerUrl = httpServerUrl;
     [JsonPropertyName("http_post_url")] public readonly string HttpPostUrl = httpPostUrl;
     [JsonPropertyName("group_id")] public readonly List<long> GroupId = groupId ?? [];
     [JsonPropertyName("command_prefix")] public readonly string CommandPrefix = commandPrefix;
+
+    public bool Equals(Config other)
+    {
+        return HttpPostUrl == other.HttpPostUrl &&
+               HttpServerUrl == other.HttpServerUrl &&
+               GroupId.Count == other.GroupId.Count &&
+               CommandPrefix == other.CommandPrefix;
+    }
 }

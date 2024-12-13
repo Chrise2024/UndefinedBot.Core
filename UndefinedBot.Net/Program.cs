@@ -15,9 +15,9 @@ internal class Program
 
     private static readonly HttpServer s_httpServer = new(new ConfigManager().GetHttpServerUrl());
 
-    private static List<PluginProperty> s_pluginReference = [];
+    private static List<PluginProperties> s_pluginReference = [];
 
-    private static Dictionary<string, CommandProperty> s_commandReference = [];
+    private static Dictionary<string, CommandProperties> s_commandReference = [];
     static void Main(string[] args)
     {
         Console.OutputEncoding = Encoding.UTF8;
@@ -32,11 +32,13 @@ internal class Program
         while (true)
         {
             string tempString = Console.ReadLine() ?? "";
-            if (tempString.Equals("stop"))
+            if (tempString != "stop")
             {
-                s_httpServer.Stop();
-                break;
+                continue;
             }
+
+            s_httpServer.Stop();
+            break;
         }
         s_mainGeneralLogger.Info("Bot Closed");
         Console.ReadKey();

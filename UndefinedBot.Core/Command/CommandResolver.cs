@@ -19,7 +19,7 @@ internal abstract partial class CommandResolver
         int commandTokenIndex = unsortedTokens.FindIndex(item =>
             item.TokenType == RawTokenTypes.NormalContent && item.Content.StartsWith(s_commandPrefix)
         );
-        if (commandTokenIndex == -1)
+        if (commandTokenIndex is -1 or > 1)
         {
             return (null, []);
         }
@@ -67,7 +67,7 @@ public readonly struct CallingProperty(
     long callerUin,
     long groupId,
     int msgId,
-    string subType,
+    MessageSubType subType,
     long time
 )
 {
@@ -75,7 +75,7 @@ public readonly struct CallingProperty(
     public readonly long CallerUin = callerUin;
     public readonly long GroupId = groupId;
     public readonly int MsgId = msgId;
-    public readonly string SubType = subType;
+    public readonly MessageSubType SubType = subType;
     public readonly long Time = time;
 }
 public readonly struct CqEntity(string cqType,Dictionary<string, string> properties)

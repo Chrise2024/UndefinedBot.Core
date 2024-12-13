@@ -47,11 +47,11 @@ internal class HttpServer
         {
             StreamReader sr = new(context.Request.InputStream);
             string tempString = await sr.ReadToEndAsync();
-            string reqString = Regex.Unescape(tempString);
+            string reqString = Regex.Unescape(tempString).Replace(@"\u0022","\\\"").Replace(@"\0","0");
             sr.Close();
             context.Response.StatusCode = 200;
             context.Response.Close();
-            await CommandHandler.HandleMsg(JsonNode.Parse(reqString) ?? throw new Exception("Parse Failed"));
+            CommandHandler.HandleMsg(JsonNode.Parse(reqString) ?? throw new Exception("Parse Failed"));
         }
         catch (Exception ex)
         {

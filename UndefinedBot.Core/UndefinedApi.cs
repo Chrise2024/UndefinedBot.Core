@@ -81,7 +81,7 @@ public class UndefinedApi
         foreach (var commandInstance in _commandInstances)
         {
             CommandHandler.CommandEvent += async (cp,tokens) => {
-                if (commandInstance.Name.Equals(cp.Command) || commandInstance.CommandAlias.Contains(cp.Command))
+                if (commandInstance.Name == cp.Command || commandInstance.CommandAlias.Contains(cp.Command))
                 {
                     CommandContext ctx = new(commandInstance.Name, this, cp);
                     ctx.Logger.Info("Command Triggered");

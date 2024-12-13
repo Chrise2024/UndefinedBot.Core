@@ -59,7 +59,7 @@ public class SubCommandNode(string name):ICommandNode
             return new TooLessArgument([GetArgumentRequire()]);
         }
 
-        if (!NodeName.Equals(tokens[0].Content))
+        if (NodeName != tokens[0].Content)
         {
             return new InvalidArgument(tokens[0].Content, [GetArgumentRequire()]);
         }
@@ -104,15 +104,15 @@ public class SubCommandNode(string name):ICommandNode
         if (tokens.Count == 1)
         {
             return new TooLessArgument(
-                result.OfType<TooLessArgument>().SelectMany(item => item.RequiredType)
+                result.OfType<TooLessArgument>().SelectMany(item => item.RequiredType).ToList()
             );
         }
         else
         {
-            InvalidArgument[] il = result.OfType<InvalidArgument>().ToArray();
+            List<InvalidArgument> il = result.OfType<InvalidArgument>().ToList();
             return new InvalidArgument(
-                il.FirstOrDefault()?.ErrorToken ?? "",
-                il.SelectMany(item => item.RequiredType)
+                il.Count == 0 ? "" : il[0].ErrorToken,
+                il.SelectMany(item => item.RequiredType).ToList()
             );
         }
     }

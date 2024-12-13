@@ -12,45 +12,58 @@ public delegate Task CommandEventHandler(CallingProperty cp,List<ParsedToken> to
  * Process OneBot11 Format Message and Resolve to Broadcast Message Event
  * </summary>
  */
-public abstract class CommandHandler
+internal abstract class CommandHandler
 {
     private static readonly List<long> s_workGroup = new ConfigManager().GetGroupList();
 
     private static readonly GeneralLogger s_commandHandlerLogger = new("MsgHandler");
     private static readonly JsonSerializerOptions s_jsonOption = new(){ WriteIndented = true };
     internal static event CommandEventHandler? CommandEvent;
-    //public static readonly CacheRefreshEvent CacheEvent = new();
-    public static async Task HandleMsg(JsonNode msgJson)
+    public static void HandleMsg(JsonNode msgJson)
     {
-        if ((msgJson["post_type"]?.GetValue<string>().Equals("message") ?? false) &&
-            (msgJson["message_type"]?.GetValue<string>().Equals("group") ?? false) &&
-            s_workGroup.Contains(msgJson["group_id"]?.GetValue<long>() ?? 0)
-           )
+        if (!IsGroupMessageToHandle(msgJson))
         {
-            MsgBody msgBody = msgJson.Deserialize<MsgBody>();
-            (string? cmdName, List<ParsedToken> tokens) = CommandResolver.Tokenize(msgBody.RawMessage ?? "");
-            if (cmdName != null)
-            {
-                CallingProperty cp = new(
-                    cmdName,
-                    msgBody.UserId,
-                    msgBody.GroupId,
-                    msgBody.MessageId,
-                    msgBody.SubType ?? "group",
-                    msgBody.Time
-                );
-                s_commandHandlerLogger.Info("Executing...\nProperties:");
-                s_commandHandlerLogger.Info(JsonSerializer.Serialize(cp, s_jsonOption));
-                s_commandHandlerLogger.Info("Tokens:");
-                s_commandHandlerLogger.Info(JsonSerializer.Serialize(tokens));
-                CommandEvent?.Invoke(cp,tokens);
-            }
+            return;
         }
+
+        MsgBody msgBody = msgJson.Deserialize<MsgBody>();
+        (string? cmdName, List<ParsedToken> tokens) = CommandResolver.Tokenize(msgBody.RawMessage ?? "");
+        if (cmdName == null)
+        {
+            return;
+        }
+
+        CallingProperty cp = new(
+            cmdName,
+            msgBody.UserId,
+            msgBody.GroupId,
+            msgBody.MessageId,
+            msgBody.SubType switch
+            {
+                "friend" => MessageSubType.Friend,
+                "group" => MessageSubType.Group,
+                _ => MessageSubType.Other,
+            },
+            msgBody.Time
+        );
+        s_commandHandlerLogger.Info("Executing...\nProperties:");
+        s_commandHandlerLogger.Info(JsonSerializer.Serialize(cp, s_jsonOption));
+        s_commandHandlerLogger.Info("Tokens:");
+        s_commandHandlerLogger.Info(JsonSerializer.Serialize(tokens));
+        CommandEvent?.Invoke(cp,tokens);
     }
 
-    public static void Trigger(CallingProperty cp, List<ParsedToken> tokens)
+    internal static void Trigger(CallingProperty cp, List<ParsedToken> tokens)
     {
         CommandEvent?.Invoke(cp,tokens);
+    }
+
+    private static bool IsGroupMessageToHandle(JsonNode msgJson)
+    {
+        long gid = msgJson["group_id"]?.GetValue<long>() ?? 0;
+        return gid != 0 && (msgJson["post_type"]?.GetValue<string>() == "message" &&
+                            msgJson["message_type"]?.GetValue<string>() == "group" &&
+                            s_workGroup.Contains(gid));
     }
 }
 public struct MsgSender
@@ -74,4 +87,10 @@ public struct MsgBody
     [JsonPropertyName("raw_message")] public string RawMessage;
     [JsonPropertyName("font")] public int Font;
     [JsonPropertyName("sender")] public MsgSender Sender;
+}
+public enum MessageSubType
+{
+    Friend = 0,
+    Group = 1,
+    Other = 2,
 }

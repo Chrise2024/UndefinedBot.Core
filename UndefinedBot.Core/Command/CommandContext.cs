@@ -7,7 +7,7 @@ namespace UndefinedBot.Core.Command;
 /// <summary>
 /// Context of command,containing apis, calling info and arguments
 /// </summary>
-public struct CommandContext(string commandName,UndefinedApi baseApi,CallingProperty cp)
+public class CommandContext(string commandName,UndefinedApi baseApi,CallingProperty cp)
 {
     public readonly string PluginName = baseApi.PluginName;
     public readonly string CommandName = commandName;
@@ -22,5 +22,5 @@ public struct CommandContext(string commandName,UndefinedApi baseApi,CallingProp
     public readonly HttpRequest Request = baseApi.Request;
     public readonly HttpApi Api = baseApi.Api;
     public MsgBuilder GetMessageBuilder() => MsgBuilder.GetInstance();
-    public ForwardBuilder GetForwardBuilder() => ForwardBuilder.GetInstance();
+    public ForwardMessageBuilder GetForwardBuilder() => ForwardMessageBuilder.GetInstance();
 }

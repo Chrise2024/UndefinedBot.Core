@@ -31,7 +31,7 @@ public class CommandInstance
     /// </summary>
     /// <param name="alias">Array of aliases</param>
     /// <returns>self</returns>
-    public CommandInstance Alias(IEnumerable<string> alias)
+    public CommandInstance Alias(List<string> alias)
     {
         foreach (string item in alias)
         {
@@ -124,12 +124,12 @@ public class CommandInstance
     }
 }
 
-public readonly struct CommandProperty
+public struct CommandProperties
 {
-    [JsonPropertyName("name")] public readonly string Name;
-    [JsonPropertyName("alias")] public readonly List<string> CommandAlias;
-    [JsonPropertyName("description")] public readonly string? CommandDescription;
-    [JsonPropertyName("short_description")] public readonly string? CommandShortDescription;
-    [JsonPropertyName("usage")] public readonly string? CommandUsage;
-    [JsonPropertyName("example")] public readonly string? CommandExample;
+    [JsonPropertyName("name")] public string Name;
+    [JsonPropertyName("alias")] public List<string> CommandAlias;
+    [JsonPropertyName("description")] public string? CommandDescription;
+    [JsonPropertyName("short_description")] public string? CommandShortDescription;
+    [JsonPropertyName("usage")] public string? CommandUsage;
+    [JsonPropertyName("example")] public string? CommandExample;
 }

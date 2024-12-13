@@ -33,11 +33,11 @@ public class HttpApi([StringSyntax("Uri")]string httpPostUrl)
     /// Send Forward to Group
     /// </summary>
     /// <param name="targetGroupId">Group Id to send</param>
-    /// <param name="forwardSummaryData">Onebot11 Forward MessageChain</param>
-    public async Task SendGroupForward(object targetGroupId,ForwardSummaryData forwardSummaryData)
+    /// <param name="forwardPropertiesData">Onebot11 Forward MessageChain</param>
+    public async Task SendGroupForward(object targetGroupId,ForwardPropertiesData forwardPropertiesData)
     {
         //JsonNode reqJson = JsonNode.FromObject(forwardSummaryData);
-        JsonNode reqJson = JsonSerializer.SerializeToNode(forwardSummaryData)!;
+        JsonNode reqJson = JsonSerializer.SerializeToNode(forwardPropertiesData)!;
         reqJson["group_id"] = $"{targetGroupId}";
         await ApiPostRequestWithoutResponse("/send_group_forward_msg", reqJson);
     }

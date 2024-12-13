@@ -23,15 +23,15 @@ public interface ICommandNode
 }
 public class CommandAbortException(string? message = null) : Exception(message);
 [Obsolete("wasted",true)]
-public class InvalidArgumentException(string currentToken, IEnumerable<string> requiredType) : Exception(null)
+public class InvalidArgumentException(string currentToken, List<string> requiredType) : Exception(null)
 {
     public string ErrorToken => currentToken;
-    public IEnumerable<string> RequiredType => requiredType;
+    public List<string> RequiredType => requiredType;
 }
 [Obsolete("wasted",true)]
-public class TooLessArgumentException(IEnumerable<string> requiredType) : Exception(null)
+public class TooLessArgumentException(List<string> requiredType) : Exception(null)
 {
-    public IEnumerable<string> RequiredType => requiredType;
+    public List<string> RequiredType => requiredType;
 }
 [Obsolete("wasted",true)]
 public class PermissionDeniedException(string currentNode, string currentPermission, string requiredPermission) : Exception(null)
