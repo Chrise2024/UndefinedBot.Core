@@ -1,16 +1,24 @@
-﻿namespace UndefinedBot.Core.Command.Arguments.ArgumentRange;
+﻿using System.Text.Json;
 
-public readonly struct RangeIn(IEnumerable<object> range) : IArgumentRange
+namespace UndefinedBot.Core.Command.Arguments.ArgumentRange;
+
+public class RangeIn<T> : IArgumentRange where T : IEquatable<T>
 {
-    private object[] Range => range.ToArray();
+    public List<T> Range { get; }
+    public string DescriptionString { get; }
+    public RangeIn(List<T> range)
+    {
+        Range = range.ToList();
+        DescriptionString = string.Join(",", Range.Select(item => JsonSerializer.Serialize(item)));
+    }
 
     public bool InRange(object current)
     {
-        return Range.Contains(current);
+        return current is T tc && Range.Any(item => item.Equals(tc));
     }
 
     public string GetRangeDescription()
     {
-        return $"In {{{string.Join(",",Range)}}}";
+        return $"In {{{DescriptionString}}}";
     }
 }

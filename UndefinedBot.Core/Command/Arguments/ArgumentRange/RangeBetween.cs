@@ -1,6 +1,6 @@
 ﻿namespace UndefinedBot.Core.Command.Arguments.ArgumentRange;
 
-public readonly struct RangeBetween<T> : IArgumentRange where T : IComparable
+public class RangeBetween<T> : IArgumentRange where T : IComparable
 {
     public T Maximum { get; }
     public T Minimum { get; }
