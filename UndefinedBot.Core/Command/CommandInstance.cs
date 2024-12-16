@@ -124,12 +124,27 @@ public class CommandInstance
     }
 }
 
-public struct CommandProperties
+[Serializable] public class CommandMetaProperties
 {
-    [JsonPropertyName("name")] public string Name;
-    [JsonPropertyName("alias")] public List<string> CommandAlias;
-    [JsonPropertyName("description")] public string? CommandDescription;
-    [JsonPropertyName("short_description")] public string? CommandShortDescription;
-    [JsonPropertyName("usage")] public string? CommandUsage;
-    [JsonPropertyName("example")] public string? CommandExample;
+    [JsonPropertyName("name")] public string Name { get; set; } = "";
+    [JsonPropertyName("alias")] public List<string> CommandAlias { get; set; } = [];
+    [JsonPropertyName("description")] public string? CommandDescription { get; set; } = null;
+    [JsonPropertyName("short_description")] public string? CommandShortDescription { get; set; } = null;
+    [JsonPropertyName("usage")] public string? CommandUsage { get; set; } = null;
+    [JsonPropertyName("example")] public string? CommandExample { get; set; } = null;
+}
+[Serializable] public class PluginMetaProperties : IEquatable<PluginMetaProperties>
+{
+    [JsonPropertyName("name")] public string Name { get; set; } = "";
+    [JsonPropertyName("description")] public string Description { get; set; } = "";
+    [JsonPropertyName("entry_file")] public string EntryFile { get; set; } = "";
+    [JsonPropertyName("entry_point")] public string? EntryPoint{ get; set; } = null;
+    [JsonIgnore] public object? Instance;
+
+    public bool Equals(PluginMetaProperties? other)
+    {
+        return Name == other?.Name &&
+               Description == other.Description &&
+               EntryFile == other.EntryFile;
+    }
 }

@@ -1,34 +1,41 @@
 ﻿using System.Text;
-using UndefinedBot.Core.Command;
+using System.Reflection;
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 using UndefinedBot.Core.Utils;
-using UndefinedBot.Net.Utils;
+using UndefinedBot.Net.NetWork;
 
 namespace UndefinedBot.Net;
 
 internal class Program
 {
-    private static readonly GeneralLogger s_mainGeneralLogger = new("Program");
-
     private static readonly string s_programRoot = Environment.CurrentDirectory;
 
     private static readonly string s_programCache = Path.Join(s_programRoot, "Cache");
-
-    private static readonly HttpServer s_httpServer = new(new ConfigManager().GetHttpServerUrl());
-
-    private static List<PluginProperties> s_pluginReference = [];
-
-    private static Dictionary<string, CommandProperties> s_commandReference = [];
-    static void Main(string[] args)
+    static async Task Main(string[] args)
     {
         Console.OutputEncoding = Encoding.UTF8;
         Console.InputEncoding = Encoding.UTF8;
-        s_pluginReference = Initializer.LoadPlugins();
-        s_commandReference = Initializer.GetCommandReference();
-        FileIO.WriteAsJson(Path.Join(s_programRoot, "plugin_reference.json"),s_pluginReference);
-        FileIO.WriteAsJson(Path.Join(s_programRoot, "command_reference.json"), s_commandReference);
-        s_mainGeneralLogger.Info("Bot Launched");
-        Task.Run(s_httpServer.Start);
-        //CommandHandler.Trigger(new CallingProperty("test",0,0,0,"",0),["308","166.6"]);
+        FileIO.EnsurePath(s_programCache);
+        if (!File.Exists("AppSettings.json"))
+        {
+            Console.WriteLine("No exist config file, create it now...");
+            Stream resStream = Assembly.GetExecutingAssembly().GetManifestResourceStream("UndefinedBot.Net.AppSettings.json")!;
+            FileStream tempStream = File.Create("AppSettings.json");
+            await resStream.CopyToAsync(tempStream);
+            resStream.Close();
+            tempStream.Close();
+            Console.WriteLine("Please Edit the AppSettings.json.json to set configs");
+            return;
+        }
+        HostApplicationBuilder undefinedAppBuilder = new (args);
+        undefinedAppBuilder.Configuration.AddJsonFile("AppSettings.json", false, true);
+        undefinedAppBuilder.Configuration.AddEnvironmentVariables();
+        undefinedAppBuilder.Services.AddSingleton<NetworkServiceCollection>();
+        undefinedAppBuilder.Services.AddScoped<HttpServer>();
+        UndefinedApp undefinedApp = new (undefinedAppBuilder.Build());
+        undefinedApp.Start();
         while (true)
         {
             string tempString = Console.ReadLine() ?? "";
@@ -36,12 +43,9 @@ internal class Program
             {
                 continue;
             }
-
-            s_httpServer.Stop();
+            await undefinedApp.StopAsync();
             break;
         }
-        s_mainGeneralLogger.Info("Bot Closed");
-        Console.ReadKey();
     }
     public static string GetProgramRoot()
     {

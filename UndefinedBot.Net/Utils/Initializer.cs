@@ -1,5 +1,4 @@
 ﻿using System.Reflection;
-using System.Text.Json.Serialization;
 using UndefinedBot.Core.Utils;
 using UndefinedBot.Core.Command;
 
@@ -7,11 +6,14 @@ namespace UndefinedBot.Net.Utils;
 
 internal abstract class Initializer
 {
+    private static readonly PluginMetaProperties s_defaultPluginMeta = new();
+    private static readonly CommandMetaProperties s_defaultCommandMeta = new();
     private static readonly string s_pluginRoot = Path.Join(Program.GetProgramRoot(),"Plugins");
 
     private static readonly GeneralLogger s_initLogger = new("Initialize");
-    internal static List<PluginProperties> LoadPlugins()
+    internal static List<PluginMetaProperties> LoadPlugins()
     {
+        s_initLogger.Info("Start Loading Plugins");
         if (!Directory.Exists(s_pluginRoot))
         {
             Directory.CreateDirectory(s_pluginRoot);
@@ -19,7 +21,7 @@ internal abstract class Initializer
         }
 
         string[] pluginFolders = Directory.GetDirectories(s_pluginRoot);
-        List<PluginProperties> pluginRef = [];
+        List<PluginMetaProperties> pluginRef = [];
         foreach (string pf in pluginFolders)
         {
             string pluginPropFile = Path.Join(pf, "plugin.json");
@@ -29,14 +31,14 @@ internal abstract class Initializer
                 continue;
             }
 
-            PluginProperties pluginProperties = FileIO.ReadAsJson<PluginProperties>(pluginPropFile);
-            if (!pluginProperties.Equals(default))
+            PluginMetaProperties? pluginMetaProperties = FileIO.ReadAsJson<PluginMetaProperties>(pluginPropFile);
+            if (pluginMetaProperties == null || pluginMetaProperties.Equals(s_defaultPluginMeta))
             {
                 s_initLogger.Warn($"Plugin: <{pf}> Invalid plugin.json");
                 continue;
             }
 
-            string entryFile = Path.Join(pf, pluginProperties.EntryFile);
+            string entryFile = Path.Join(pf, pluginMetaProperties.EntryFile);
             if (!File.Exists(entryFile))
             {
                 s_initLogger.Warn($"Plugin: <{pf}> EntryFile: <{entryFile}> Not Found");
@@ -44,18 +46,17 @@ internal abstract class Initializer
             }
 
             FileIO.SafeDeleteFile(pluginUcFile);
-            string pluginCachePath = Path.Join(Program.GetProgramCache(), pluginProperties.Name);
+            string pluginCachePath = Path.Join(Program.GetProgramCache(), pluginMetaProperties.Name);
             FileIO.EnsurePath(pluginCachePath);
             foreach (string cf in Directory.GetFiles(pluginCachePath))
             {
                 FileIO.SafeDeleteFile(cf);
             }
-
-            object? pInstance = CreatePluginInstance(entryFile, pluginProperties.Name);
+            object? pInstance = CreatePluginInstance(entryFile, pluginMetaProperties.Name);
             if (pInstance != null)
             {
-                pluginProperties.Instance = pInstance;
-                pluginRef.Add(pluginProperties);
+                pluginMetaProperties.Instance = pInstance;
+                pluginRef.Add(pluginMetaProperties);
             }
             else
             {
@@ -64,17 +65,18 @@ internal abstract class Initializer
         }
         return pluginRef;
     }
-    public static Dictionary<string, CommandProperties> GetCommandReference()
+    public static Dictionary<string, CommandMetaProperties> GetCommandReference()
     {
+        s_initLogger.Info("Extracting Command References");
         if (!FileIO.EnsurePath(Path.Join(Program.GetProgramRoot(), "CommandReference")))
         {
             throw new TargetException("CommandReference Not Exist");
         }
         return Directory
             .GetFiles(Path.Join(Program.GetProgramRoot(),"CommandReference"))
-            .Select(cfp => FileIO.ReadAsJson<List<CommandProperties>>(cfp) ?? [])
+            .Select(cfp => FileIO.ReadAsJson<List<CommandMetaProperties>>(cfp) ?? [])
             .SelectMany(item => item)
-            .Where(item => !item.Equals(default(CommandProperties)))
+            .Where(item => !item.Equals(s_defaultCommandMeta))
             .ToDictionary(item => item.Name, item => item);
     }
     private static object? CreatePluginInstance(string pluginDllPath, string pluginName)
@@ -98,21 +100,5 @@ internal abstract class Initializer
         {
             return null;
         }
-    }
-}
-internal struct PluginProperties : IEquatable<PluginProperties>
-{
-    [JsonPropertyName("name")] public string Name;
-    [JsonPropertyName("description")] public string Description;
-    [JsonPropertyName("entry_file")] public string EntryFile;
-    [JsonPropertyName("entry_point")] public string? EntryPoint;
-    [JsonIgnore] public object? Instance;
-    [JsonIgnore] private static PluginProperties _defaultValue = default;
-
-    public bool Equals(PluginProperties other)
-    {
-        return Name == other.Name &&
-               Description == other.Description &&
-               EntryFile == other.EntryFile;
     }
 }

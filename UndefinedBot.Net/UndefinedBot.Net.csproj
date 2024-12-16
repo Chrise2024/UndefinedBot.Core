@@ -13,5 +13,11 @@
   <ItemGroup>
       <ProjectReference Include="..\UndefinedBot.Core\UndefinedBot.Core.csproj" />
   </ItemGroup>
+  <ItemGroup>
+    <None Remove="AppSettings.json" />
+    <EmbeddedResource Include="AppSettings.json">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </EmbeddedResource>
+  </ItemGroup>
 
 </Project>

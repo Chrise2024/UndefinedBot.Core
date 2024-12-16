@@ -14,10 +14,10 @@ public delegate Task CommandEventHandler(CallingProperty cp,List<ParsedToken> to
  */
 internal abstract class CommandHandler
 {
-    private static readonly List<long> s_workGroup = new ConfigManager().GetGroupList();
+    private static readonly List<long> s_workGroup =ConfigManager.GetGroupList();
 
     private static readonly GeneralLogger s_commandHandlerLogger = new("MsgHandler");
-    private static readonly JsonSerializerOptions s_jsonOption = new(){ WriteIndented = true };
+    private static readonly JsonSerializerOptions s_serializerOptions = new() { WriteIndented = true };
     internal static event CommandEventHandler? CommandEvent;
     public static void HandleMsg(JsonNode msgJson)
     {
@@ -26,28 +26,29 @@ internal abstract class CommandHandler
             return;
         }
 
-        MsgBody msgBody = msgJson.Deserialize<MsgBody>();
-        (string? cmdName, List<ParsedToken> tokens) = CommandResolver.Tokenize(msgBody.RawMessage ?? "");
-        if (cmdName == null)
+        MsgBody? msgBody = msgJson.Deserialize<MsgBody>();
+        (string? cmdName, List<ParsedToken> tokens) = CommandResolver.Tokenize(msgBody?.RawMessage ?? "");
+        if (msgBody == null || cmdName == null)
         {
             return;
         }
 
-        CallingProperty cp = new(
-            cmdName,
-            msgBody.UserId,
-            msgBody.GroupId,
-            msgBody.MessageId,
-            msgBody.SubType switch
+        CallingProperty cp = new()
+        {
+            Command = cmdName,
+            CallerUin = msgBody.UserId,
+            GroupId = msgBody.GroupId,
+            MsgId = msgBody.MessageId,
+            SubType = msgBody.SubType switch
             {
                 "friend" => MessageSubType.Friend,
                 "group" => MessageSubType.Group,
                 _ => MessageSubType.Other,
             },
-            msgBody.Time
-        );
+            Time = msgBody.Time
+        };
         s_commandHandlerLogger.Info("Executing...\nProperties:");
-        s_commandHandlerLogger.Info(JsonSerializer.Serialize(cp, s_jsonOption));
+        s_commandHandlerLogger.Info(JsonSerializer.Serialize(cp, s_serializerOptions));
         s_commandHandlerLogger.Info("Tokens:");
         s_commandHandlerLogger.Info(JsonSerializer.Serialize(tokens));
         CommandEvent?.Invoke(cp,tokens);
@@ -66,27 +67,28 @@ internal abstract class CommandHandler
                             s_workGroup.Contains(gid));
     }
 }
-public struct MsgSender
+
+[Serializable] public class MsgSender
 {
-    [JsonPropertyName("user_id")] public long UserId;
-    [JsonPropertyName("nickname")] public string Nickname;
-    [JsonPropertyName("sex")] public string Sex;
-    [JsonPropertyName("age")] public int Age;
+    [JsonPropertyName("user_id")] public long UserId { get; set; } = 0;
+    [JsonPropertyName("nickname")] public string Nickname { get; set; } = "";
+    [JsonPropertyName("sex")] public string Sex { get; set; } = "";
+    [JsonPropertyName("age")] public int Age { get; set; } = 0;
 }
-public struct MsgBody
+[Serializable]  public class MsgBody
 {
-    [JsonPropertyName("time")] public long Time;
-    [JsonPropertyName("self_id")] public long SelfId;
-    [JsonPropertyName("post_type")] public string PostType;
-    [JsonPropertyName("message_type")] public string MessageType;
-    [JsonPropertyName("sub_type")] public string SubType;
-    [JsonPropertyName("message_id")] public int MessageId;
-    [JsonPropertyName("group_id")] public long GroupId;
-    [JsonPropertyName("user_id")] public long UserId;
-    [JsonPropertyName("message")] public List<JsonNode> Message;
-    [JsonPropertyName("raw_message")] public string RawMessage;
-    [JsonPropertyName("font")] public int Font;
-    [JsonPropertyName("sender")] public MsgSender Sender;
+    [JsonPropertyName("time")] public long Time { get; set; } = 0;
+    [JsonPropertyName("self_id")] public long SelfId { get; set; } = 0;
+    [JsonPropertyName("post_type")] public string PostType { get; set; } = "";
+    [JsonPropertyName("message_type")] public string MessageType { get; set; } = "";
+    [JsonPropertyName("sub_type")] public string SubType { get; set; } = "";
+    [JsonPropertyName("message_id")] public int MessageId { get; set; } = 0;
+    [JsonPropertyName("group_id")] public long GroupId { get; set; } = 0;
+    [JsonPropertyName("user_id")] public long UserId { get; set; } = 0;
+    [JsonPropertyName("message")] public List<JsonNode> Message { get; set; } = [];
+    [JsonPropertyName("raw_message")] public string RawMessage { get; set; } = "";
+    [JsonPropertyName("font")] public int Font { get; set; } = 0;
+    [JsonPropertyName("sender")] public MsgSender Sender { get; set; } = new();
 }
 public enum MessageSubType
 {

@@ -1,86 +1,79 @@
-﻿using System.Text.Json.Serialization;
-
+﻿
 namespace UndefinedBot.Core.Utils;
 
-public class ConfigManager
+public class HttpServiceOptions
 {
-
-    private readonly string _configPath = Path.Join(Environment.CurrentDirectory, "config.json");
-
-    private readonly Config _config;
-
-    private readonly Config _defaultConfig = new();
-
-    /*
-     * 8087为Bot上报消息的Url，即当前程序开启的Http Server地址
-     * 8085为Bot接收Http请求的Url，即当前程序发送Http请求的地址
-     */
-
-    public ConfigManager()
+    public HttpServiceOptions(string host, string port, string? accessToken = null)
     {
-        if (File.Exists(_configPath))
+        if (!uint.TryParse(port, out uint numberPort) || numberPort is <= 1023 or >= 65536)
         {
-            Config rConfig = FileIO.ReadAsJson<Config>(_configPath);
-            if (rConfig.Equals(default(Config)))
-            {
-                _config = _defaultConfig;
-                FileIO.WriteAsJson(_configPath, _defaultConfig);
-            }
-            else
-            {
-                _config = rConfig;
-            }
+            throw new ArgumentException($"Invalid Port: {port}");
         }
-        else
+
+        Host = host;
+        Port = numberPort;
+        AccessToken = accessToken;
+    }
+    public HttpServiceOptions(string host, uint port, string? accessToken = null)
+    {
+        if (port < 1023)
         {
-            FileIO.WriteAsJson(_configPath, _defaultConfig);
-            _config = _defaultConfig;
+            throw new ArgumentException($"Invalid Port: {port}");
         }
+        Host = host;
+        Port = port;
+        AccessToken = accessToken;
     }
-
-    public string GetHttpServerUrl()
+    public HttpServiceOptions()
     {
-        return _config.HttpServerUrl;
+        Host = "";
+        Port = 16384;
+        AccessToken = null;
     }
-
-    public string GetHttpPostUrl()
-    {
-        return _config.HttpPostUrl;
-    }
-
-    public List<long> GetGroupList()
-    {
-        return _config.GroupId;
-    }
-
-    public string GetCommandPrefix()
-    {
-        return _config.CommandPrefix;
-    }
-
-    public Config GetConfig()
-    {
-        return _config;
-    }
+    public string Host { get; }
+    public uint Port { get; }
+    public string? AccessToken { get; }
 }
 
-public readonly struct Config(
-    string httpServerUrl = "",
-    string httpPostUrl = "",
-    List<long>? groupId = null,
-    string commandPrefix = "!"
-) : IEquatable<Config>
+public abstract class ConfigManager
 {
-    [JsonPropertyName("http_server_url")] public readonly string HttpServerUrl = httpServerUrl;
-    [JsonPropertyName("http_post_url")] public readonly string HttpPostUrl = httpPostUrl;
-    [JsonPropertyName("group_id")] public readonly List<long> GroupId = groupId ?? [];
-    [JsonPropertyName("command_prefix")] public readonly string CommandPrefix = commandPrefix;
+    private static Config s_configData = new();
 
-    public bool Equals(Config other)
+    //private static Config InitConfig(Config initData) => initData;
+    // {
+    //     return FileIO.ReadAsJson<Config>(s_configPath)!;
+    // }
+    public static void InitConfig(Config initData)
     {
-        return HttpPostUrl == other.HttpPostUrl &&
-               HttpServerUrl == other.HttpServerUrl &&
-               GroupId.Count == other.GroupId.Count &&
-               CommandPrefix == other.CommandPrefix;
+        s_configData = initData;
     }
+
+    public static string GetHttpServerUrl() => $"http://{s_configData.HttpServer.Host}:{s_configData.HttpServer.Port}/";
+
+    public static string GetHttpPostUrl() => $"http://{s_configData.HttpPost.Host}:{s_configData.HttpPost.Port}";
+
+    public static List<long> GetGroupList()
+    {
+        return s_configData.GroupId;
+    }
+
+    public static string GetCommandPrefix()
+    {
+        return s_configData.CommandPrefix;
+    }
+
+    public static Config GetConfig()
+    {
+        return s_configData;
+    }
+}
+[Serializable] public class Config
+{
+    public HttpServiceOptions HttpServer { get; set; } = new HttpServiceOptions("",16384);
+    public HttpServiceOptions HttpPost { get; set; } = new HttpServiceOptions("",16384);
+    public List<long> GroupId { get; set; } = [];
+    public string CommandPrefix { get; set; } = "!";
+    public string GetHttpServerUrl() => $"http://{HttpServer.Host}:{HttpServer.Port}/";
+    public string GetHttpPostUrl() => $"http://{HttpPost.Host}:{HttpPost.Port}";
+
 }

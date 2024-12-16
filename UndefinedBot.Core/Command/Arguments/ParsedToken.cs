@@ -1,10 +1,10 @@
 ﻿
 namespace UndefinedBot.Core.Command.Arguments;
 
-public struct ParsedToken(RawTokenTypes tokenType, string content)
+[Serializable] public class ParsedToken
 {
-    public readonly RawTokenTypes TokenType = tokenType;
-    public readonly string Content = content;
+    public RawTokenTypes TokenType { get; set; } = RawTokenTypes.NormalContent;
+    public string Content { get; set; } = "";
 }
 
 public enum RawTokenTypes

@@ -16,13 +16,13 @@ public class HelpCommand
 
     private readonly string _commandPrefix;
 
-    private Dictionary<string, CommandProperties> _commandReference = [];
+    private Dictionary<string, CommandMetaProperties> _commandReference = [];
 
     public HelpCommand(string pluginName)
     {
         _undefinedApi = new(pluginName);
         _pluginName = pluginName;
-        _commandPrefix = _undefinedApi.Config.CommandPrefix;
+        _commandPrefix = _undefinedApi.ConfigData.CommandPrefix;
         _undefinedApi.RegisterCommand("help")
             .Description("指令帮助文档")
             .ShortDescription("帮助")
@@ -33,7 +33,7 @@ public class HelpCommand
                 if (_commandReference.Count == 0)
                 {
                     _commandReference =
-                        JsonSerializer.Deserialize<Dictionary<string,CommandProperties>>(
+                        JsonSerializer.Deserialize<Dictionary<string,CommandMetaProperties>>(
                             File.ReadAllText(Path.Join(ctx.RootPath, "command_reference.json"))) ?? [];
                 }
 
@@ -60,12 +60,12 @@ public class HelpCommand
                     if (_commandReference.Count == 0)
                     {
                         _commandReference =
-                            JsonSerializer.Deserialize<Dictionary<string,CommandProperties>>(
+                            JsonSerializer.Deserialize<Dictionary<string,CommandMetaProperties>>(
                                 File.ReadAllText(Path.Join(ctx.RootPath, "command_reference.json"))) ?? [];
                     }
 
                     string cmd = StringArgument.GetString("cmd", ctx);
-                    if (_commandReference.TryGetValue(cmd, out CommandProperties prop))
+                    if (_commandReference.TryGetValue(cmd, out CommandMetaProperties prop))
                     {
                         string? desc = prop.CommandDescription;
                         string? ug = prop.CommandUsage;

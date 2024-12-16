@@ -31,10 +31,10 @@ internal abstract class Core
 {
     private static readonly string s_programRoot = Environment.CurrentDirectory;
 
-    private static readonly ConfigManager s_mainConfigManager = new();
-    public static ConfigManager GetConfigManager()
+    private static readonly Config s_mainConfigDataData = ConfigManager.GetConfig();
+    public static Config GetConfigData()
     {
-        return s_mainConfigManager;
+        return s_mainConfigDataData;
     }
     public static string GetCoreRoot()
     {
@@ -48,7 +48,7 @@ public class UndefinedApi
     public readonly GeneralLogger Logger;
     public readonly HttpApi Api;
     public readonly HttpRequest Request;
-    public readonly Config Config;
+    public readonly Config ConfigData;
     public readonly string RootPath;
     public readonly string CachePath;
     public readonly CommandFinishEvent FinishEvent;
@@ -60,8 +60,8 @@ public class UndefinedApi
         //Plugin call core sdk assembly
         PluginPath = Path.GetDirectoryName(Assembly.GetCallingAssembly().Location) ?? throw new DllNotFoundException("Get Plugin Assembly Failed");
         Logger = new(pluginName);
-        Config = new ConfigManager().GetConfig();
-        Api = new(Config.HttpPostUrl);
+        ConfigData = ConfigManager.GetConfig();
+        Api = new(ConfigData.GetHttpPostUrl());
         Request = new();
         RootPath = Environment.CurrentDirectory;
         CachePath = Path.Join(RootPath, "Cache", pluginName);

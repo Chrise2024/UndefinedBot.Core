@@ -5,8 +5,7 @@ using UndefinedBot.Core.Command.Arguments.ArgumentType;
 
 namespace UndefinedBot.Core.Test;
 
-[Plugin]
-public class TestCommand
+[Plugin] public class TestCommand
 {
     private readonly UndefinedApi _undefinedApi;
     private readonly string _pluginName;

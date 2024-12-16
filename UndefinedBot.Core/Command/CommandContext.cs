@@ -17,7 +17,7 @@ public class CommandContext(string commandName,UndefinedApi baseApi,CallingPrope
     public readonly CallingProperty CallingProperties = cp;
     internal readonly Dictionary<string, ParsedToken> _argumentReference = [];
     public readonly CommandLogger Logger = new(baseApi.PluginName,commandName);
-    public readonly Config Config = baseApi.Config;
+    public readonly Config ConfigData = baseApi.ConfigData;
     public readonly CacheManager Cache = baseApi.Cache;
     public readonly HttpRequest Request = baseApi.Request;
     public readonly HttpApi Api = baseApi.Api;

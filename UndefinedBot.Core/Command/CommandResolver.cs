@@ -6,7 +6,7 @@ namespace UndefinedBot.Core.Command;
 
 internal abstract partial class CommandResolver
 {
-    private static readonly string s_commandPrefix = new ConfigManager().GetCommandPrefix();
+    private static readonly string s_commandPrefix = ConfigManager.GetCommandPrefix();
 
     /// <summary>
     /// Split message into tokens
@@ -39,8 +39,8 @@ internal abstract partial class CommandResolver
             .Split(" ", StringSplitOptions.RemoveEmptyEntries)
             .Select(item =>
                 item.StartsWith("\r0CQ[")
-                    ? new ParsedToken(RawTokenTypes.CqCodeContent, item[4..])
-                    : new ParsedToken(RawTokenTypes.NormalContent, item)
+                    ? new ParsedToken{TokenType = RawTokenTypes.CqCodeContent,Content = item[4..]}
+                    : new ParsedToken{TokenType = RawTokenTypes.NormalContent,Content = item}
             ).ToList();
     }
     public static CqEntity DecodeCqEntity(string cqEntityString)
@@ -62,21 +62,14 @@ internal abstract partial class CommandResolver
     [GeneratedRegex(@"\[CQ:\S+\]")]
     private static partial Regex GetCqEntityRegex();
 }
-public readonly struct CallingProperty(
-    string command,
-    long callerUin,
-    long groupId,
-    int msgId,
-    MessageSubType subType,
-    long time
-)
+[Serializable] public class CallingProperty
 {
-    public readonly string Command = command;
-    public readonly long CallerUin = callerUin;
-    public readonly long GroupId = groupId;
-    public readonly int MsgId = msgId;
-    public readonly MessageSubType SubType = subType;
-    public readonly long Time = time;
+    public string Command { get; set; } = "";
+    public long CallerUin { get; set; }
+    public long GroupId { get; set; }
+    public int MsgId { get; set; }
+    public MessageSubType SubType { get; set; } = MessageSubType.Group;
+    public long Time { get; set; }
 }
 public readonly struct CqEntity(string cqType,Dictionary<string, string> properties)
 {

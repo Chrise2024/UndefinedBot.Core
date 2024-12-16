@@ -57,7 +57,7 @@ public class HttpApi([StringSyntax("Uri")]string httpPostUrl)
     /// </summary>
     /// <param name="msgId">Message Id of Message to get</param>
     /// <returns>MsgBody</returns>
-    public async Task<MsgBody> GetMsg(object msgId)
+    public async Task<MsgBody?> GetMsg(object msgId)
     {
         return await ApiPostRequestWithResponse<MsgBody>("/get_msg", new
         {
@@ -71,7 +71,7 @@ public class HttpApi([StringSyntax("Uri")]string httpPostUrl)
     /// <param name="targetGroupId">Group Id</param>
     /// <param name="targetUin">User Id to get</param>
     /// <returns>GroupMember</returns>
-    public async Task<GroupMember> GetGroupMember(object targetGroupId, object targetUin)
+    public async Task<GroupMember?> GetGroupMember(object targetGroupId, object targetUin)
     {
         return await ApiPostRequestWithResponse<GroupMember>("/get_group_member_info", new
         {
@@ -96,7 +96,7 @@ public class HttpApi([StringSyntax("Uri")]string httpPostUrl)
     }
     public async Task<bool> CheckUin(long targetGroupId, long targetUin)
     {
-        return ((await GetGroupMember(targetGroupId, targetUin)).GroupId ?? 0) != 0;
+        return ((await GetGroupMember(targetGroupId, targetUin))?.GroupId ?? 0)  != 0;
     }
     private async Task<T?> ApiPostRequestWithResponse<T>(string subUrl, object? content = null)
     {
@@ -152,21 +152,22 @@ public class HttpApi([StringSyntax("Uri")]string httpPostUrl)
         _httpApiLogger.Error(ex.StackTrace ?? "");
     }
 }
-public struct GroupMember
+
+[Serializable] public class GroupMember
 {
-    [JsonPropertyName("group_id")] public long? GroupId;
-    [JsonPropertyName("user_id")] public long? UserId;
-    [JsonPropertyName("nickname")] public string? Nickname;
-    [JsonPropertyName("card")] public string? Card;
-    [JsonPropertyName("sex")] public string? Sex;
-    [JsonPropertyName("age")] public int? Age;
-    [JsonPropertyName("area")] public string? Area;
-    [JsonPropertyName("join_time")] public int? JoinTime;
-    [JsonPropertyName("last_sent_time")] public int? LastSentTime;
-    [JsonPropertyName("level")] public string? Level;
-    [JsonPropertyName("role")] public string? Role;
-    [JsonPropertyName("unfriendly")] public bool? Unfriendly;
-    [JsonPropertyName("title")] public string? Title;
-    [JsonPropertyName("title_expire_time")] public int? TitleExpireTime;
-    [JsonPropertyName("card_changeable")] public bool? CardChangeable;
+    [JsonPropertyName("group_id")] public long GroupId { get; set; } = 0;
+    [JsonPropertyName("user_id")] public long UserId { get; set; } = 0;
+    [JsonPropertyName("nickname")] public string Nickname { get; set; } = "";
+    [JsonPropertyName("card")] public string Card { get; set; } = "";
+    [JsonPropertyName("sex")] public string Sex { get; set; } = "";
+    [JsonPropertyName("age")] public int Age { get; set; } = 0;
+    [JsonPropertyName("area")] public string Area { get; set; } = "";
+    [JsonPropertyName("join_time")] public int JoinTime { get; set; } = 0;
+    [JsonPropertyName("last_sent_time")] public int LastSentTime { get; set; } = 0;
+    [JsonPropertyName("level")] public string Level { get; set; } = "";
+    [JsonPropertyName("role")] public string Role { get; set; } = "member";
+    [JsonPropertyName("unfriendly")] public bool Unfriendly { get; set; } = false;
+    [JsonPropertyName("title")] public string Title { get; set; } = "";
+    [JsonPropertyName("title_expire_time")] public int TitleExpireTime { get; set; } = 0;
+    [JsonPropertyName("card_changeable")] public bool CardChangeable { get; set; } = true;
 }

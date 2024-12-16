@@ -5,7 +5,7 @@ namespace UndefinedBot.Core.Utils;
 
 internal abstract class FileIO
 {
-    private static readonly JsonSerializerOptions s_jsonOption = new(){ WriteIndented = true };
+    private static readonly JsonSerializerOptions s_serializerOptio = new(){ WriteIndented = true };
     public static bool EnsurePath(string? tPath)
     {
         if (tPath == null)
@@ -135,6 +135,6 @@ internal abstract class FileIO
     public static void WriteAsJson<T>(string tPath, T content)
     {
         EnsureFile(tPath);
-        WriteFile(tPath, JsonSerializer.Serialize(content, s_jsonOption));
+        WriteFile(tPath, JsonSerializer.Serialize(content, s_serializerOptio));
     }
 }
