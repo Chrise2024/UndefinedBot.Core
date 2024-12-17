@@ -4,35 +4,7 @@ UndefinedBot is a modularity QQ Bot based on .Net8.0 OneBot11.
 
 In developing commands: [https://github.com/Chrise2024/UndefinedBot.Command](https://github.com/Chrise2024/UndefinedBot.Command)
 
-## Plugins Loading
-
-### Plugin
-
-- Plugins are developing with `UndefinedBot.Core` on Nuget.
-
-## What happened in loading plugins
-
-- Main program start
-
-- `Initializer.LoadPlugins()` is called
-
-- `LoadPlugins()` will read `plugin.json` in plugin folder in `./Plugins` and get plugin's meta data
-
-- load plugin assembly and create plugin instance accroding to plugin's meta data
-
-- commands in plugin will be registered,creating command instance and generate command reference
-
-- return plugin reference(including meta data and instance) to main program
-
-- `Initializer.GetCommandReference()` is called
-
-- `GetCommandReference()` will collect command reference and store them in program directory
-
-- Start to Listen to http port
-
-- Bot Launched
-
-## Conbrtibuting
+## Contributing
 
 ### Prerequisites
 
