@@ -15,7 +15,7 @@ public class UinArgument(IArgumentRange? range = null) : IArgumentType
     public object GetValue(ParsedToken token) => GetExactTypeValue(token);
     public static QUin GetQUin(string key,CommandContext ctx)
     {
-        if (ctx._argumentReference.TryGetValue(key, out ParsedToken token))
+        if (ctx._argumentReference.TryGetValue(key, out ParsedToken? token))
         {
 
             return GetExactTypeValue(token);
