@@ -16,7 +16,7 @@ public class PosIntArgument(IArgumentRange? range = null) : IArgumentType
     public object GetValue(ParsedToken token) => GetExactTypeValue(token);
     public static ulong GetPosInt(string key,CommandContext ctx)
     {
-        if (ctx._argumentReference.TryGetValue(key, out ParsedToken token))
+        if (ctx._argumentReference.TryGetValue(key, out ParsedToken? token))
         {
             return GetExactTypeValue(token);
         }
