@@ -39,8 +39,8 @@ internal abstract partial class CommandResolver
             .Split(" ", StringSplitOptions.RemoveEmptyEntries)
             .Select(item =>
                 item.StartsWith("\r0CQ[")
-                    ? new ParsedToken{TokenType = RawTokenTypes.CqCodeContent,Content = item[4..]}
-                    : new ParsedToken{TokenType = RawTokenTypes.NormalContent,Content = item}
+                    ? ParsedToken.CreateCqToken(item[4..])
+                    : ParsedToken.CreateNormalToken(item)
             ).ToList();
     }
     public static CqEntity DecodeCqEntity(string cqEntityString)

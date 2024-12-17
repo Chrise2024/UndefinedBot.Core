@@ -25,11 +25,13 @@ public class UndefinedApp(IHost host) : IHost
 
     private Dictionary<string, CommandMetaProperties> _commandReference = [];
 
+    private Dictionary<string, CommandInstance> _commandInstance = [];
+
     private readonly JsonSerializerOptions _serializerOptions = new() { WriteIndented = true,IndentSize = 4 };
 
     public async Task StartAsync(CancellationToken cancellationToken = new())
     {
-        LogEventBus.CoreLogEvent += (nameSpace, subSpace, undefinedLogLevel, message) =>
+        LogEventBus.RegisterLogEventHandler((nameSpace, subSpace, undefinedLogLevel, message) =>
         {
             Services.GetRequiredService<ILogger<UndefinedApp>>().Log(undefinedLogLevel switch
             {
@@ -43,7 +45,7 @@ public class UndefinedApp(IHost host) : IHost
                 _ => LogLevel.Error,
             },
             $"[{DateTime.Now:yyyy-MM-dd HH:mm:ss}] [{nameSpace}] [{subSpace}] [{undefinedLogLevel.ToString()}] {message}");
-        };
+        });
         ConfigManager.InitConfig(new Config
         {
             HttpServer = new HttpServiceOptions(Configuration["HttpServer:Host"]!,Configuration["HttpServer:Port"]!,Configuration["HttpServer:AccessToken"]!),
@@ -51,20 +53,30 @@ public class UndefinedApp(IHost host) : IHost
             GroupId = Configuration.GetSection("GroupId").GetChildren().Select(child => long.Parse(child.Value!)).ToList(),
             CommandPrefix = Configuration["CommandPrefix"]!
         });
-        await HostApp.StartAsync(cancellationToken);
-        await NetworkService.StartAsync(cancellationToken);
-        Logger.LogInformation("UndefinedBot.Net Implementation has started");
-        _pluginReference = Initializer.LoadPlugins();
+
+        (_pluginReference,_commandInstance) = Initializer.LoadPlugins();
+
         _commandReference = Initializer.GetCommandReference();
+
         FileIO.WriteAsJson(Path.Join(_programRoot, "plugin_reference.json"),_pluginReference);
+
         FileIO.WriteAsJson(Path.Join(_programRoot, "command_reference.json"), _commandReference);
+
+        await HostApp.StartAsync(cancellationToken);
+
+        await NetworkService.StartAsync(cancellationToken);
+
+        Logger.LogInformation("UndefinedBot.Net Implementation has started");
+
         Logger.LogInformation($"Loaded Plugins:{JsonSerializer.Serialize(_pluginReference.Select(item => item.Name),_serializerOptions)}");
     }
 
     public async Task StopAsync(CancellationToken cancellationToken = new())
     {
         await HostApp.StopAsync(cancellationToken);
+
         await NetworkService.StopAsync(cancellationToken);
+
         Logger.LogInformation("UndefinedBot.Net Implementation has stopped");
     }
     public void Dispose()

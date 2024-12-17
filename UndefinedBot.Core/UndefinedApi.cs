@@ -25,53 +25,23 @@ public class CommandFinishEvent
 
 [AttributeUsage(AttributeTargets.Class, AllowMultiple = true)]
 public sealed class PluginAttribute : Attribute;
-
-[Obsolete("wasted",true)]
-internal abstract class Core
+public class UndefinedApi(string pluginName)
 {
-    private static readonly string s_programRoot = Environment.CurrentDirectory;
-
-    private static readonly Config s_mainConfigDataData = ConfigManager.GetConfig();
-    public static Config GetConfigData()
-    {
-        return s_mainConfigDataData;
-    }
-    public static string GetCoreRoot()
-    {
-        return s_programRoot;
-    }
-}
-public class UndefinedApi
-{
-    public readonly string PluginName;
-    public readonly string PluginPath;
-    public readonly GeneralLogger Logger;
-    public readonly HttpApi Api;
-    public readonly HttpRequest Request;
-    public readonly Config ConfigData;
-    public readonly string RootPath;
-    public readonly string CachePath;
-    public readonly CommandFinishEvent FinishEvent;
-    public readonly CacheManager Cache;
-    private readonly List<CommandInstance> _commandInstances = [];
-    public UndefinedApi(string pluginName)
-    {
-        PluginName = pluginName;
-        //Plugin call core sdk assembly
-        PluginPath = Path.GetDirectoryName(Assembly.GetCallingAssembly().Location) ?? throw new DllNotFoundException("Get Plugin Assembly Failed");
-        Logger = new(pluginName);
-        ConfigData = ConfigManager.GetConfig();
-        Api = new(ConfigData.GetHttpPostUrl());
-        Request = new();
-        RootPath = Environment.CurrentDirectory;
-        CachePath = Path.Join(RootPath, "Cache", pluginName);
-        FinishEvent = new();
-        Cache = new(pluginName, CachePath, FinishEvent);
-    }
+    public  string PluginName => pluginName;
+    public string RootPath => Environment.CurrentDirectory;
+    public string PluginPath => Path.GetDirectoryName(Assembly.GetCallingAssembly().Location) ?? throw new DllNotFoundException("Get Plugin Assembly Failed");
+    public string CachePath => Path.Join(RootPath, "Cache", pluginName);
+    public GeneralLogger Logger => new(pluginName);
+    public HttpApi Api => new(ConfigData.GetHttpPostUrl());
+    public HttpRequest Request => new();
+    public Config ConfigData => ConfigManager.GetConfig();
+    public CommandFinishEvent FinishEvent => new();
+    public CacheManager Cache => new(pluginName, CachePath, FinishEvent);
+    internal readonly List<CommandInstance> _commandInstances = [];
     /// <summary>
     /// Submit Command After Register
     /// </summary>
-    public void SubmitCommand()
+    [Obsolete("Now Need not to Submit",true)]public void SubmitCommand()
     {
         //while command is triggered, control flow will travel all child nodes by deep-first.
         //If none child node in node's all child,this node will execute itself.
@@ -80,7 +50,7 @@ public class UndefinedApi
         string commandRefPath = Path.Join(RootPath, "CommandReference", $"{PluginName}.reference.json");
         foreach (var commandInstance in _commandInstances)
         {
-            CommandHandler.CommandEvent += async (cp,tokens) => {
+            CommandHandler.RegisterCommandEventHandler(async (cp,tokens) => {
                 if (commandInstance.Name == cp.Command || commandInstance.CommandAlias.Contains(cp.Command))
                 {
                     CommandContext ctx = new(commandInstance.Name, this, cp);
@@ -123,7 +93,7 @@ public class UndefinedApi
                     ctx.Logger.Info("Command Completed");
                     FinishEvent.Trigger();
                 }
-            };
+            });
             commandRef.Add(commandInstance);
             Logger.Info($"Successful Load Command <{commandInstance.Name}>");
         }

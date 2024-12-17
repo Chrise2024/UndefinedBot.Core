@@ -137,15 +137,15 @@ public class ForwardMessageBuilder
     }
 }
 
-public class ForwardMessageNode(string name, string uin, ForwardMessageBuilder instance)
+[Serializable]public class ForwardMessageNode(string name, string uin, ForwardMessageBuilder instance)
 {
     [JsonIgnore] private static readonly JsonNode s_textElementBase = JsonNode.Parse("""{"type": "text", "data": {"text": ""}}""")!;
     [JsonIgnore] private static readonly JsonNode s_faceElementBase = JsonNode.Parse("""{"type": "face", "data": {"id": ""}}""")!;
     [JsonIgnore] private static readonly JsonNode s_imageElementBase = JsonNode.Parse("""{"type": "image", "data": {"file": "", "subType": ""}}""")!;
     [JsonIgnore] private static readonly JsonNode s_atElementBase = JsonNode.Parse("""{"type": "at", "data": {"qq": ""}}""")!;
     [JsonIgnore] private static readonly JsonNode s_replyElementBase = JsonNode.Parse("""{"type": "reply", "data": {"id": ""}}""")!;
-    [JsonPropertyName("type")] public readonly string Type = "node";
-    [JsonPropertyName("data")] public readonly ForwardNodeData Data = new(name, uin, []);
+    [JsonPropertyName("type")] public string Type => "node";
+    [JsonPropertyName("data")] public ForwardNodeData Data => new(name, uin, []);
     [JsonIgnore] private readonly ForwardMessageBuilder _parentInstance = instance;
 
     public ForwardMessageNode Text(string text)
@@ -200,23 +200,23 @@ public class ForwardMessageNode(string name, string uin, ForwardMessageBuilder i
         return _parentInstance;
     }
 }
-public struct ForwardPropertiesData(List<ForwardMessageNode> content,
+public class ForwardPropertiesData(List<ForwardMessageNode> content,
     List<ForwardSummaryNewsEntity>? news = null,
     string? prompt = null
     )
 {
-    [JsonPropertyName("message")] public List<ForwardMessageNode> Message = content;
-    [JsonPropertyName("news")] public List<ForwardSummaryNewsEntity>? News = news?.ToList();
-    [JsonPropertyName("prompt")] public string? Prompt = prompt;
+    [JsonPropertyName("message")] public List<ForwardMessageNode> Message => content;
+    [JsonPropertyName("news")] public List<ForwardSummaryNewsEntity>? News => news;
+    [JsonPropertyName("prompt")] public string? Prompt => prompt;
 }
 
-public struct ForwardSummaryNewsEntity(string text)
+public class ForwardSummaryNewsEntity(string text)
 {
-    [JsonPropertyName("text")] public readonly string Text = text;
+    [JsonPropertyName("text")] public string Text => text;
 }
-public readonly struct ForwardNodeData(string name, string uin, List<JsonNode> content)
+public class ForwardNodeData(string name, string uin, List<JsonNode> content)
 {
-    [JsonPropertyName("name")] public readonly string Name = name;
-    [JsonPropertyName("uin")] public readonly string Uin = uin;
-    [JsonPropertyName("content")] public readonly List<JsonNode> Content = content;
+    [JsonPropertyName("name")] public string Name => name;
+    [JsonPropertyName("uin")] public string Uin => uin;
+    [JsonPropertyName("content")] public List<JsonNode> Content => content;
 }

@@ -33,12 +33,9 @@ public class CommandInstance
     /// <returns>self</returns>
     public CommandInstance Alias(List<string> alias)
     {
-        foreach (string item in alias)
+        foreach (string item in alias.Where(item => !CommandAlias.Contains(item)))
         {
-            if (!CommandAlias.Contains(item))
-            {
-                CommandAlias.Add(item);
-            }
+            CommandAlias.Add(item);
         }
 
         return this;
@@ -122,6 +119,19 @@ public class CommandInstance
     {
         return RootNode.Then(nextNode);
     }
+
+    public CommandMetaProperties ExportToCommandProperties()
+    {
+        return new CommandMetaProperties
+        {
+            Name = Name,
+            CommandDescription = CommandDescription,
+            CommandShortDescription = CommandShortDescription,
+            CommandAlias = CommandAlias,
+            CommandExample = CommandExample,
+            CommandUsage = CommandUsage
+        };
+    }
 }
 
 [Serializable] public class CommandMetaProperties
@@ -132,19 +142,4 @@ public class CommandInstance
     [JsonPropertyName("short_description")] public string? CommandShortDescription { get; set; } = null;
     [JsonPropertyName("usage")] public string? CommandUsage { get; set; } = null;
     [JsonPropertyName("example")] public string? CommandExample { get; set; } = null;
-}
-[Serializable] public class PluginMetaProperties : IEquatable<PluginMetaProperties>
-{
-    [JsonPropertyName("name")] public string Name { get; set; } = "";
-    [JsonPropertyName("description")] public string Description { get; set; } = "";
-    [JsonPropertyName("entry_file")] public string EntryFile { get; set; } = "";
-    [JsonPropertyName("entry_point")] public string? EntryPoint{ get; set; } = null;
-    [JsonIgnore] public object? Instance;
-
-    public bool Equals(PluginMetaProperties? other)
-    {
-        return Name == other?.Name &&
-               Description == other.Description &&
-               EntryFile == other.EntryFile;
-    }
 }
