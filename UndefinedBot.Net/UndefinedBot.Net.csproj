@@ -14,8 +14,8 @@
       <ProjectReference Include="..\UndefinedBot.Core\UndefinedBot.Core.csproj" />
   </ItemGroup>
   <ItemGroup>
-    <None Remove="AppSettings.json" />
-    <EmbeddedResource Include="AppSettings.json">
+    <None Remove="appsettings.json" />
+    <EmbeddedResource Include="appsettings.json">
       <CopyToOutputDirectory>Never</CopyToOutputDirectory>
     </EmbeddedResource>
   </ItemGroup>
