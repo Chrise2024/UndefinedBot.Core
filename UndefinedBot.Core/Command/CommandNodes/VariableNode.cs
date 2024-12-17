@@ -117,6 +117,6 @@ public class VariableNode(string name,IArgumentType argumentType):ICommandNode
     }
     public string GetArgumentRequire()
     {
-        return ArgumentType.Range == null ? $"[{ArgumentType.ArgumentTypeName}]" : $"[{ArgumentType} ({ArgumentType.Range.GetRangeDescription()})]";
+        return ArgumentType.Range == null ? $"[{ArgumentType.ArgumentTypeName}]" : $"[{ArgumentType.ArgumentTypeName} ({ArgumentType.Range.GetRangeDescription()})]";
     }
 }
