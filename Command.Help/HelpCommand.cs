@@ -3,27 +3,21 @@ using UndefinedBot.Core;
 using UndefinedBot.Core.Command;
 using UndefinedBot.Core.Command.CommandNodes;
 using UndefinedBot.Core.Command.Arguments.ArgumentType;
+using UndefinedBot.Core.Registry;
+using UndefinedBot.Core.Utils;
 
 namespace Command.Help;
 
-public class HelpCommand
+public class HelpCommand : IPluginInitializer
 {
-    private readonly UndefinedApi _undefinedApi;
-
-    private readonly string _pluginName;
-
-    private string _baseHelpText = "";
-
-    private readonly string _commandPrefix;
+    private string BaseHelpText { get; set; } = "";
+    private string CommandPrefix => ConfigManager.GetCommandPrefix();
 
     private Dictionary<string, CommandMetaProperties> _commandReference = [];
 
-    public HelpCommand(string pluginName)
+    public void Initialize(UndefinedApi undefinedApi)
     {
-        _undefinedApi = new(pluginName);
-        _pluginName = pluginName;
-        _commandPrefix = _undefinedApi.ConfigData.CommandPrefix;
-        _undefinedApi.RegisterCommand("help")
+        undefinedApi.RegisterCommand("help")
             .Description("指令帮助文档")
             .ShortDescription("帮助")
             .Usage("{0}help [指令名]")
@@ -34,25 +28,25 @@ public class HelpCommand
                 {
                     _commandReference =
                         JsonSerializer.Deserialize<Dictionary<string,CommandMetaProperties>>(
-                            File.ReadAllText(Path.Join(ctx.RootPath, "command_reference.json"))) ?? [];
+                            await File.ReadAllTextAsync(Path.Join(ctx.RootPath, "command_reference.json"))) ?? [];
                 }
 
-                if (_baseHelpText.Length == 0)
+                if (BaseHelpText.Length == 0)
                 {
                     string text = _commandReference.Aggregate("",
                         (current, pair) =>
                             current +
-                            $"{_commandPrefix}{pair.Value.Name} - {pair.Value.CommandShortDescription ?? ""}\n");
+                            $"{CommandPrefix}{pair.Value.Name} - {pair.Value.CommandShortDescription ?? ""}\n");
 
-                    _baseHelpText = "---------------help---------------\n指令列表：\n" +
+                    BaseHelpText = "---------------help---------------\n指令列表：\n" +
                                     text +
-                                    $"使用#help+具体指令查看使用方法\ne.g. {_commandPrefix}help help";
+                                    $"使用#help+具体指令查看使用方法\ne.g. {CommandPrefix}help help";
                 }
 
                 await ctx.Api.SendGroupMsg(
                     ctx.CallingProperties.GroupId,
                     ctx.GetMessageBuilder()
-                        .Text(string.Format(_baseHelpText, _commandPrefix)).Build()
+                        .Text(string.Format(BaseHelpText, CommandPrefix)).Build()
                 );
             }).Then(new VariableNode("cmd", new StringArgument())
                 .Execute(async (ctx) =>
@@ -61,11 +55,11 @@ public class HelpCommand
                     {
                         _commandReference =
                             JsonSerializer.Deserialize<Dictionary<string,CommandMetaProperties>>(
-                                File.ReadAllText(Path.Join(ctx.RootPath, "command_reference.json"))) ?? [];
+                                await File.ReadAllTextAsync(Path.Join(ctx.RootPath, "command_reference.json"))) ?? [];
                     }
 
                     string cmd = StringArgument.GetString("cmd", ctx);
-                    if (_commandReference.TryGetValue(cmd, out CommandMetaProperties prop))
+                    if (_commandReference.TryGetValue(cmd, out CommandMetaProperties? prop))
                     {
                         string? desc = prop.CommandDescription;
                         string? ug = prop.CommandUsage;
@@ -77,8 +71,8 @@ public class HelpCommand
                                 ctx.GetMessageBuilder()
                                     .Text("---------------help---------------\n" +
                                           (desc == null ? "" : $"{prop.Name} - {desc}\n") +
-                                          (ug == null ? "" : $"使用方法: \n{string.Format(ug, _commandPrefix)}\n") +
-                                          (eg == null ? "" : $"e.g.\n{string.Format(eg, _commandPrefix)}\n") +
+                                          (ug == null ? "" : $"使用方法: \n{string.Format(ug, CommandPrefix)}\n") +
+                                          (eg == null ? "" : $"e.g.\n{string.Format(eg, CommandPrefix)}\n") +
                                           $"可用指令别名: \n{JsonSerializer.Serialize(prop.CommandAlias)}").Build()
                             );
                         }
@@ -92,6 +86,7 @@ public class HelpCommand
                         );
                         ctx.Logger.Warn($"Command Not Found: <{cmd}>");
                     }
-                }));
+                })
+            );
     }
 }

@@ -1,6 +1,6 @@
 {
   "name": "Test",
   "description": "测试",
-  "entry_file": "UndefinedBot.Core.Test.dll",
+  "entry_file": "UndefinedBot.Core.Test",
   "entry_point": "TestCommand"
 }
