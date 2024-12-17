@@ -15,7 +15,12 @@ public enum UndefinedLogLevel
 public delegate void LogEventHandler(string nameSpace, string subSpace, UndefinedLogLevel undefinedLogLevel, string message);
 internal abstract class LogEventBus
 {
-    internal static event LogEventHandler? CoreLogEvent;
+    protected static event LogEventHandler? CoreLogEvent;
+
+    internal static void RegisterLogEventHandler(LogEventHandler handler)
+    {
+        CoreLogEvent += handler;
+    }
     public static void SendLogMessage(string nameSpace, string subSpace, UndefinedLogLevel undefinedLogLevel, string message)
     {
         CoreLogEvent?.Invoke(nameSpace,subSpace,undefinedLogLevel,message);

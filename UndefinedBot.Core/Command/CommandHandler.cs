@@ -18,7 +18,17 @@ internal abstract class CommandHandler
 
     private static readonly GeneralLogger s_commandHandlerLogger = new("MsgHandler");
     private static readonly JsonSerializerOptions s_serializerOptions = new() { WriteIndented = true };
-    internal static event CommandEventHandler? CommandEvent;
+    protected static event CommandEventHandler? CommandEvent;
+
+    public static void RegisterCommandEventHandler(CommandEventHandler handler)
+    {
+        CommandEvent += handler;
+    }
+
+    internal static void Trigger(CallingProperty cp, List<ParsedToken> tokens)
+    {
+        CommandEvent?.Invoke(cp,tokens);
+    }
     public static void HandleMsg(JsonNode msgJson)
     {
         if (!IsGroupMessageToHandle(msgJson))
@@ -51,11 +61,6 @@ internal abstract class CommandHandler
         s_commandHandlerLogger.Info(JsonSerializer.Serialize(cp, s_serializerOptions));
         s_commandHandlerLogger.Info("Tokens:");
         s_commandHandlerLogger.Info(JsonSerializer.Serialize(tokens));
-        CommandEvent?.Invoke(cp,tokens);
-    }
-
-    internal static void Trigger(CallingProperty cp, List<ParsedToken> tokens)
-    {
         CommandEvent?.Invoke(cp,tokens);
     }
 
