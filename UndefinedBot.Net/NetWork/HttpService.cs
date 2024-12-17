@@ -139,7 +139,6 @@ internal class HttpServer(
             PrintExceptionInfo(ex);
         }
     }
-
     private void PrintExceptionInfo(Exception ex)
     {
         _logger.LogError("Error Occured, Error Information:");

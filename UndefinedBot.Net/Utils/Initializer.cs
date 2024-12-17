@@ -202,8 +202,9 @@ internal abstract class Initializer
                 });
                 uApi.Logger.Info($"Successful Load Command <{commandInstance.Name}>");
             }
-
-            return uApi._commandInstances.ToDictionary(k => k.Name, v => v);
+            Dictionary<string, CommandInstance> t = uApi._commandInstances.ToDictionary(k => k.Name, v => v);
+            uApi._commandInstances.Clear();
+            return t;
         }
         catch (TypeLoadException tle)
         {

@@ -44,7 +44,13 @@ public class UndefinedApp(IHost host) : IHost
                 UndefinedLogLevel.None => LogLevel.None,
                 _ => LogLevel.Error,
             },
-            $"[{DateTime.Now:yyyy-MM-dd HH:mm:ss}] [{nameSpace}] [{subSpace}] [{undefinedLogLevel.ToString()}] {message}");
+            "[{Time}] [{nameSpace}] [{subSpace}] [{undefinedLogLevel.ToString()}] {message}",
+            DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"),
+            nameSpace,
+            subSpace,
+            undefinedLogLevel.ToString(),
+            message
+            );
         });
         ConfigManager.InitConfig(new Config
         {
@@ -68,7 +74,7 @@ public class UndefinedApp(IHost host) : IHost
 
         Logger.LogInformation("UndefinedBot.Net Implementation has started");
 
-        Logger.LogInformation($"Loaded Plugins:{JsonSerializer.Serialize(_pluginReference.Select(item => item.Name),_serializerOptions)}");
+        Logger.LogInformation("Loaded Plugins:{PluginList}", JsonSerializer.Serialize(_pluginReference.Select(item => item.Name), _serializerOptions));
     }
 
     public async Task StopAsync(CancellationToken cancellationToken = new())
