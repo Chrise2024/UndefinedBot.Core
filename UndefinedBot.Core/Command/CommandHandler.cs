@@ -99,5 +99,6 @@ public enum MessageSubType
 {
     Friend = 0,
     Group = 1,
-    Other = 2,
+    Guild = 2,
+    Other = 3,
 }

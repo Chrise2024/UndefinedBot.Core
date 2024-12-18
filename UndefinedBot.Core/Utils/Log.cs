@@ -34,19 +34,19 @@ public class GeneralLogger(string nameSpace)
 {
     public void Error(string message)
     {
-        LogEventBus.SendLogMessage(nameSpace,UndefinedLogLevel.Error,message);
+        LogEventBus.SendLogMessage(nameSpace,"Main",UndefinedLogLevel.Error,message);
     }
     public void Warn(string message)
     {
-        LogEventBus.SendLogMessage(nameSpace,UndefinedLogLevel.Warning,message);
+        LogEventBus.SendLogMessage(nameSpace,"Main",UndefinedLogLevel.Warning,message);
     }
     public void Info(string message)
     {
-        LogEventBus.SendLogMessage(nameSpace,UndefinedLogLevel.Information,message);
+        LogEventBus.SendLogMessage(nameSpace,"Main",UndefinedLogLevel.Information,message);
     }
     public void Debug(string message)
     {
-        LogEventBus.SendLogMessage(nameSpace,UndefinedLogLevel.Debug,message);
+        LogEventBus.SendLogMessage(nameSpace,"Main",UndefinedLogLevel.Debug,message);
     }
 }
 public class CommandLogger(string nameSpace,string commandName)
@@ -66,5 +66,25 @@ public class CommandLogger(string nameSpace,string commandName)
     public void Debug(string message)
     {
         LogEventBus.SendLogMessage(nameSpace,commandName,UndefinedLogLevel.Debug,message);
+    }
+}
+
+public class AdapterLogger(string adapterName)
+{
+    public void Error(string message)
+    {
+        LogEventBus.SendLogMessage("Adapter",adapterName,UndefinedLogLevel.Error,message);
+    }
+    public void Warn(string message)
+    {
+        LogEventBus.SendLogMessage("Adapter",adapterName,UndefinedLogLevel.Warning,message);
+    }
+    public void Info(string message)
+    {
+        LogEventBus.SendLogMessage("Adapter",adapterName,UndefinedLogLevel.Information,message);
+    }
+    public void Debug(string message)
+    {
+        LogEventBus.SendLogMessage("Adapter",adapterName,UndefinedLogLevel.Debug,message);
     }
 }
