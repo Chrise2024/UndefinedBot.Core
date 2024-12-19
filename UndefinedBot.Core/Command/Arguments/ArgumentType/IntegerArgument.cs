@@ -9,15 +9,15 @@ public class IntegerArgument(IArgumentRange? range = null) : IArgumentType
     public IArgumentRange? Range => range;
     public bool IsValid(ParsedToken token)
     {
-        return token.TokenType == RawTokenTypes.NormalContent &&
-               long.TryParse(token.Content, out long val) &&
+        return token.TokenType == ParsedTokenTypes.Normal &&
+               long.TryParse(token.SerializedContent, out long val) &&
                (Range?.InRange(val) ?? true);
     }
 
     public object GetValue(ParsedToken token) => GetExactTypeValue(token);
     public static long GetInteger(string key,CommandContext ctx)
     {
-        if (ctx._argumentReference.TryGetValue(key, out ParsedToken? token))
+        if (ctx.ArgumentReference.TryGetValue(key, out ParsedToken? token))
         {
             return GetExactTypeValue(token);
         }
@@ -26,8 +26,8 @@ public class IntegerArgument(IArgumentRange? range = null) : IArgumentType
 
     private static long GetExactTypeValue(ParsedToken token)
     {
-        return long.TryParse(token.Content, out long val)
+        return token.TokenType == ParsedTokenTypes.Normal && long.TryParse(token.SerializedContent, out long val)
             ? val
-            : throw new ArgumentInvalidException($"{token} Is Not Valid Integer");
+            : throw new ArgumentInvalidException("Token Is Not Integer");
     }
 }

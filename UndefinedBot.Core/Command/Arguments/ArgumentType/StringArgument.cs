@@ -9,15 +9,15 @@ public class StringArgument(IArgumentRange? range = null) : IArgumentType
     public IArgumentRange? Range => range;
     public bool IsValid(ParsedToken token)
     {
-        return token.TokenType == RawTokenTypes.NormalContent &&
-               !string.IsNullOrEmpty(token.Content) &&
-               (Range?.InRange(token.Content) ?? true);
+        return token.TokenType == ParsedTokenTypes.Normal &&
+               !string.IsNullOrEmpty(token.SerializedContent) &&
+               (Range?.InRange(token.SerializedContent) ?? true);
     }
 
     public object GetValue(ParsedToken token) => GetExactTypeValue(token);
     public static string GetString(string key,CommandContext ctx)
     {
-        if (ctx._argumentReference.TryGetValue(key, out ParsedToken? token))
+        if (ctx.ArgumentReference.TryGetValue(key, out ParsedToken? token))
         {
             return GetExactTypeValue(token);
         }
@@ -25,8 +25,8 @@ public class StringArgument(IArgumentRange? range = null) : IArgumentType
     }
     private static string GetExactTypeValue(ParsedToken token)
     {
-        return token.TokenType == RawTokenTypes.NormalContent
-            ? token.Content
-            : throw new ArgumentInvalidException("Invalid String Literal");
+        return token.TokenType == ParsedTokenTypes.Normal
+            ? token.SerializedContent
+            : throw new ArgumentInvalidException("Token Is Not String");
     }
 }

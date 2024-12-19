@@ -2,21 +2,21 @@
 
 namespace UndefinedBot.Core.Command.Arguments.ArgumentType;
 
-public class PosIntArgument(IArgumentRange? range = null) : IArgumentType
+public class PositiveIntegerArgument(IArgumentRange? range = null) : IArgumentType
 {
-    public ArgumentTypes ArgumentType => ArgumentTypes.PosInt;
+    public ArgumentTypes ArgumentType => ArgumentTypes.PositiveInteger;
     public string ArgumentTypeName => "Positive Integer";
     public IArgumentRange? Range => range;
     public bool IsValid(ParsedToken token)
     {
-        return token.TokenType == RawTokenTypes.NormalContent &&
-               ulong.TryParse(token.Content, out ulong val) &&
+        return token.TokenType == ParsedTokenTypes.Normal &&
+               ulong.TryParse(token.SerializedContent, out ulong val) &&
                (Range?.InRange(val) ?? true);
     }
     public object GetValue(ParsedToken token) => GetExactTypeValue(token);
-    public static ulong GetPosInt(string key,CommandContext ctx)
+    public static ulong GetPositiveInteger(string key,CommandContext ctx)
     {
-        if (ctx._argumentReference.TryGetValue(key, out ParsedToken? token))
+        if (ctx.ArgumentReference.TryGetValue(key, out ParsedToken? token))
         {
             return GetExactTypeValue(token);
         }
@@ -24,8 +24,8 @@ public class PosIntArgument(IArgumentRange? range = null) : IArgumentType
     }
     private static ulong GetExactTypeValue(ParsedToken token)
     {
-        return ulong.TryParse(token.Content, out ulong val)
+        return token.TokenType == ParsedTokenTypes.Normal && ulong.TryParse(token.SerializedContent, out ulong val)
             ? val
-            : throw new ArgumentInvalidException($"{token} Is Not Valid Positive Integer");
+            : throw new ArgumentInvalidException("Token Is Not Valid Positive Integer");
     }
 }

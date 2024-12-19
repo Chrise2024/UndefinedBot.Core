@@ -9,13 +9,13 @@ public class DateArgument(IArgumentRange? range = null) : IArgumentType
     public IArgumentRange? Range => range;
     public bool IsValid(ParsedToken token)
     {
-            return token.TokenType == RawTokenTypes.NormalContent &&
-                   DateTime.TryParse(token.Content,out DateTime _);
+            return token.TokenType == ParsedTokenTypes.Normal &&
+                   DateTime.TryParse(token.SerializedContent,out DateTime _);
         }
     public object GetValue(ParsedToken token) => GetExactTypeValue(token);
     public static DateTime GetDate(string key,CommandContext ctx)
     {
-            if (ctx._argumentReference.TryGetValue(key,out ParsedToken? token))
+            if (ctx.ArgumentReference.TryGetValue(key,out ParsedToken? token))
             {
                 return GetExactTypeValue(token);
             }
@@ -23,7 +23,7 @@ public class DateArgument(IArgumentRange? range = null) : IArgumentType
         }
     private static DateTime GetExactTypeValue(ParsedToken token)
     {
-            return DateTime.TryParse(token.Content, out DateTime val)
+            return token.TokenType == ParsedTokenTypes.Normal && DateTime.TryParse(token.SerializedContent, out DateTime val)
                 ? val
                 : throw new ArgumentInvalidException($"{token} Is Not Valid Positive Integer");
         }
