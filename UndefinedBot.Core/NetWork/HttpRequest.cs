@@ -5,14 +5,14 @@ using UndefinedBot.Core.Utils;
 
 namespace UndefinedBot.Core.NetWork;
 
-public class HttpRequest
+public class HttpRequest(string pluginName)
 {
     private readonly HttpClient _httpClient = new()
     {
         Timeout = TimeSpan.FromSeconds(10)
     };
 
-    private readonly GeneralLogger _httpRequestLogger = new("HttpRequest");
+    private readonly CommandLogger _httpRequestLogger = new(pluginName,"HttpRequest");
 
     public async Task<string> Post([StringSyntax("Uri")]string url, object? content = null)
     {

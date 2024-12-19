@@ -15,39 +15,34 @@ using UndefinedBot.Core.Utils;
 
 namespace Adapter.OneBot11;
 
-public class HttpServiceOptions
+public class HttpServiceOptions(string host, uint port, string? accessToken = null)
 {
-    public static HttpServiceOptions Create(AdapterConfigData adapterConfig)
+    public static HttpServiceOptions CreateFromConfig(AdapterConfigData adapterConfig)
     {
         JsonNode? serverConfig = adapterConfig.OriginalConfig["Server"];
         if (serverConfig == null)
         {
-            throw new NotImplementedException();
+            throw new Exception("Server Properties Not Implemented");
         }
 
-        return serverConfig.Deserialize<HttpServiceOptions>() ?? throw new NotImplementedException();
+        return serverConfig.Deserialize<HttpServiceOptions>() ?? throw new Exception("Invalid Server Properties");
     }
 
     public static HttpServiceOptions Default()
     {
         return new HttpServiceOptions("", 16384);
     }
-    private HttpServiceOptions(string host,uint port,string? accessToken = null)
-    {
-        Host = host;
-        Port = port;
-        AccessToken = accessToken;
-    }
-    public string Host { get; }
-    public uint Port { get; }
-    public string? AccessToken { get; }
+
+    public string Host { get; } = host;
+    public uint Port { get; } = port;
+    public string? AccessToken { get; } = accessToken;
 }
 
 internal class HttpServer(AdapterLogger logger,AdapterConfigData adapterConfig,Action<PrimeInvokeProperties,BaseCommandSource,List<ParsedToken>> submitter)
 {
 
     private readonly HttpListener _httpListener = new();
-    private readonly HttpServiceOptions _options = HttpServiceOptions.Create(adapterConfig);
+    private readonly HttpServiceOptions _options = HttpServiceOptions.CreateFromConfig(adapterConfig);
     private readonly MsgHandler _handler = new(logger, adapterConfig);
     private AdapterLogger Logger => logger;
     private Action<PrimeInvokeProperties, BaseCommandSource, List<ParsedToken>> Submitter => submitter;
