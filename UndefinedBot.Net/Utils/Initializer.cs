@@ -10,6 +10,7 @@ using UndefinedBot.Core.Command.CommandResult;
 
 namespace UndefinedBot.Net.Utils;
 
+//To-do: Move Initializer Into Core
 internal abstract class Initializer
 {
     private static readonly PluginMetaProperties s_defaultPluginMeta = new();
@@ -102,6 +103,8 @@ internal abstract class Initializer
                 );
             FileIO.WriteAsJson(commandRefPath, cmd.Select(p => p.Value.ExportToCommandProperties()));
             pluginRef.Add(pluginMetaProperties);
+            //Console.WriteLine($"{pf} Loaded");
+            //Console.WriteLine();
         }
 
         return (pluginRef, commandInstance);
@@ -152,53 +155,57 @@ internal abstract class Initializer
             //Register Command
             foreach (CommandInstance commandInstance in uApi._commandInstances)
             {
-                CommandHandler.RegisterCommandEventHandler(async (cp, tokens) =>
+                CommandEventBus.RegisterCommandEventHandler(async (invokeProperties, commandSource) =>
                 {
-                    if (commandInstance.Name == cp.Command || commandInstance.CommandAlias.Contains(cp.Command))
+                    if (commandInstance.Name != invokeProperties.Command &&
+                        !commandInstance.CommandAlias.Contains(invokeProperties.Command))
                     {
-                        CommandContext ctx = new(commandInstance.Name, uApi, cp);
-                        ctx.Logger.Info("Command Triggered");
-                        //While any node matches the token,control flow will execute this node and throw CommandFinishException to exit.
-                        try
-                        {
-                            ICommandResult result = await commandInstance.Run(ctx, tokens);
-                            switch (result)
-                            {
-                                case CommandSuccess:
-                                    //ignore
-                                    break;
-                                case InvalidArgument iae:
-                                    ctx.Logger.Error(
-                                        $"Invalid argument: {iae.ErrorToken}, require {JsonSerializer.Serialize(iae.RequiredType)}");
-                                    break;
-                                case TooLessArgument tae:
-                                    ctx.Logger.Error(
-                                        $"To less arguments, require {JsonSerializer.Serialize(tae.RequiredType)}");
-                                    break;
-                                case PermissionDenied pde:
-                                    ctx.Logger.Error(
-                                        $"Not enough permission: {pde.CurrentPermission} at {pde.CurrentNode}, require {pde.RequiredPermission}");
-                                    break;
-                            }
-                        }
-                        catch (CommandAbortException)
-                        {
-                            ctx.Logger.Error($"Command Execute Aborted");
-                        }
-                        catch (CommandSyntaxException cse)
-                        {
-                            ctx.Logger.Error($"Node {cse.CurrentNode} Not Implemented");
-                        }
-                        catch (Exception ex)
-                        {
-                            ctx.Logger.Error("Command Failed");
-                            ctx.Logger.Error(ex.Message);
-                            ctx.Logger.Error(ex.StackTrace ?? "");
-                        }
-
-                        ctx.Logger.Info("Command Completed");
-                        uApi.FinishEvent.Trigger();
+                        return;
                     }
+
+                    CommandContext ctx = new(commandInstance.Name, uApi, invokeProperties);
+                    ctx.Logger.Info("Command Triggered");
+                    //While any node matches the token,control flow will execute this node and throw CommandFinishException to exit.
+                    try
+                    {
+                        ICommandResult result =
+                            await commandInstance.Run(ctx, commandSource, invokeProperties.Tokens);
+                        switch (result)
+                        {
+                            case CommandSuccess:
+                                //ignore
+                                break;
+                            case InvalidArgument iae:
+                                ctx.Logger.Error(
+                                    $"Invalid argument: {iae.ErrorToken}, require {JsonSerializer.Serialize(iae.RequiredType)}");
+                                break;
+                            case TooLessArgument tae:
+                                ctx.Logger.Error(
+                                    $"To less arguments, require {JsonSerializer.Serialize(tae.RequiredType)}");
+                                break;
+                            case PermissionDenied pde:
+                                ctx.Logger.Error(
+                                    $"Not enough permission: {pde.CurrentPermission} at {pde.CurrentNode}, require {pde.RequiredPermission}");
+                                break;
+                        }
+                    }
+                    catch (CommandAbortException)
+                    {
+                        ctx.Logger.Error($"Command Execute Aborted");
+                    }
+                    catch (CommandSyntaxException cse)
+                    {
+                        ctx.Logger.Error($"Node {cse.CurrentNode} Not Implemented");
+                    }
+                    catch (Exception ex)
+                    {
+                        ctx.Logger.Error("Command Failed");
+                        ctx.Logger.Error(ex.Message);
+                        ctx.Logger.Error(ex.StackTrace ?? "");
+                    }
+
+                    ctx.Logger.Info("Command Completed");
+                    uApi.FinishEvent.Trigger();
                 });
                 uApi.Logger.Info($"Successful Load Command <{commandInstance.Name}>");
             }
