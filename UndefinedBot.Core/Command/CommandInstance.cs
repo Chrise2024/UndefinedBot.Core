@@ -2,6 +2,7 @@
 using UndefinedBot.Core.Command.CommandResult;
 using UndefinedBot.Core.Command.CommandNodes;
 using UndefinedBot.Core.Command.Arguments;
+using UndefinedBot.Core.Command.CommandSource;
 
 namespace UndefinedBot.Core.Command;
 
@@ -21,9 +22,9 @@ public class CommandInstance
         RootNode = new RootCommandNode(commandName);
     }
 
-    internal async Task<ICommandResult> Run(CommandContext ctx, List<ParsedToken> tokens)
+    internal async Task<ICommandResult> Run(CommandContext ctx,BaseCommandSource source, List<ParsedToken> tokens)
     {
-        return await RootNode.ExecuteSelf(ctx, tokens);
+        return await RootNode.ExecuteSelf(ctx,source, tokens);
     }
 
     /// <summary>
@@ -100,7 +101,7 @@ public class CommandInstance
     /// </example>
     /// <remarks>While action added,control flow will goto command tree building.</remarks>
     /// <returns>self</returns>
-    public ICommandNode Execute(Func<CommandContext, Task> action)
+    public ICommandNode Execute(Func<CommandContext,BaseCommandSource, Task> action)
     {
         //RootNode.SetAction(action);
         return RootNode.Execute(action);
@@ -138,8 +139,8 @@ public class CommandInstance
 {
     [JsonPropertyName("name")] public string Name { get; set; } = "";
     [JsonPropertyName("alias")] public List<string> CommandAlias { get; set; } = [];
-    [JsonPropertyName("description")] public string? CommandDescription { get; set; } = null;
-    [JsonPropertyName("short_description")] public string? CommandShortDescription { get; set; } = null;
-    [JsonPropertyName("usage")] public string? CommandUsage { get; set; } = null;
-    [JsonPropertyName("example")] public string? CommandExample { get; set; } = null;
+    [JsonPropertyName("description")] public string? CommandDescription { get; set; }
+    [JsonPropertyName("short_description")] public string? CommandShortDescription { get; set; }
+    [JsonPropertyName("usage")] public string? CommandUsage { get; set; }
+    [JsonPropertyName("example")] public string? CommandExample { get; set; }
 }

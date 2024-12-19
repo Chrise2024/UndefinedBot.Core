@@ -76,10 +76,10 @@ public class MsgBuilder
         _msgChain.Add(temp);
         return this;
     }
-    public MsgBuilder At(QUin atUin)
+    public MsgBuilder At(string atUin)
     {
         JsonNode temp = s_atElementBase.DeepClone();
-        temp["data"]!["at"] = $"{atUin.Uin}";
+        temp["data"]!["at"] = $"{atUin}";
         _msgChain.Add(temp);
         return this;
     }
