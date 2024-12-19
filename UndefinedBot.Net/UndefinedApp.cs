@@ -2,7 +2,6 @@
 using UndefinedBot.Core.Utils;
 using UndefinedBot.Core.Command;
 using UndefinedBot.Net.Utils;
-using UndefinedBot.Net.NetWork;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Configuration;
@@ -15,8 +14,6 @@ public class UndefinedApp(IHost host) : IHost
     public IServiceProvider Services => HostApp.Services;
     private IHost HostApp => host;
     private ILogger<UndefinedApp> Logger => Services.GetRequiredService<ILogger<UndefinedApp>>();
-    //private HttpServer HttpServer => Services.GetRequiredService<HttpServer>();
-    private NetworkServiceCollection NetworkService => Services.GetRequiredService<NetworkServiceCollection>();
     private IConfiguration Configuration => Services.GetRequiredService<IConfiguration>();
 
     private readonly string _programRoot = Environment.CurrentDirectory;
@@ -54,8 +51,6 @@ public class UndefinedApp(IHost host) : IHost
         });
         ConfigManager.InitConfig(new Config
         {
-            HttpServer = new HttpServiceOptions(Configuration["HttpServer:Host"]!,Configuration["HttpServer:Port"]!,Configuration["HttpServer:AccessToken"]!),
-            HttpPost = new HttpServiceOptions(Configuration["HttpPost:Host"]!,Configuration["HttpPost:Port"]!,Configuration["HttpServer:AccessToken"]!),
             GroupId = Configuration.GetSection("GroupId").GetChildren().Select(child => long.Parse(child.Value!)).ToList(),
             CommandPrefix = Configuration["CommandPrefix"]!
         });
@@ -70,8 +65,6 @@ public class UndefinedApp(IHost host) : IHost
 
         await HostApp.StartAsync(cancellationToken);
 
-        await NetworkService.StartAsync(cancellationToken);
-
         Logger.LogInformation("UndefinedBot.Net Implementation has started");
 
         Logger.LogInformation("Loaded Plugins:{PluginList}", JsonSerializer.Serialize(_pluginReference.Select(item => item.Name), _serializerOptions));
@@ -80,8 +73,6 @@ public class UndefinedApp(IHost host) : IHost
     public async Task StopAsync(CancellationToken cancellationToken = new())
     {
         await HostApp.StopAsync(cancellationToken);
-
-        await NetworkService.StopAsync(cancellationToken);
 
         Logger.LogInformation("UndefinedBot.Net Implementation has stopped");
     }

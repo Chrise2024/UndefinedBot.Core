@@ -1,10 +1,13 @@
 ﻿using System.Text;
 using System.Reflection;
+using System.Text.Json;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using UndefinedBot.Core.Command;
+using UndefinedBot.Core.Command.Arguments;
 using UndefinedBot.Core.Utils;
-using UndefinedBot.Net.NetWork;
+using System.Runtime;
 
 namespace UndefinedBot.Net;
 
@@ -17,23 +20,22 @@ internal class Program
     {
         Console.OutputEncoding = Encoding.UTF8;
         Console.InputEncoding = Encoding.UTF8;
+        GCSettings.LatencyMode = GCLatencyMode.Batch;
         FileIO.EnsurePath(s_programCache);
-        if (!File.Exists("AppSettings.json"))
+        if (!File.Exists("appsettings.json"))
         {
             Console.WriteLine("No exist config file, create it now...");
-            Stream resStream = Assembly.GetExecutingAssembly().GetManifestResourceStream("UndefinedBot.Net.AppSettings.json")!;
-            FileStream tempStream = File.Create("AppSettings.json");
+            Stream resStream = Assembly.GetExecutingAssembly().GetManifestResourceStream("UndefinedBot.Net.appsettings.json")!;
+            FileStream tempStream = File.Create("appsettings.json");
             await resStream.CopyToAsync(tempStream);
             resStream.Close();
             tempStream.Close();
-            Console.WriteLine("Please Edit the AppSettings.json.json to set configs");
+            Console.WriteLine("Please Edit the appsettings.json to set configs");
             return;
         }
         HostApplicationBuilder undefinedAppBuilder = new (args);
-        undefinedAppBuilder.Configuration.AddJsonFile("AppSettings.json", false, true);
+        undefinedAppBuilder.Configuration.AddJsonFile("appsettings.json", false, true);
         undefinedAppBuilder.Configuration.AddEnvironmentVariables();
-        undefinedAppBuilder.Services.AddSingleton<NetworkServiceCollection>();
-        undefinedAppBuilder.Services.AddScoped<HttpServer>();
         UndefinedApp undefinedApp = new (undefinedAppBuilder.Build());
         undefinedApp.Start();
         while (true)
