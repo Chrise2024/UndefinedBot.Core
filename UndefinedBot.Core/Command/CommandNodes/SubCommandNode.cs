@@ -1,6 +1,7 @@
 ﻿using UndefinedBot.Core.Command.CommandResult;
 using UndefinedBot.Core.Command.Arguments;
 using UndefinedBot.Core.Command.Arguments.ArgumentType;
+using UndefinedBot.Core.Command.CommandSource;
 
 namespace UndefinedBot.Core.Command.CommandNodes;
 
@@ -10,8 +11,8 @@ public class SubCommandNode(string name):ICommandNode
     public IArgumentType ArgumentType => new StringArgument();
     public ICommandNode? Parent { get; private set; }
     public List<ICommandNode> Child { get; private set; } = [];
-    public Func<CommandContext,Task>? NodeAction { get; private set; }
-    public void SetAction(Func<CommandContext,Task> action)
+    public Func<CommandContext,BaseCommandSource, Task>? NodeAction { get; private set; }
+    public void SetAction(Func<CommandContext,BaseCommandSource, Task> action)
     {
         NodeAction = action;
     }
@@ -47,21 +48,21 @@ public class SubCommandNode(string name):ICommandNode
     /// </code>
     /// </example>
     /// <returns>This node self</returns>
-    public ICommandNode Execute(Func<CommandContext,Task> action)
+    public ICommandNode Execute(Func<CommandContext,BaseCommandSource,Task> action)
     {
         NodeAction = action;
         return this;
     }
-    public async Task<ICommandResult> ExecuteSelf(CommandContext ctx,List<ParsedToken> tokens)
+    public async Task<ICommandResult> ExecuteSelf(CommandContext ctx,BaseCommandSource source,List<ParsedToken> tokens)
     {
         if (tokens.Count == 0)
         {
             return new TooLessArgument([GetArgumentRequire()]);
         }
 
-        if (NodeName != tokens[0].Content)
+        if (tokens[0].TokenType != ParsedTokenTypes.Normal || tokens[0].SerializedContent != NodeName)
         {
-            return new InvalidArgument(tokens[0].Content, [GetArgumentRequire()]);
+            return new InvalidArgument(tokens[0].TokenType.ToString(), [GetArgumentRequire()]);
         }
 
         if (NodeAction != null && (tokens.Count == 1 || Child.Count == 0))
@@ -69,7 +70,7 @@ public class SubCommandNode(string name):ICommandNode
             //无后续token或无子节点 且 定义了节点Action，执行自身
             try
             {
-                await Task.WhenAny(NodeAction(ctx),Task.Delay(TimeSpan.FromSeconds(20)));
+                await Task.WhenAny(NodeAction(ctx,source),Task.Delay(TimeSpan.FromSeconds(20)));
                 return new CommandSuccess();
             }
             catch (Exception ex)
@@ -90,7 +91,7 @@ public class SubCommandNode(string name):ICommandNode
         List<ICommandResult> result = [];
         foreach (ICommandNode node in Child)
         {
-            ICommandResult res = await node.ExecuteSelf(ctx, tokens[1..]);
+            ICommandResult res = await node.ExecuteSelf(ctx,source,tokens[1..]);
             if (res is CommandSuccess)
             {
                 //有一个子节点可以执行

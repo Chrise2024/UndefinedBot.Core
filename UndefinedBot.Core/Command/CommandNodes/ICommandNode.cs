@@ -1,6 +1,7 @@
 ﻿using UndefinedBot.Core.Command.CommandResult;
 using UndefinedBot.Core.Command.Arguments;
 using UndefinedBot.Core.Command.Arguments.ArgumentType;
+using UndefinedBot.Core.Command.CommandSource;
 
 namespace UndefinedBot.Core.Command.CommandNodes;
 
@@ -13,12 +14,12 @@ public interface ICommandNode
     internal IArgumentType ArgumentType { get; }
     internal ICommandNode? Parent { get; }
     internal List<ICommandNode> Child { get; }
-    internal Func<CommandContext,Task>? NodeAction { get; }
+    internal Func<CommandContext,BaseCommandSource,Task>? NodeAction { get; }
     internal void SetParent(ICommandNode parentNode);
-    internal void SetAction(Func<CommandContext,Task> action);
+    internal void SetAction(Func<CommandContext,BaseCommandSource,Task> action);
     public ICommandNode Then(ICommandNode nextNode);
-    public ICommandNode Execute(Func<CommandContext,Task> action);
-    internal Task<ICommandResult> ExecuteSelf(CommandContext ctx,List<ParsedToken> tokens);
+    public ICommandNode Execute(Func<CommandContext,BaseCommandSource,Task> action);
+    internal Task<ICommandResult> ExecuteSelf(CommandContext ctx,BaseCommandSource source,List<ParsedToken> tokens);
     public string GetArgumentRequire();
 }
 public class CommandAbortException(string? message = null) : Exception(message);
