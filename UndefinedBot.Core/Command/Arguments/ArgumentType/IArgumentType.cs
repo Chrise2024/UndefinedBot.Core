@@ -14,12 +14,13 @@ public class ArgumentInvalidException(string message) : Exception(message);
 
 public enum ArgumentTypes
 {
-    Date = 0,
-    Image = 1,
-    Integer = 2,
+    String = 0,
+    Integer = 1,
+    PositiveInteger = 2,
     Number = 3,
-    PosInt = 4,
-    Reply = 5,
-    String = 6,
-    Uin = 7,
+    Date = 4,
+    User = 5,
+    Reply = 6,
+    Image = 7,
+    File = 8,
 }
