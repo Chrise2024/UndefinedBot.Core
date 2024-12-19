@@ -9,7 +9,7 @@ internal abstract class CommandEventBus
 {
     private static event UniversalCommandEventHandler? UniversalCommandEvent;
 
-    internal static void InvokeCommandEvent(
+    public static void InvokeCommandEvent(
         CommandInvokeProperties invokeProperties,
         BaseCommandSource source
         )
@@ -17,7 +17,7 @@ internal abstract class CommandEventBus
         UniversalCommandEvent?.Invoke(invokeProperties, source);
     }
 
-    internal static void RegisterCommandEventHandler(UniversalCommandEventHandler handler)
+    public static void RegisterCommandEventHandler(UniversalCommandEventHandler handler)
     {
         UniversalCommandEvent += handler;
     }
@@ -67,25 +67,33 @@ public class PrimeInvokeProperties
         return new PrimeInvokeProperties(command, sourceId, msgId, MessageSubType.Guild, time);
     }
 
-    internal CommandInvokeProperties ImplementInvokeProperties(string platform, string protocol, List<ParsedToken> tokens)
+    internal CommandInvokeProperties ImplementInvokeProperties(string aid,string platform, string protocol, List<ParsedToken> tokens)
     {
-        return new CommandInvokeProperties(this, platform, protocol, tokens);
+        return new CommandInvokeProperties(this, aid, platform, protocol, tokens);
     }
 }
 
 public class CommandInvokeProperties : PrimeInvokeProperties
 {
+    public string AdapterIdentifier { get; }
     public string Platform { get; }
     public string Protocol { get; }
     public List<ParsedToken> Tokens { get; }
-
-    public string GetEnvironmentInfo() => $"{Platform}:{Protocol}";
-    internal CommandInvokeProperties(PrimeInvokeProperties parent, string platform, string protocol, List<ParsedToken> tokens) : base(parent)
+    public string GetEnvironmentInfo() => $"[{AdapterIdentifier}]{Platform}:{Protocol}";
+    internal CommandInvokeProperties(PrimeInvokeProperties parent,string aid, string platform, string protocol, List<ParsedToken> tokens) : base(parent)
     {
+        AdapterIdentifier = aid;
         Platform = platform;
         Protocol = protocol;
         Tokens = tokens;
     }
+}
+public enum MessageSubType
+{
+    Friend = 0,
+    Group = 1,
+    Guild = 2,
+    Other = 3,
 }
 
 
