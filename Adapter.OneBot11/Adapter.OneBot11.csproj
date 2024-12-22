@@ -8,5 +8,8 @@
     <ItemGroup>
         <ProjectReference Include="..\UndefinedBot.Core\UndefinedBot.Core.csproj" />
     </ItemGroup>
+    <ItemGroup>
+      <PackageReference Include="Google.Protobuf" Version="3.29.2" />
+    </ItemGroup>
 
 </Project>

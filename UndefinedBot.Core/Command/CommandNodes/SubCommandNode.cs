@@ -1,4 +1,5 @@
-﻿using UndefinedBot.Core.Command.CommandResult;
+﻿using System.Text;
+using UndefinedBot.Core.Command.CommandResult;
 using UndefinedBot.Core.Command.Arguments;
 using UndefinedBot.Core.Command.Arguments.ArgumentType;
 using UndefinedBot.Core.Command.CommandSource;
@@ -60,7 +61,7 @@ public class SubCommandNode(string name):ICommandNode
             return new TooLessArgument([GetArgumentRequire()]);
         }
 
-        if (tokens[0].TokenType != ParsedTokenTypes.Normal || tokens[0].SerializedContent != NodeName)
+        if (tokens[0].TokenType != ParsedTokenTypes.Normal || Encoding.UTF8.GetString(tokens[0].SerializedContent) != NodeName)
         {
             return new InvalidArgument(tokens[0].TokenType.ToString(), [GetArgumentRequire()]);
         }

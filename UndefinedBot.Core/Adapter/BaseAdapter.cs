@@ -14,6 +14,12 @@ public abstract class BaseAdapter(AdapterConfigData adapterConfig)
     public abstract string Protocol { get; }
     protected AdapterLogger Logger => new(Name);
     protected AdapterConfigData AdapterConfig => adapterConfig;
+    /// <summary>
+    /// For adapter invoke command
+    /// </summary>
+    /// <param name="invokeProperties">Command's basic information</param>
+    /// <param name="source">Command Source</param>
+    /// <param name="tokens">Tokens, the body of the command</param>
     protected void SubmitCommandEvent(
         PrimeInvokeProperties invokeProperties,
         BaseCommandSource source,
@@ -22,6 +28,9 @@ public abstract class BaseAdapter(AdapterConfigData adapterConfig)
     {
         CommandEventBus.InvokeCommandEvent(invokeProperties.ImplementInvokeProperties(Id,Platform, Protocol, tokens), source);
     }
+    /// <summary>
+    /// Handle action invoked by command
+    /// </summary>
     public abstract void HandleCustomAction(string action, object paras);
     public abstract void HandleDefaultAction(DefaultActionType action, object paras);
 }

@@ -1,4 +1,5 @@
-﻿using UndefinedBot.Core.Command.Arguments.ArgumentRange;
+﻿using System.Text;
+using UndefinedBot.Core.Command.Arguments.ArgumentRange;
 
 namespace UndefinedBot.Core.Command.Arguments.ArgumentType;
 
@@ -10,7 +11,7 @@ public class DateArgument(IArgumentRange? range = null) : IArgumentType
     public bool IsValid(ParsedToken token)
     {
             return token.TokenType == ParsedTokenTypes.Normal &&
-                   DateTime.TryParse(token.SerializedContent,out DateTime _);
+                   DateTime.TryParse(Encoding.UTF8.GetString(token.SerializedContent),out DateTime _);
         }
     public object GetValue(ParsedToken token) => GetExactTypeValue(token);
     public static DateTime GetDate(string key,CommandContext ctx)
@@ -23,7 +24,7 @@ public class DateArgument(IArgumentRange? range = null) : IArgumentType
         }
     private static DateTime GetExactTypeValue(ParsedToken token)
     {
-            return token.TokenType == ParsedTokenTypes.Normal && DateTime.TryParse(token.SerializedContent, out DateTime val)
+            return token.TokenType == ParsedTokenTypes.Normal && DateTime.TryParse(Encoding.UTF8.GetString(token.SerializedContent), out DateTime val)
                 ? val
                 : throw new ArgumentInvalidException($"{token} Is Not Valid Positive Integer");
         }

@@ -1,4 +1,5 @@
-﻿using UndefinedBot.Core.Command.Arguments.ArgumentRange;
+﻿using System.Text;
+using UndefinedBot.Core.Command.Arguments.ArgumentRange;
 
 namespace UndefinedBot.Core.Command.Arguments.ArgumentType;
 
@@ -9,8 +10,7 @@ public class StringArgument(IArgumentRange? range = null) : IArgumentType
     public IArgumentRange? Range => range;
     public bool IsValid(ParsedToken token)
     {
-        return token.TokenType == ParsedTokenTypes.Normal &&
-               !string.IsNullOrEmpty(token.SerializedContent) &&
+        return token is { TokenType: ParsedTokenTypes.Normal, SerializedContent.Length: > 0 } &&
                (Range?.InRange(token.SerializedContent) ?? true);
     }
 
@@ -26,7 +26,7 @@ public class StringArgument(IArgumentRange? range = null) : IArgumentType
     private static string GetExactTypeValue(ParsedToken token)
     {
         return token.TokenType == ParsedTokenTypes.Normal
-            ? token.SerializedContent
+            ? Encoding.UTF8.GetString(token.SerializedContent)
             : throw new ArgumentInvalidException("Token Is Not String");
     }
 }
