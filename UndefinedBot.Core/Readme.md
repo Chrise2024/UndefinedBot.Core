@@ -2,68 +2,97 @@
 
 The SDK of UndefinedBot.
 
-## Plugin Meta
+## Plugin Config
 
 In `plugin.json`
 
-```json
+```json5
 {
-  "name": "Help",
-  "description": "帮助",
-  "entry_file": "Command.Help"
+    "Description": "帮助",
+    "EntryFile": "Command.Help",
+    "GroupIds" : []
+    //other content
 }
 ```
 
-- `name` The name of plugin
-- `description` The description of plugin
-- `entry_file` The binary assembly of plugin(Without Suffix)
+- `Description` The description of plugin
+- `EntryFile` The binary assembly of plugin(Without Suffix)
+- `GroupIds` The groups plugin will be active in
+- You can write other content in this file. The custom content will be provided
 
 ## Plugin Develop
 
 Plugins are developing with `UndefinedBot.Core` on Nuget or as git submodule.
 
-Plugin's main class must not be abstract or static and must implement interface `UndefinedBot.Core.Registry.IPluginInitializer`.
+Plugin's main class must not be abstract or static and must extend class `UndefinedBot.Core.Plugin.BasePlugin` and override it's abstract fields and have a constructor with single param `PluginConfigData`.
 
-You can register commands in `Initialize` method.
+Use `RegisterCommand` method extends form BasePlugin to register command
+
+You can register commands in `Initialize` method. (Register commands in constructor is accepted)
 
 Example:
 
 ```csharp
-public class TestCommand : IPluginInitializer
+public class TestCommand(PluginConfigData pluginConfig) : BasePlugin(pluginConfig)
 {
-    public void Initialize(UndefinedApi undefinedApi)
+    public override string Id => "Test";
+    public override string Name => "Test Plugin";
+    public override string TargetAdapterId => "Adapter";
+    public override void Initialize()
     {
-        undefinedApi.RegisterCommand("test")
+        RegisterCommand("test")
             .Description("指令帮助文档")
             .ShortDescription("帮助")
             .Usage("{0}test [xxx]")
             .Example("{0}test 114514")
-            .Execute(async (ctx) => { })
+            .Execute(async (ctx,source) => { })
             .Then(new VariableNode("var1", new IntegerArgument()));
     }
 }
 ```
+- `Id` The plugin's unique identification
+- `Name` The plugin's name
+- `TargetAdapterId` The adapter plugin will dock to
 
-## Plugins Loading
+## Adapter Config
 
-## What happened in loading plugins
+In `adapter.json`
 
-- Main program start
+```json5
+{
+    "Description": "Adapter for Homo",
+    "EntryFile": "Adapter.Test",
+    "GroupIds" : [],
+    "CommandPrefix" : "!"
+    //other content
+}
+```
 
-- `Initializer.LoadPlugins()` is called
+- `Description` The description of adapter
+- `EntryFile` The binary assembly of adapter(Without Suffix)
+- `GroupIds` The groups adapter will be active in
+- `CommandPrefix` The message with prefix will be processed
+- You can write other content in this file. The custom content will be provided
 
-- `LoadPlugins()` will read `plugin.json` in plugin folder in `./Plugins` and get plugin's meta data
+## Adapter Develop
 
-- load plugin assembly and invoke `Initialize` method
+Adapter are developing with `UndefinedBot.Core` on Nuget or as git submodule.
 
-- commands in plugin will be registered,creating command instance and generate command reference
+Adapter's main class must not be abstract or static and must extend class `UndefinedBot.Core.Adapter.BaseAdapter` and override it's abstract fields and have a constructor with single param `AdapterConfigData`.
 
-- return plugin reference and command instance to main program
+Example:
 
-- `Initializer.GetCommandReference()` is called
-
-- `GetCommandReference()` will collect command reference and store them in program directory
-
-- Start to Listen to http port
-
-- Bot Launched
+```csharp
+public class TestAdapter : BaseAdapter
+{
+    public override string Id => "Test";
+    public override string Name => "Test Adapter";
+    public override string Platform => "QQ";
+    public override string Protocol => "OneBot11";
+    public TestAdapter(AdapterConfigData adapterConfig) : base(adapterConfig)
+}
+```
+- `Id` The adapter's unique identification
+- `Name` The adapter's name
+- `Platform` The adapter' platform
+- `Protocol` The adapter's protocol
