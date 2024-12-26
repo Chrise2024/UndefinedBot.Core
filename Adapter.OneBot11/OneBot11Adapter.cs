@@ -9,19 +9,21 @@ public class OneBot11Adapter : BaseAdapter
     public override string Platform => "QQ";
     public override string Protocol => "OneBot11";
     private Task MainLoopInstance { get; set; }
-
+    private HttpApi HApi => new(AdapterConfig);
     public OneBot11Adapter(AdapterConfigData adapterConfig) : base(adapterConfig)
     {
         HttpServer hs  = new(Logger,adapterConfig,SubmitCommandEvent);
         MainLoopInstance = hs.ExecuteAsync(new CancellationToken());
     }
 
-    public override void HandleCustomAction(string action, object paras)
+    public override byte[]? HandleCustomAction(string action, byte[]? paras)
     {
         //None
+        return null;
     }
-    public override void HandleDefaultAction(DefaultActionType action, object paras)
+    public override byte[]? HandleDefaultAction(DefaultActionType action, byte[]? paras)
     {
         //None
+        return null;
     }
 }

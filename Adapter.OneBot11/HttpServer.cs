@@ -24,7 +24,6 @@ public class HttpServiceOptions(string host, uint port, string? accessToken = nu
         {
             throw new Exception("Server Properties Not Implemented");
         }
-
         return serverConfig.Deserialize<HttpServiceOptions>() ?? throw new Exception("Invalid Server Properties");
     }
 
@@ -38,14 +37,14 @@ public class HttpServiceOptions(string host, uint port, string? accessToken = nu
     public string? AccessToken { get; } = accessToken;
 }
 
-internal class HttpServer(AdapterLogger logger,AdapterConfigData adapterConfig,Action<PrimeInvokeProperties,BaseCommandSource,List<ParsedToken>> submitter)
+internal class HttpServer(AdapterLogger logger,AdapterConfigData adapterConfig,Action<CommandInvokeProperties,BaseCommandSource,List<ParsedToken>> submitter)
 {
 
     private readonly HttpListener _httpListener = new();
     private readonly HttpServiceOptions _options = HttpServiceOptions.CreateFromConfig(adapterConfig);
     private readonly MsgHandler _handler = new(logger, adapterConfig);
     private AdapterLogger Logger => logger;
-    private Action<PrimeInvokeProperties, BaseCommandSource, List<ParsedToken>> Submitter => submitter;
+    private Action<CommandInvokeProperties, BaseCommandSource, List<ParsedToken>> Submitter => submitter;
     public async Task ExecuteAsync(CancellationToken token)
     {
         string prefix = $"http://{_options.Host}:{_options.Port}/";
@@ -158,10 +157,10 @@ internal class HttpServer(AdapterLogger logger,AdapterConfigData adapterConfig,A
             sr.Close();
             context.Response.StatusCode = 200;
             context.Response.Close();
-            (PrimeInvokeProperties? pip,BaseCommandSource? ucs, List<ParsedToken>? tokens) = _handler.HandleMsg(JsonNode.Parse(reqString) ?? throw new Exception("Parse Failed"));
-            if (pip != null && ucs != null && tokens != null)
+            (CommandInvokeProperties? cip,BaseCommandSource? ucs, List<ParsedToken>? tokens) = _handler.HandleMsg(JsonNode.Parse(reqString) ?? throw new Exception("Parse Failed"));
+            if (cip != null && ucs != null && tokens != null)
             {
-                Submitter(pip, ucs, tokens);
+                Submitter(cip, ucs, tokens);
                 Logger.Info("Handle Complete");
             }
         }

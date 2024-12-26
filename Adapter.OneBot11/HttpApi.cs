@@ -3,13 +3,25 @@ using System.Text;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
+using UndefinedBot.Core.Adapter;
 using UndefinedBot.Core.Utils;
 
 namespace Adapter.OneBot11;
 
-public class HttpApi([StringSyntax("Uri")]string httpPostUrl)
+public class HttpApi
 {
-    private readonly HttpClient _httpClient = new()
+    private string HttpPostUrl { get; }
+    public HttpApi(AdapterConfigData adapterConfig)
+    {
+        HttpServiceOptions? postConfig = adapterConfig.OriginalConfig["Post"]?.Deserialize<HttpServiceOptions>();
+        if (postConfig == null)
+        {
+            throw new Exception("Server Properties Not Implemented");
+        }
+        HttpClient.DefaultRequestHeaders.Add("Authorization", postConfig.AccessToken);
+        HttpPostUrl = $"http://{postConfig.Host}:{postConfig.Port}";
+    }
+    private static HttpClient HttpClient => new()
     {
         Timeout = TimeSpan.FromSeconds(20)
     };
@@ -101,7 +113,7 @@ public class HttpApi([StringSyntax("Uri")]string httpPostUrl)
     {
         try
         {
-            HttpResponseMessage response = await _httpClient.PostAsync(httpPostUrl + subUrl,
+            HttpResponseMessage response = await HttpClient.PostAsync(HttpPostUrl + subUrl,
                 content != null ?
                     new StringContent(
                         JsonSerializer.Serialize(content),
@@ -126,7 +138,7 @@ public class HttpApi([StringSyntax("Uri")]string httpPostUrl)
     {
         try
         {
-            _ = await _httpClient.PostAsync(httpPostUrl + subUrl,
+            _ = await HttpClient.PostAsync(HttpPostUrl + subUrl,
                 content != null ?
                     new StringContent(
                         JsonSerializer.Serialize(content),

@@ -1,0 +1,13 @@
+﻿syntax = 'proto3';
+package ob11_adapter;
+
+message OneBot11ReceiveFile{
+    string url = 1;
+    optional string file_unique = 3;
+}
+
+message OneBot11ReceiveImage{
+    string url = 1;
+    uint32 file_size = 2;
+    optional string file_unique = 3;
+}

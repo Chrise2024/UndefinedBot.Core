@@ -1,6 +1,7 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Text;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
@@ -8,9 +9,10 @@ using System.Text.RegularExpressions;
 using UndefinedBot.Core.Adapter;
 using UndefinedBot.Core.Command;
 using UndefinedBot.Core.Command.Arguments;
-using UndefinedBot.Core.Command.Arguments.ArgumentType;
 using UndefinedBot.Core.Command.CommandSource;
 using UndefinedBot.Core.Utils;
+using Google.Protobuf;
+using Ob11Adapter;
 
 namespace Adapter.OneBot11;
 
@@ -18,7 +20,7 @@ internal partial class MsgHandler(AdapterLogger logger,AdapterConfigData adapter
 {
     private AdapterLogger Logger => logger;
     private AdapterConfigData AdapterConfig => adapterConfig;
-    public (PrimeInvokeProperties?,BaseCommandSource?, List<ParsedToken>?) HandleMsg(JsonNode msgJson)
+    public (CommandInvokeProperties?,BaseCommandSource?, List<ParsedToken>?) HandleMsg(JsonNode msgJson)
     {
         if (!IsGroupMessageToHandle(msgJson))
         {
@@ -31,9 +33,9 @@ internal partial class MsgHandler(AdapterLogger logger,AdapterConfigData adapter
         {
             return (null,null,null);
         }
-        PrimeInvokeProperties pip = PrimeInvokeProperties.Group(cmdName,msgBody.UserId,msgBody.MessageId,msgBody.Time);
+        CommandInvokeProperties cip = CommandInvokeProperties.Group(cmdName,msgBody.UserId,msgBody.MessageId,msgBody.Time);
         UserCommandSource ucs = UserCommandSource.Group(msgBody.UserId, msgBody.GroupId, msgBody.Sender.Nickname, 0);
-        return (pip, ucs, tokens);
+        return (cip, ucs, tokens);
     }
 
     private bool IsGroupMessageToHandle(JsonNode msgJson)
@@ -53,14 +55,14 @@ internal partial class MsgHandler(AdapterLogger logger,AdapterConfigData adapter
     {
         List<ParsedToken> unsortedTokens = SplitRawCqMessage(msgString);
         int commandTokenIndex = unsortedTokens.FindIndex(item =>
-            item.TokenType == ParsedTokenTypes.Normal && item.SerializedContent.StartsWith(AdapterConfig.CommandPrefix)
+            item.TokenType == ParsedTokenTypes.Normal && Encoding.UTF8.GetString(item.SerializedContent).StartsWith(AdapterConfig.CommandPrefix)
         );
         if (commandTokenIndex is -1 or > 1)
         {
             return (null, []);
         }
         unsortedTokens.RemoveAt(commandTokenIndex);
-        return (unsortedTokens[commandTokenIndex].SerializedContent[AdapterConfig.CommandPrefix.Length..],unsortedTokens);
+        return (Encoding.UTF8.GetString(unsortedTokens[commandTokenIndex].SerializedContent)[AdapterConfig.CommandPrefix.Length..],unsortedTokens);
 
     }
     private List<ParsedToken> SplitRawCqMessage(string cqString)
@@ -76,7 +78,7 @@ internal partial class MsgHandler(AdapterLogger logger,AdapterConfigData adapter
             .Select(item =>
                 item.StartsWith("\r0CQ[")
                     ? DecodeCqEntity(item[4..])
-                    : new ParsedToken(ParsedTokenTypes.Normal,item)
+                    : new ParsedToken(ParsedTokenTypes.Normal,Encoding.UTF8.GetBytes(item))
             )
             .OfType<ParsedToken>()
             .ToList();
@@ -98,27 +100,26 @@ internal partial class MsgHandler(AdapterLogger logger,AdapterConfigData adapter
         switch (cqType)
         {
             case "at":
-                return new ParsedToken(ParsedTokenTypes.User,cqContent["qq"]);
+                return new ParsedToken(ParsedTokenTypes.User,Encoding.UTF8.GetBytes(cqContent["qq"]));
             case "reply":
-                return new ParsedToken(ParsedTokenTypes.Reply,cqContent["id"]);
+                return new ParsedToken(ParsedTokenTypes.Reply,Encoding.UTF8.GetBytes(cqContent["id"]));
             case "image":
                 return new ParsedToken(ParsedTokenTypes.Image,
-                    JsonSerializer.Serialize(
-                        new ImageContent(
-                            cqContent.TryGetValue("url", out string? u) ? u : cqContent["file"],
-                            cqContent["file_unique"])
-                        )
+                    new OneBot11ReceiveImage
+                    {
+                        FileUnique = cqContent["file_unique"],
+                        Url = cqContent.TryGetValue("url", out string? u) ? u : cqContent["file"]
+                    }.ToByteArray()
                     );
             case "file":
                 return new ParsedToken(
                     ParsedTokenTypes.File,
-                    JsonSerializer.Serialize(
-                        new FileContent(
-                            cqContent["url"],
-                            cqContent["file_unique"],
-                            int.Parse(cqContent["file_size"])
-                            )
-                        )
+                    new OneBot11ReceiveImage
+                    {
+                        Url = cqContent["url"],
+                        FileUnique = cqContent["file_unique"],
+                        FileSize = uint.Parse(cqContent["file_size"])
+                    }.ToByteArray()
                     );
             default:
                 return null;
