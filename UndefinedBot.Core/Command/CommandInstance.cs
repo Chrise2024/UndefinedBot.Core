@@ -8,6 +8,7 @@ namespace UndefinedBot.Core.Command;
 
 public class CommandInstance
 {
+    [JsonPropertyName("target_adapter_id")] public string TargetAdapterId { get; }
     [JsonPropertyName("name")] public string Name { get; private set; }
     [JsonPropertyName("alias")] public List<string> CommandAlias { get; private set; } = [];
     [JsonPropertyName("description")] public string? CommandDescription { get; private set; }
@@ -15,9 +16,9 @@ public class CommandInstance
     [JsonPropertyName("usage")] public string? CommandUsage { get; private set; }
     [JsonPropertyName("example")] public string? CommandExample { get; private set; }
     [JsonIgnore] private RootCommandNode RootNode { get; set; }
-
-    internal CommandInstance(string commandName)
+    internal CommandInstance(string commandName,string targetAdapterId)
     {
+        TargetAdapterId = targetAdapterId;
         Name = commandName;
         RootNode = new RootCommandNode(commandName);
     }
@@ -121,9 +122,9 @@ public class CommandInstance
         return RootNode.Then(nextNode);
     }
 
-    public CommandMetaProperties ExportToCommandProperties()
+    internal CommandProperties ExportToCommandProperties()
     {
-        return new CommandMetaProperties
+        return new CommandProperties
         {
             Name = Name,
             CommandDescription = CommandDescription,
@@ -135,7 +136,7 @@ public class CommandInstance
     }
 }
 
-[Serializable] public class CommandMetaProperties
+[Serializable] public class CommandProperties
 {
     [JsonPropertyName("name")] public string Name { get; set; } = "";
     [JsonPropertyName("alias")] public List<string> CommandAlias { get; set; } = [];

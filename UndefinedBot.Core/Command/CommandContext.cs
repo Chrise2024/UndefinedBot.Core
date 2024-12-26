@@ -8,18 +8,18 @@ namespace UndefinedBot.Core.Command;
 /// <summary>
 /// Context of command,containing apis, calling info and arguments
 /// </summary>
-public class CommandContext(string commandName,UndefinedApi baseApi,CommandInvokeProperties ip)
+public class CommandContext(string commandName,string pluginId,CommandInvokeProperties ip)
 {
-    public string PluginName => baseApi.PluginName;
+    public string PluginName => pluginId;
     public string CommandName => commandName;
-    public string RootPath => baseApi.RootPath;
-    public string CachePath => baseApi.CachePath;
+    public string RootPath => Environment.CurrentDirectory;
+    public string CachePath => Path.Join(RootPath,"Cache",pluginId);
     public CommandInvokeProperties InvokeProperties => ip;
-    public CommandLogger Logger => new(baseApi.PluginName,commandName);
+    public CommandLogger Logger => new(pluginId,commandName);
     public Config MainConfigData => UndefinedApi.MainConfigData;
-    public CacheManager Cache => baseApi.Cache;
-    public HttpRequest Request => baseApi.Request;
-    public ActionManager Action => new();
+    //public CacheManager Cache => new(pluginName);
+    public HttpRequest Request => new(pluginId);
+    public ActionManager Action => new(ip,Logger);
     //public readonly HttpApi Api = baseApi.Api;
     public MsgBuilder GetMessageBuilder() => MsgBuilder.GetInstance();
     public ForwardMessageBuilder GetForwardBuilder() => ForwardMessageBuilder.GetInstance();
