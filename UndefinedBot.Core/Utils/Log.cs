@@ -88,3 +88,23 @@ public class AdapterLogger(string adapterName)
         LogEventBus.SendLogMessage("Adapter",adapterName,UndefinedLogLevel.Debug,message);
     }
 }
+
+public class PluginLogger(string adapterName)
+{
+    public void Error(string message)
+    {
+        LogEventBus.SendLogMessage("Plugin",adapterName,UndefinedLogLevel.Error,message);
+    }
+    public void Warn(string message)
+    {
+        LogEventBus.SendLogMessage("Plugin",adapterName,UndefinedLogLevel.Warning,message);
+    }
+    public void Info(string message)
+    {
+        LogEventBus.SendLogMessage("Plugin",adapterName,UndefinedLogLevel.Information,message);
+    }
+    public void Debug(string message)
+    {
+        LogEventBus.SendLogMessage("Plugin",adapterName,UndefinedLogLevel.Debug,message);
+    }
+}
