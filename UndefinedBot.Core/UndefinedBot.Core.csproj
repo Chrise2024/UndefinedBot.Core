@@ -9,9 +9,9 @@
     <!-- NuGet 包信息 -->
     <PackageId>UndefinedBot.Core</PackageId>
 	<Title>UndefinedBot.Core</Title>
-    <Version>1.1.9.0</Version>
+    <Version>1.2.0.0-alpha</Version>
     <Authors>ChriseCecilia</Authors>
-    <Description>UndefinedBot SDK</Description>
+    <Description>UndefinedBot's Plugin and Adapter SDK</Description>
     <Copyright>Copyright © 2024</Copyright>
     <PackageLicenseExpression> MIT</PackageLicenseExpression>
     <PackageProjectUrl>https://github.com/Chrise2024/UndefinedBot.Core</PackageProjectUrl>

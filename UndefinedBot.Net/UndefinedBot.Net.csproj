@@ -19,5 +19,8 @@
       <CopyToOutputDirectory>Never</CopyToOutputDirectory>
     </EmbeddedResource>
   </ItemGroup>
+  <ItemGroup>
+    <Folder Include="NetWork\" />
+  </ItemGroup>
 
 </Project>
