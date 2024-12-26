@@ -19,9 +19,6 @@ public class CommandFinishEvent
         OnCommandFinish?.Invoke();
     }
 }
-
-[AttributeUsage(AttributeTargets.Class, AllowMultiple = true)]
-public sealed class PluginAttribute : Attribute;
 public class UndefinedApi(string pluginName)
 {
     public  string PluginName => pluginName;
@@ -29,25 +26,8 @@ public class UndefinedApi(string pluginName)
     public string PluginPath => Path.GetDirectoryName(Assembly.GetCallingAssembly().Location) ?? throw new DllNotFoundException("Get Plugin Assembly Failed");
     public string CachePath => Path.Join(RootPath, "Cache", pluginName);
     public GeneralLogger Logger => new(pluginName);
-    //public HttpApi Api => new("");//ConfigData.GetHttpPostUrl());
     public HttpRequest Request => new(pluginName);
-    public CommandFinishEvent FinishEvent => new();
-    public CacheManager Cache => new(pluginName, CachePath, FinishEvent);
+    //public CommandFinishEvent FinishEvent => new();
+    //public CacheManager Cache => new(pluginName, CachePath, FinishEvent);
     public static Config MainConfigData => ConfigManager.GetConfig();
-    internal readonly List<CommandInstance> _commandInstances = [];
-    /// <summary>
-    /// Register Command
-    /// </summary>
-    /// <param name="commandName">
-    /// Command Name to be Called
-    /// </param>
-    /// <returns>
-    /// CommandInstance
-    /// </returns>
-    public CommandInstance RegisterCommand(string commandName)
-    {
-        CommandInstance ci = new(commandName);
-        _commandInstances.Add(ci);
-        return ci;
-    }
 }
