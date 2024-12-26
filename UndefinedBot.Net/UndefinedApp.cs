@@ -6,6 +6,9 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using UndefinedBot.Core.Adapter;
+using UndefinedBot.Core.Command.CommandSource;
+using UndefinedBot.Core.Plugin;
 
 namespace UndefinedBot.Net;
 
@@ -18,16 +21,11 @@ public class UndefinedApp(IHost host) : IHost
 
     private readonly string _programRoot = Environment.CurrentDirectory;
 
-    private List<PluginMetaProperties> _pluginReference = [];
-
-    private Dictionary<string, CommandMetaProperties> _commandReference = [];
-
-    private Dictionary<string, CommandInstance> _commandInstance = [];
-
     private readonly JsonSerializerOptions _serializerOptions = new() { WriteIndented = true,IndentSize = 4 };
 
     public async Task StartAsync(CancellationToken cancellationToken = new())
     {
+        //Add LogEvent Handler
         LogEventBus.RegisterLogEventHandler((nameSpace, subSpace, undefinedLogLevel, message) =>
         {
             Services.GetRequiredService<ILogger<UndefinedApp>>().Log(undefinedLogLevel switch
@@ -49,25 +47,47 @@ public class UndefinedApp(IHost host) : IHost
             message
             );
         });
+        //Load Root Config
         ConfigManager.InitConfig(new Config
         {
             GroupId = Configuration.GetSection("GroupId").GetChildren().Select(child => long.Parse(child.Value!)).ToList(),
             CommandPrefix = Configuration["CommandPrefix"]!
         });
+        //Load Adapters
+        Dictionary<string, AdapterProperties> adapterReference = AdapterLoader.LoadAdapters();
+        //Load Plugins
+        List<PluginProperties> pluginReference = PluginLoader.LoadPlugins();
+        //Get Command References for Help command
+        Dictionary<string,CommandProperties> commandReference = PluginLoader.GetCommandReference();
 
-        (_pluginReference,_commandInstance) = Initializer.LoadPlugins();
+        FileIO.WriteAsJson(Path.Join(_programRoot, "adapter_reference.json"),adapterReference);
 
-        _commandReference = Initializer.GetCommandReference();
+        FileIO.WriteAsJson(Path.Join(_programRoot, "plugin_reference.json"),pluginReference);
 
-        FileIO.WriteAsJson(Path.Join(_programRoot, "plugin_reference.json"),_pluginReference);
-
-        FileIO.WriteAsJson(Path.Join(_programRoot, "command_reference.json"), _commandReference);
+        FileIO.WriteAsJson(Path.Join(_programRoot, "command_reference.json"), commandReference);
 
         await HostApp.StartAsync(cancellationToken);
 
         Logger.LogInformation("UndefinedBot.Net Implementation has started");
 
-        Logger.LogInformation("Loaded Plugins:{PluginList}", JsonSerializer.Serialize(_pluginReference.Select(item => item.Name), _serializerOptions));
+        Logger.LogInformation("Loaded Adapters:{AdapterList}", JsonSerializer.Serialize(adapterReference.Select(item => item.Value), _serializerOptions));
+
+        Logger.LogInformation("Loaded Plugins:{PluginList}", JsonSerializer.Serialize(pluginReference.Select(item => item), _serializerOptions));
+
+        //for test
+        CommandEventBus.InvokeCommandEvent(
+            CommandInvokeProperties.Group(
+                "test",
+                0,
+                0,
+                0)
+                .Implement(
+                    "OneBot11Adapter",
+                    "",
+                    "",
+                    []
+                    ),
+            UserCommandSource.Friend(0,"",0));
     }
 
     public async Task StopAsync(CancellationToken cancellationToken = new())
