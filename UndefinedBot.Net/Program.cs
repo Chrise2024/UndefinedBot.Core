@@ -8,6 +8,9 @@ using UndefinedBot.Core.Command;
 using UndefinedBot.Core.Command.Arguments;
 using UndefinedBot.Core.Utils;
 using System.Runtime;
+using UndefinedBot.Core.Adapter;
+using UndefinedBot.Core.Plugin;
+using UndefinedBot.Net.Utils;
 
 namespace UndefinedBot.Net;
 
@@ -38,16 +41,8 @@ internal class Program
         undefinedAppBuilder.Configuration.AddEnvironmentVariables();
         UndefinedApp undefinedApp = new (undefinedAppBuilder.Build());
         undefinedApp.Start();
-        while (true)
-        {
-            string tempString = Console.ReadLine() ?? "";
-            if (tempString != "stop")
-            {
-                continue;
-            }
-            await undefinedApp.StopAsync();
-            break;
-        }
+
+        await undefinedApp.StopAsync();
     }
     public static string GetProgramRoot()
     {

@@ -53,27 +53,12 @@ public class UndefinedApp(IHost host) : IHost
             GroupId = Configuration.GetSection("GroupId").GetChildren().Select(child => long.Parse(child.Value!)).ToList(),
             CommandPrefix = Configuration["CommandPrefix"]!
         });
-        //Load Adapters
-        Dictionary<string, AdapterProperties> adapterReference = AdapterLoader.LoadAdapters();
-        //Load Plugins
-        List<PluginProperties> pluginReference = PluginLoader.LoadPlugins();
-        //Get Command References for Help command
-        Dictionary<string,CommandProperties> commandReference = PluginLoader.GetCommandReference();
-
-        FileIO.WriteAsJson(Path.Join(_programRoot, "adapter_reference.json"),adapterReference);
-
-        FileIO.WriteAsJson(Path.Join(_programRoot, "plugin_reference.json"),pluginReference);
-
-        FileIO.WriteAsJson(Path.Join(_programRoot, "command_reference.json"), commandReference);
+        //Load Adapter and Plugin
+        Init();
 
         await HostApp.StartAsync(cancellationToken);
 
         Logger.LogInformation("UndefinedBot.Net Implementation has started");
-
-        Logger.LogInformation("Loaded Adapters:{AdapterList}", JsonSerializer.Serialize(adapterReference.Select(item => item.Value), _serializerOptions));
-
-        Logger.LogInformation("Loaded Plugins:{PluginList}", JsonSerializer.Serialize(pluginReference.Select(item => item), _serializerOptions));
-
         //for test
         CommandEventBus.InvokeCommandEvent(
             CommandInvokeProperties.Group(
@@ -87,7 +72,22 @@ public class UndefinedApp(IHost host) : IHost
                     "",
                     []
                     ),
-            UserCommandSource.Friend(0,"",0));
+            UserCommandSource.Friend(0,"",0)
+            );
+        //Console Loop
+        while (true)
+        {
+            string? tempString = Console.ReadLine();
+            if (tempString == "stop")
+            {
+                break;
+            }
+
+            if (tempString == "reload")
+            {
+                Init();
+            }
+        }
     }
 
     public async Task StopAsync(CancellationToken cancellationToken = new())
@@ -100,5 +100,24 @@ public class UndefinedApp(IHost host) : IHost
     {
         HostApp.Dispose();
         GC.SuppressFinalize(this);
+    }
+    private void Init()
+    {
+        //Load Adapters
+        Dictionary<string, AdapterProperties> adapterReference = AdapterLoader.LoadAdapters();
+        //Load Plugins
+        List<PluginProperties> pluginReference = PluginLoader.LoadPlugins();
+        //Get Command References for Help command
+        Dictionary<string,CommandProperties> commandReference = PluginLoader.GetCommandReference();
+
+        FileIO.WriteAsJson(Path.Join(_programRoot, "adapter_reference.json"),adapterReference);
+
+        FileIO.WriteAsJson(Path.Join(_programRoot, "plugin_reference.json"),pluginReference);
+
+        FileIO.WriteAsJson(Path.Join(_programRoot, "command_reference.json"), commandReference);
+
+        Logger.LogInformation("Loaded Adapters:{AdapterList}", JsonSerializer.Serialize(adapterReference.Select(item => item.Value), _serializerOptions));
+
+        Logger.LogInformation("Loaded Plugins:{PluginList}", JsonSerializer.Serialize(pluginReference.Select(item => item), _serializerOptions));
     }
 }
