@@ -136,7 +136,8 @@ public class CommandInstance
     }
 }
 
-[Serializable] public class CommandProperties
+[Serializable]
+public class CommandProperties
 {
     [JsonPropertyName("name")] public string Name { get; set; } = "";
     [JsonPropertyName("alias")] public List<string> CommandAlias { get; set; } = [];
@@ -144,4 +145,9 @@ public class CommandInstance
     [JsonPropertyName("short_description")] public string? CommandShortDescription { get; set; }
     [JsonPropertyName("usage")] public string? CommandUsage { get; set; }
     [JsonPropertyName("example")] public string? CommandExample { get; set; }
+
+    public bool IsValid()
+    {
+        return !string.IsNullOrEmpty(Name);
+    }
 }
