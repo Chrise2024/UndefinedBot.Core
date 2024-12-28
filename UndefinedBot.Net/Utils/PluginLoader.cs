@@ -13,8 +13,6 @@ internal static class PluginLoader
 {
     private static string PluginRoot => Path.Join(Program.GetProgramRoot(), "Plugins");
     private static string LibSuffix => GetLibSuffix();
-    private static PluginConfigData DefaultPluginConfigData => new();
-    private static CommandProperties DefaultCommand => new();
     private static GeneralLogger PluginInitializeLogger => new("Plugin Initialize");
     private static readonly List<PluginProperties> s_pluginReference = [];
     private static readonly Dictionary<string, CommandProperties> s_commandReference = [];
@@ -46,7 +44,7 @@ internal static class PluginLoader
 
             JsonNode? originJson = FileIO.ReadAsJson(pluginPropertiesFile);
             PluginConfigData? pluginConfigData = originJson.Deserialize<PluginConfigData>();
-            if (originJson == null || pluginConfigData == null || pluginConfigData.Equals(DefaultPluginConfigData))
+            if (originJson == null || pluginConfigData == null || !pluginConfigData.IsValid())
             {
                 PluginInitializeLogger.Warn($"Plugin: <{pf}> Invalid plugin.json");
                 continue;
@@ -246,7 +244,7 @@ internal static class PluginLoader
                         $"{Path.GetFileName(cfp).Split(".")[0]}:{k.Name}", v => v)
                 )
                 .SelectMany(item => item)
-                .Where(item => !item.Value.Equals(DefaultCommand))
+                .Where(item => item.Value.IsValid())
         )
         {
             s_commandReference[p.Key] = p.Value;

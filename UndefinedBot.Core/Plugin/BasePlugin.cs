@@ -34,17 +34,16 @@ public abstract class BasePlugin(PluginConfigData pluginConfig)
 /// <summary>
 /// This Class records what write in config file
 /// </summary>
-[Serializable] public class PluginConfigData : IEquatable<PluginConfigData>
+[Serializable] public class PluginConfigData
 {
     public string EntryFile { get; set; } = "";
     public string Description { get; set; } = "";
     public List<long> GroupIds { get; set; } = [];
     public JsonNode OriginalConfig { get; set; } = JsonNode.Parse("{}")!;
 
-    public bool Equals(PluginConfigData? other)
+    public bool IsValid()
     {
-        return EntryFile == other?.EntryFile &&
-               Description == other.Description;
+        return !string.IsNullOrEmpty(EntryFile);
     }
 }
 /// <summary>

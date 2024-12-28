@@ -52,7 +52,7 @@ public enum DefaultActionType
 /// <summary>
 /// This Class records what write in config file
 /// </summary>
-[Serializable] public class AdapterConfigData : IEquatable<AdapterConfigData>
+[Serializable] public class AdapterConfigData
 {
     public string EntryFile { get; set; } = "";
     public string Description { get; set; } = "";
@@ -60,11 +60,9 @@ public enum DefaultActionType
     public List<long> GroupIds { get; set; } = [];
     public JsonNode OriginalConfig { get; set; } = JsonNode.Parse("{}")!;
 
-    public bool Equals(AdapterConfigData? other)
+    public bool IsValid()
     {
-        return EntryFile == other?.EntryFile &&
-               Description == other.Description &&
-               CommandPrefix == other.CommandPrefix;
+        return !(string.IsNullOrEmpty(EntryFile) || string.IsNullOrEmpty(CommandPrefix));
     }
 }
 /// <summary>

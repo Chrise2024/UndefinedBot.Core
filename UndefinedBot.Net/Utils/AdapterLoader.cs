@@ -10,7 +10,6 @@ internal static class AdapterLoader
 {
     private static string AdapterRoot => Path.Join(Environment.CurrentDirectory, "Adapters");
     private static string LibSuffix => GetLibSuffix();
-    private static AdapterConfigData DefaultAdapterConfigData => new();
     private static GeneralLogger AdapterInitializeLogger => new("AdapterLoad");
     private static readonly Dictionary<string, AdapterInstance> s_adapterInstances = [];
     private static readonly Dictionary<string, AdapterProperties> s_adapterReferences = [];
@@ -36,7 +35,7 @@ internal static class AdapterLoader
             }
             JsonNode? originJson = FileIO.ReadAsJson(adapterPropertiesFile);
             AdapterConfigData? adapterConfigData = originJson?.Deserialize<AdapterConfigData>();
-            if (originJson == null || adapterConfigData == null || adapterConfigData.Equals(DefaultAdapterConfigData))
+            if (originJson == null || adapterConfigData == null || !adapterConfigData.IsValid())
             {
                 AdapterInitializeLogger.Warn($"Adapter: <{af}> Invalid adapter.json");
                 continue;
