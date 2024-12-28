@@ -53,6 +53,7 @@ internal partial class MsgHandler(AdapterLogger logger,AdapterConfigData adapter
     /// <returns>tokens</returns>
     private (string?,List<ParsedToken>) Tokenize(string msgString)
     {
+        Logger.Info($"Processing: {msgString}");
         List<ParsedToken> unsortedTokens = SplitRawCqMessage(msgString);
         int commandTokenIndex = unsortedTokens.FindIndex(item =>
             item.TokenType == ParsedTokenTypes.Normal && Encoding.UTF8.GetString(item.SerializedContent).StartsWith(AdapterConfig.CommandPrefix)
@@ -72,14 +73,15 @@ internal partial class MsgHandler(AdapterLogger logger,AdapterConfigData adapter
             return [];
         }
 
-        return GetCqEntityRegex()
-            .Replace(cqString, match => $" \r0CQ{match.Value} ")
-            .Split(" ", StringSplitOptions.RemoveEmptyEntries)
-            .Select(item =>
-                item.StartsWith("\r0CQ[")
-                    ? DecodeCqEntity(item[4..])
-                    : new ParsedToken(ParsedTokenTypes.Normal,Encoding.UTF8.GetBytes(item))
-            )
+        return GetCommandTokenRegex()
+            .Matches(GetCqEntityRegex().Replace(cqString, match => $" \r0CQ{match.Value} "))
+            .Select(m =>
+            {
+                string tmp = m.Value.Trim('"');
+                return tmp.StartsWith("\r0CQ[")
+                    ? DecodeCqEntity(tmp[4..])
+                    : new ParsedToken(ParsedTokenTypes.Normal, Encoding.UTF8.GetBytes(tmp));
+            })
             .OfType<ParsedToken>()
             .ToList();
     }
@@ -97,36 +99,30 @@ internal partial class MsgHandler(AdapterLogger logger,AdapterConfigData adapter
             .Select(item => item.Split("=", 2, StringSplitOptions.RemoveEmptyEntries))
             .Where(item => item.Length == 2)
             .ToDictionary(item => item[0], item => item[1]);
-        switch (cqType)
+        return cqType switch
         {
-            case "at":
-                return new ParsedToken(ParsedTokenTypes.User,Encoding.UTF8.GetBytes(cqContent["qq"]));
-            case "reply":
-                return new ParsedToken(ParsedTokenTypes.Reply,Encoding.UTF8.GetBytes(cqContent["id"]));
-            case "image":
-                return new ParsedToken(ParsedTokenTypes.Image,
-                    new OneBot11ReceiveImage
-                    {
-                        FileUnique = cqContent["file_unique"],
-                        Url = cqContent.TryGetValue("url", out string? u) ? u : cqContent["file"]
-                    }.ToByteArray()
-                    );
-            case "file":
-                return new ParsedToken(
-                    ParsedTokenTypes.File,
-                    new OneBot11ReceiveImage
-                    {
-                        Url = cqContent["url"],
-                        FileUnique = cqContent["file_unique"],
-                        FileSize = uint.Parse(cqContent["file_size"])
-                    }.ToByteArray()
-                    );
-            default:
-                return null;
-        }
+            "at" => new ParsedToken(ParsedTokenTypes.User, Encoding.UTF8.GetBytes(cqContent["qq"])),
+            "reply" => new ParsedToken(ParsedTokenTypes.Reply, Encoding.UTF8.GetBytes(cqContent["id"])),
+            "image" => new ParsedToken(ParsedTokenTypes.Image,
+                new OneBot11ReceiveImage
+                {
+                    FileUnique = cqContent["file_unique"],
+                    Url = cqContent.TryGetValue("url", out string? u) ? u : cqContent["file"]
+                }.ToByteArray()),
+            "file" => new ParsedToken(ParsedTokenTypes.File,
+                new OneBot11ReceiveImage
+                {
+                    Url = cqContent["url"],
+                    FileUnique = cqContent["file_unique"],
+                    FileSize = uint.Parse(cqContent["file_size"])
+                }.ToByteArray()),
+            _ => null
+        };
     }
     [GeneratedRegex(@"\[CQ:\S+\]")]
     private static partial Regex GetCqEntityRegex();
+    [GeneratedRegex(@"[\""].+?[\""]|[^ ]+")]
+    private static partial Regex GetCommandTokenRegex();
 }
 [Serializable] public class MsgSender
 {
