@@ -15,7 +15,7 @@ using UndefinedBot.Core.Utils;
 
 namespace Adapter.OneBot11;
 
-public class HttpServiceOptions(string host, uint port, string? accessToken = null)
+public sealed class HttpServiceOptions(string host, uint port, string? accessToken = null)
 {
     public static HttpServiceOptions CreateFromConfig(AdapterConfigData adapterConfig)
     {
@@ -37,7 +37,7 @@ public class HttpServiceOptions(string host, uint port, string? accessToken = nu
     public string? AccessToken { get; } = accessToken;
 }
 
-internal class HttpServer(AdapterLogger logger,AdapterConfigData adapterConfig,Action<CommandInvokeProperties,BaseCommandSource,List<ParsedToken>> submitter)
+internal sealed class HttpServer(AdapterLogger logger,AdapterConfigData adapterConfig,Action<CommandInvokeProperties,BaseCommandSource,List<ParsedToken>> submitter)
 {
 
     private readonly HttpListener _httpListener = new();

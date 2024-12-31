@@ -5,7 +5,7 @@ using UndefinedBot.Core.Utils;
 
 namespace UndefinedBot.Core.NetWork;
 
-public class HttpRequest(string pluginName)
+public sealed class HttpRequest(string pluginName)
 {
     private readonly HttpClient _httpClient = new()
     {

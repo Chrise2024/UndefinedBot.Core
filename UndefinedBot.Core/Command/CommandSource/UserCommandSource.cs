@@ -1,7 +1,7 @@
 ﻿
 namespace UndefinedBot.Core.Command.CommandSource;
 
-public class UserCommandSource : BaseCommandSource
+public sealed class UserCommandSource : BaseCommandSource
 {
     public sealed override long UserId { get; protected set; }
     public sealed override string UserName { get; protected set; }

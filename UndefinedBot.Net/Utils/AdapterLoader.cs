@@ -41,7 +41,7 @@ internal static class AdapterLoader
                 continue;
             }
 
-            adapterConfigData.OriginalConfig = originJson;
+            adapterConfigData.Implement(originJson);
             string entryFile = $"{Path.Join(af, adapterConfigData.EntryFile)}.{LibSuffix}";
             if (!File.Exists(entryFile))
             {

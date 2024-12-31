@@ -2,7 +2,7 @@
 
 namespace UndefinedBot.Core.Command.Arguments.ArgumentType;
 
-public class NumberArgument(IArgumentRange? range = null) : IArgumentType
+public sealed class NumberArgument(IArgumentRange? range = null) : IArgumentType
 {
     public ArgumentTypes ArgumentType => ArgumentTypes.Number;
     public string ArgumentTypeName => "Number";

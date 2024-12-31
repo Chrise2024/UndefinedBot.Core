@@ -13,9 +13,9 @@ public enum UndefinedLogLevel
 }
 
 public delegate void LogEventHandler(string nameSpace, string subSpace, UndefinedLogLevel undefinedLogLevel, string message);
-internal abstract class LogEventBus
+internal static class LogEventBus
 {
-    protected static event LogEventHandler? CoreLogEvent;
+    private static event LogEventHandler? CoreLogEvent;
 
     internal static void RegisterLogEventHandler(LogEventHandler handler)
     {
@@ -30,7 +30,7 @@ internal abstract class LogEventBus
         CoreLogEvent?.Invoke(nameSpace,"Main",undefinedLogLevel,message);
     }
 }
-public class GeneralLogger(string nameSpace)
+public sealed class GeneralLogger(string nameSpace)
 {
     public void Error(string message)
     {
@@ -49,7 +49,7 @@ public class GeneralLogger(string nameSpace)
         LogEventBus.SendLogMessage(nameSpace,"Main",UndefinedLogLevel.Debug,message);
     }
 }
-public class CommandLogger(string nameSpace,string commandName)
+public sealed class CommandLogger(string nameSpace,string commandName)
 {
     public void Error(string message)
     {
@@ -69,7 +69,7 @@ public class CommandLogger(string nameSpace,string commandName)
     }
 }
 
-public class AdapterLogger(string adapterName)
+public sealed class AdapterLogger(string adapterName)
 {
     public void Error(string message)
     {
@@ -89,7 +89,7 @@ public class AdapterLogger(string adapterName)
     }
 }
 
-public class PluginLogger(string adapterName)
+public sealed class PluginLogger(string adapterName)
 {
     public void Error(string message)
     {

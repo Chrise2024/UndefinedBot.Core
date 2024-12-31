@@ -4,7 +4,7 @@ using UndefinedBot.Core.Command.Arguments.ArgumentRange;
 
 namespace UndefinedBot.Core.Command.Arguments.ArgumentType;
 
-public class ReplyArgument(IArgumentRange? range = null) : IArgumentType
+public sealed class ReplyArgument(IArgumentRange? range = null) : IArgumentType
 {
     public ArgumentTypes ArgumentType => ArgumentTypes.Reply;
     public string ArgumentTypeName => "Reply";

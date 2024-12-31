@@ -8,7 +8,7 @@ using UndefinedBot.Core.Utils;
 
 namespace Adapter.OneBot11;
 
-public class HttpApi
+public sealed class HttpApi
 {
     private string HttpPostUrl { get; }
     public HttpApi(AdapterConfigData adapterConfig)
@@ -164,21 +164,21 @@ public class HttpApi
     }
 }
 
-[Serializable] public class GroupMember
+[Serializable] public sealed class GroupMember
 {
-    [JsonPropertyName("group_id")] public long GroupId { get; set; } = 0;
-    [JsonPropertyName("user_id")] public long UserId { get; set; } = 0;
-    [JsonPropertyName("nickname")] public string Nickname { get; set; } = "";
-    [JsonPropertyName("card")] public string Card { get; set; } = "";
-    [JsonPropertyName("sex")] public string Sex { get; set; } = "";
-    [JsonPropertyName("age")] public int Age { get; set; } = 0;
-    [JsonPropertyName("area")] public string Area { get; set; } = "";
-    [JsonPropertyName("join_time")] public int JoinTime { get; set; } = 0;
-    [JsonPropertyName("last_sent_time")] public int LastSentTime { get; set; } = 0;
-    [JsonPropertyName("level")] public string Level { get; set; } = "";
-    [JsonPropertyName("role")] public string Role { get; set; } = "member";
-    [JsonPropertyName("unfriendly")] public bool Unfriendly { get; set; } = false;
-    [JsonPropertyName("title")] public string Title { get; set; } = "";
-    [JsonPropertyName("title_expire_time")] public int TitleExpireTime { get; set; } = 0;
-    [JsonPropertyName("card_changeable")] public bool CardChangeable { get; set; } = true;
+    [JsonPropertyName("group_id")] public long GroupId { get; init; } = 0;
+    [JsonPropertyName("user_id")] public long UserId { get; init; } = 0;
+    [JsonPropertyName("nickname")] public string Nickname { get; init; } = "";
+    [JsonPropertyName("card")] public string Card { get; init; } = "";
+    [JsonPropertyName("sex")] public string Sex { get; init; } = "";
+    [JsonPropertyName("age")] public int Age { get; init; } = 0;
+    [JsonPropertyName("area")] public string Area { get; init; } = "";
+    [JsonPropertyName("join_time")] public int JoinTime { get; init; } = 0;
+    [JsonPropertyName("last_sent_time")] public int LastSentTime { get; init; } = 0;
+    [JsonPropertyName("level")] public string Level { get; init; } = "";
+    [JsonPropertyName("role")] public string Role { get; init; } = "member";
+    [JsonPropertyName("unfriendly")] public bool Unfriendly { get; init; } = false;
+    [JsonPropertyName("title")] public string Title { get; init; } = "";
+    [JsonPropertyName("title_expire_time")] public int TitleExpireTime { get; init; } = 0;
+    [JsonPropertyName("card_changeable")] public bool CardChangeable { get; init; } = true;
 }

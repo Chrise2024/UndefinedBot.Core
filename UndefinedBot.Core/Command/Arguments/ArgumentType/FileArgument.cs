@@ -3,7 +3,7 @@ using UndefinedBot.Core.Command.Arguments.ArgumentRange;
 
 namespace UndefinedBot.Core.Command.Arguments.ArgumentType;
 
-public class FileArgument : IArgumentType
+public sealed class FileArgument : IArgumentType
 {
     public ArgumentTypes ArgumentType => ArgumentTypes.File;
     public string ArgumentTypeName => "File";
@@ -28,7 +28,7 @@ public class FileArgument : IArgumentType
     }
 }
 
-public class FileContent(string fileUrl,string fileUnique,int size)
+public sealed class FileContent(string fileUrl,string fileUnique,int size)
 {
     public string FileUrl => fileUrl;
     public string FileUnique => fileUnique;

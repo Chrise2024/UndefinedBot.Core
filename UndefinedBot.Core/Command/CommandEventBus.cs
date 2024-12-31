@@ -8,7 +8,7 @@ public delegate Task UniversalCommandEventHandler(CommandInvokeProperties invoke
 /// <summary>
 /// Plan to assign standalone bus for each adapter
 /// </summary>
-internal abstract class CommandEventBus
+internal static class CommandEventBus
 {
     private static event UniversalCommandEventHandler? UniversalCommandEvent;
 
@@ -29,7 +29,7 @@ internal abstract class CommandEventBus
 /// <summary>
 /// Contains the meta data of the command
 /// </summary>
-public class CommandInvokeProperties
+public sealed class CommandInvokeProperties
 {
 
     public string Command { get; }

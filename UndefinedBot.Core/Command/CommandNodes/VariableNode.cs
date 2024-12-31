@@ -5,7 +5,7 @@ using UndefinedBot.Core.Command.CommandSource;
 
 namespace UndefinedBot.Core.Command.CommandNodes;
 
-public class VariableNode(string name,IArgumentType argumentType):ICommandNode
+public sealed class VariableNode(string name,IArgumentType argumentType):ICommandNode
 {
     public string NodeName => name;
     public IArgumentType ArgumentType => argumentType;

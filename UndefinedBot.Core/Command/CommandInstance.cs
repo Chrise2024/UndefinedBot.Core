@@ -6,7 +6,7 @@ using UndefinedBot.Core.Command.CommandSource;
 
 namespace UndefinedBot.Core.Command;
 
-public class CommandInstance
+public sealed class CommandInstance
 {
     [JsonPropertyName("target_adapter_id")] public string TargetAdapterId { get; }
     [JsonPropertyName("name")] public string Name { get; private set; }
@@ -137,14 +137,14 @@ public class CommandInstance
 }
 
 [Serializable]
-public class CommandProperties
+public sealed class CommandProperties
 {
-    [JsonPropertyName("name")] public string Name { get; set; } = "";
-    [JsonPropertyName("alias")] public List<string> CommandAlias { get; set; } = [];
-    [JsonPropertyName("description")] public string? CommandDescription { get; set; }
-    [JsonPropertyName("short_description")] public string? CommandShortDescription { get; set; }
-    [JsonPropertyName("usage")] public string? CommandUsage { get; set; }
-    [JsonPropertyName("example")] public string? CommandExample { get; set; }
+    [JsonPropertyName("name")] public string Name { get; init; } = "";
+    [JsonPropertyName("alias")] public List<string> CommandAlias { get; init; } = [];
+    [JsonPropertyName("description")] public string? CommandDescription { get; init; }
+    [JsonPropertyName("short_description")] public string? CommandShortDescription { get; init; }
+    [JsonPropertyName("usage")] public string? CommandUsage { get; init; }
+    [JsonPropertyName("example")] public string? CommandExample { get; init; }
 
     public bool IsValid()
     {

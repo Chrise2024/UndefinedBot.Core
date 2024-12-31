@@ -4,7 +4,7 @@ using UndefinedBot.Core.Command.Arguments.ArgumentRange;
 
 namespace UndefinedBot.Core.Command.Arguments.ArgumentType;
 
-public class UserArgument(IArgumentRange? range = null) : IArgumentType
+public sealed class UserArgument(IArgumentRange? range = null) : IArgumentType
 {
     public ArgumentTypes ArgumentType => ArgumentTypes.User;
     public string ArgumentTypeName => "At";

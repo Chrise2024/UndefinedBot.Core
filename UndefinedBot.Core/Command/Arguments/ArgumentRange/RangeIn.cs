@@ -2,7 +2,7 @@
 
 namespace UndefinedBot.Core.Command.Arguments.ArgumentRange;
 
-public class RangeIn<T> : IArgumentRange where T : IEquatable<T>
+public sealed class RangeIn<T> : IArgumentRange where T : IEquatable<T>
 {
     public List<T> Range { get; }
     public string DescriptionString { get; }

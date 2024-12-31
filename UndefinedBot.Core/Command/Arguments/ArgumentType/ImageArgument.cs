@@ -4,7 +4,7 @@ using UndefinedBot.Core.Command.Arguments.ArgumentRange;
 
 namespace UndefinedBot.Core.Command.Arguments.ArgumentType;
 
-public class ImageArgument : IArgumentType
+public sealed class ImageArgument : IArgumentType
 {
     public ArgumentTypes ArgumentType => ArgumentTypes.Image;
     public string ArgumentTypeName => "Image";
@@ -28,7 +28,7 @@ public class ImageArgument : IArgumentType
         return token.TokenType == ParsedTokenTypes.Image ? JsonSerializer.Deserialize<ImageContent>(token.SerializedContent)! : throw new ArgumentInvalidException("Token Is Not Image");
     }
 }
-public class ImageContent(string imageUrl,string imageUnique,int? width = null,int? height = null)
+public sealed class ImageContent(string imageUrl,string imageUnique,int? width = null,int? height = null)
 {
     public string ImageUrl => imageUrl;
     public string ImageUnique => imageUnique;

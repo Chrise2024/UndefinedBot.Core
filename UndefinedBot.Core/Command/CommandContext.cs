@@ -8,7 +8,7 @@ namespace UndefinedBot.Core.Command;
 /// <summary>
 /// Context of command,containing apis, calling info and arguments
 /// </summary>
-public class CommandContext(string commandName,string pluginId,CommandInvokeProperties ip)
+public sealed class CommandContext(string commandName,string pluginId,CommandInvokeProperties ip)
 {
     public string PluginName => pluginId;
     public string CommandName => commandName;

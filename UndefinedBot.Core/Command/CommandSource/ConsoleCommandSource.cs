@@ -3,7 +3,7 @@
 
 namespace UndefinedBot.Core.Command.CommandSource;
 
-internal class ConsoleCommandSource : BaseCommandSource
+internal sealed class ConsoleCommandSource : BaseCommandSource
 {
     public override CommandSourceAuthority Authority { get; protected set; } = CommandSourceAuthority.Console;
 

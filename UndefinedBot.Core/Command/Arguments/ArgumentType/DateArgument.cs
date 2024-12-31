@@ -3,7 +3,7 @@ using UndefinedBot.Core.Command.Arguments.ArgumentRange;
 
 namespace UndefinedBot.Core.Command.Arguments.ArgumentType;
 
-public class DateArgument(IArgumentRange? range = null) : IArgumentType
+public sealed class DateArgument(IArgumentRange? range = null) : IArgumentType
 {
     public ArgumentTypes ArgumentType => ArgumentTypes.Date;
     public string ArgumentTypeName => "Date";

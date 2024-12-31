@@ -10,7 +10,7 @@ namespace UndefinedBot.Core;
 
 public delegate void CommandFinishHandler();
 public delegate Task CommandActionHandler(CommandContext ctx);
-public class CommandFinishEvent
+public sealed class CommandFinishEvent
 {
     public event CommandFinishHandler? OnCommandFinish;
 
@@ -19,7 +19,7 @@ public class CommandFinishEvent
         OnCommandFinish?.Invoke();
     }
 }
-public class UndefinedApi(string pluginName)
+public sealed class UndefinedApi(string pluginName)
 {
     public  string PluginName => pluginName;
     public string RootPath => Environment.CurrentDirectory;

@@ -6,7 +6,7 @@ using UndefinedBot.Core.Utils;
 
 namespace UndefinedBot.Core.Adapter;
 
-public class ActionManager(CommandInvokeProperties cip,CommandLogger logger)
+public sealed class ActionManager(CommandInvokeProperties cip,CommandLogger logger)
 {
     private static Dictionary<string, AdapterInstance> AdapterInstances { get; set; } = [];
     private CommandInvokeProperties InvokeProperties => cip;

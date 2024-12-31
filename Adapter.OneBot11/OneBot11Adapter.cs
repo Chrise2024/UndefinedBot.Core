@@ -2,7 +2,7 @@
 
 namespace Adapter.OneBot11;
 
-public class OneBot11Adapter : BaseAdapter
+public sealed class OneBot11Adapter : BaseAdapter
 {
     public override string Id => "OneBot11Adapter";
     public override string Name => "OneBot11Adapter";

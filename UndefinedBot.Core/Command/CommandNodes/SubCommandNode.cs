@@ -6,7 +6,7 @@ using UndefinedBot.Core.Command.CommandSource;
 
 namespace UndefinedBot.Core.Command.CommandNodes;
 
-public class SubCommandNode(string name):ICommandNode
+public sealed class SubCommandNode(string name):ICommandNode
 {
     public string NodeName => name;
     public IArgumentType ArgumentType => new StringArgument();

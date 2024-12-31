@@ -3,7 +3,7 @@ using UndefinedBot.Core.Command.Arguments.ArgumentRange;
 
 namespace UndefinedBot.Core.Command.Arguments.ArgumentType;
 
-public class StringArgument(IArgumentRange? range = null) : IArgumentType
+public sealed class StringArgument(IArgumentRange? range = null) : IArgumentType
 {
     public ArgumentTypes ArgumentType => ArgumentTypes.String;
     public string ArgumentTypeName => "String";

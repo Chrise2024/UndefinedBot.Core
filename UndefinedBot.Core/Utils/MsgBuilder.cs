@@ -19,7 +19,7 @@ public enum ImageSubType
     Battle = 3, //斗图
 }
 
-public class MsgBuilder
+public sealed class MsgBuilder
 {
     private static readonly JsonNode s_textElementBase = JsonNode.Parse("""{"type": "text", "data": {"text": ""}}""")!;
     private static readonly JsonNode s_faceElementBase = JsonNode.Parse("""{"type": "face", "data": {"id": ""}}""")!;
@@ -98,7 +98,7 @@ public class MsgBuilder
     }
 }
 
-public class ForwardMessageBuilder
+public sealed class ForwardMessageBuilder
 {
     private ForwardMessageBuilder()
     {
@@ -137,7 +137,7 @@ public class ForwardMessageBuilder
     }
 }
 
-[Serializable]public class ForwardMessageNode(string name, string uin, ForwardMessageBuilder instance)
+[Serializable]public sealed class ForwardMessageNode(string name, string uin, ForwardMessageBuilder instance)
 {
     [JsonIgnore] private static readonly JsonNode s_textElementBase = JsonNode.Parse("""{"type": "text", "data": {"text": ""}}""")!;
     [JsonIgnore] private static readonly JsonNode s_faceElementBase = JsonNode.Parse("""{"type": "face", "data": {"id": ""}}""")!;
@@ -200,7 +200,7 @@ public class ForwardMessageBuilder
         return _parentInstance;
     }
 }
-public class ForwardPropertiesData(List<ForwardMessageNode> content,
+public sealed class ForwardPropertiesData(List<ForwardMessageNode> content,
     List<ForwardSummaryNewsEntity>? news = null,
     string? prompt = null
     )
@@ -210,11 +210,11 @@ public class ForwardPropertiesData(List<ForwardMessageNode> content,
     [JsonPropertyName("prompt")] public string? Prompt => prompt;
 }
 
-public class ForwardSummaryNewsEntity(string text)
+public sealed class ForwardSummaryNewsEntity(string text)
 {
     [JsonPropertyName("text")] public string Text => text;
 }
-public class ForwardNodeData(string name, string uin, List<JsonNode> content)
+public sealed class ForwardNodeData(string name, string uin, List<JsonNode> content)
 {
     [JsonPropertyName("name")] public string Name => name;
     [JsonPropertyName("uin")] public string Uin => uin;

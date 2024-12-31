@@ -34,12 +34,17 @@ public abstract class BasePlugin(PluginConfigData pluginConfig)
 /// <summary>
 /// This Class records what write in config file
 /// </summary>
-[Serializable] public class PluginConfigData
+[Serializable] public sealed class PluginConfigData
 {
-    public string EntryFile { get; set; } = "";
-    public string Description { get; set; } = "";
-    public List<long> GroupIds { get; set; } = [];
-    public JsonNode OriginalConfig { get; set; } = JsonNode.Parse("{}")!;
+    public string EntryFile { get; init; } = "";
+    public string Description { get; init; } = "";
+    public List<long> GroupIds { get; init; } = [];
+    public JsonNode OriginalConfig { get; private set; } = JsonNode.Parse("{}")!;
+
+    internal void Implement(JsonNode oc)
+    {
+        OriginalConfig = oc;
+    }
 
     public bool IsValid()
     {
@@ -49,7 +54,7 @@ public abstract class BasePlugin(PluginConfigData pluginConfig)
 /// <summary>
 /// This class is for program record plugin's properties,include information defined in assembly
 /// </summary>
-[Serializable] public class PluginProperties(BasePlugin baseInstance,PluginConfigData originData)
+[Serializable] public sealed class PluginProperties(BasePlugin baseInstance,PluginConfigData originData)
 {
     public string Id => baseInstance.Id;
     public string Name => baseInstance.Name;

@@ -2,7 +2,7 @@
 
 namespace UndefinedBot.Core.Command.Arguments.ArgumentType;
 
-public class PositiveIntegerArgument(IArgumentRange? range = null) : IArgumentType
+public sealed class PositiveIntegerArgument(IArgumentRange? range = null) : IArgumentType
 {
     public ArgumentTypes ArgumentType => ArgumentTypes.PositiveInteger;
     public string ArgumentTypeName => "Positive Integer";

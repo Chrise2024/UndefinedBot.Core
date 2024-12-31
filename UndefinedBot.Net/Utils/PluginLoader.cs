@@ -50,7 +50,7 @@ internal static class PluginLoader
                 continue;
             }
 
-            pluginConfigData.OriginalConfig = originJson;
+            pluginConfigData.Implement(originJson);
             string entryFile = $"{Path.Join(pf, pluginConfigData.EntryFile)}.{LibSuffix}";
             if (!File.Exists(entryFile))
             {

@@ -5,7 +5,7 @@ using UndefinedBot.Core.Plugin;
 
 namespace UndefinedBot.Core.Test;
 
-public class TestCommand(PluginConfigData pluginConfig) : BasePlugin(pluginConfig)
+public sealed class TestCommand(PluginConfigData pluginConfig) : BasePlugin(pluginConfig)
 {
     public override string Id => "Test";
     public override string Name => "Test Plugin";

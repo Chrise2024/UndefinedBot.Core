@@ -2,7 +2,7 @@
 
 namespace UndefinedBot.Core.Command.Arguments.ArgumentType;
 
-public class IntegerArgument(IArgumentRange? range = null) : IArgumentType
+public sealed class IntegerArgument(IArgumentRange? range = null) : IArgumentType
 {
     public ArgumentTypes ArgumentType => ArgumentTypes.Integer;
     public string ArgumentTypeName => "Integer";

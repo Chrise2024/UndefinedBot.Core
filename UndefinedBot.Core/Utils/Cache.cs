@@ -3,7 +3,7 @@ using System.Text.Json;
 
 namespace UndefinedBot.Core.Utils;
 
-public class CacheManager
+public sealed class CacheManager
 {
     private readonly Dictionary<string,object> _storageCache = [];
     private readonly Dictionary<string, FileCacheProperty> _fileCache = [];
@@ -100,13 +100,13 @@ public class CacheManager
     }
 }
 
-public class StorageCacheProperty<T>(T content, long expiredTime)
+public sealed class StorageCacheProperty<T>(T content, long expiredTime)
 {
     public T Content = content;
     public readonly long ExpiredTime = expiredTime;
 }
 
-public class FileCacheProperty(string path, long expiredTime)
+public sealed class FileCacheProperty(string path, long expiredTime)
 {
     public readonly string FilePath = path;
     public readonly long ExpiredTime = expiredTime;

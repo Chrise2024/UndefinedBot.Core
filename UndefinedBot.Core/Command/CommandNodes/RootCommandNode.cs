@@ -9,7 +9,7 @@ namespace UndefinedBot.Core.Command.CommandNodes;
 /// Root node of command tree.Only use in <see cref="UndefinedBot.Core.Command.CommandInstance"/>.
 /// </summary>
 /// <param name="name">Node name,will be same as command name</param>
-internal class RootCommandNode(string name) : ICommandNode
+internal sealed class RootCommandNode(string name) : ICommandNode
 {
     public string NodeName => name;
     public IArgumentType ArgumentType => new StringArgument();

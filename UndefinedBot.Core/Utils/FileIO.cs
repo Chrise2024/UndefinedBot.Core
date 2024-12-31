@@ -3,7 +3,7 @@ using System.Text.Json.Nodes;
 
 namespace UndefinedBot.Core.Utils;
 
-internal abstract class FileIO
+internal static class FileIO
 {
     private static readonly JsonSerializerOptions s_serializerOptio = new(){ WriteIndented = true };
     public static bool EnsurePath(string? tPath)

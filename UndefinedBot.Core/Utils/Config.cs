@@ -1,7 +1,7 @@
 ﻿
 namespace UndefinedBot.Core.Utils;
 
-public abstract class ConfigManager
+public static class ConfigManager
 {
     private static Config s_configData = new();
 
@@ -29,7 +29,7 @@ public abstract class ConfigManager
         return s_configData;
     }
 }
-[Serializable] public class Config
+[Serializable] public sealed class Config
 {
     public List<long> GroupId { get; set; } = [];
     public string CommandPrefix { get; set; } = "!";

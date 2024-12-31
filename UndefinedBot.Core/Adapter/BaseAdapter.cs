@@ -52,13 +52,18 @@ public enum DefaultActionType
 /// <summary>
 /// This Class records what write in config file
 /// </summary>
-[Serializable] public class AdapterConfigData
+[Serializable] public sealed class AdapterConfigData
 {
-    public string EntryFile { get; set; } = "";
-    public string Description { get; set; } = "";
-    public string CommandPrefix { get; set; } = "!";
-    public List<long> GroupIds { get; set; } = [];
-    public JsonNode OriginalConfig { get; set; } = JsonNode.Parse("{}")!;
+    public string EntryFile { get; init; } = "";
+    public string Description { get; init; } = "";
+    public string CommandPrefix { get; init; } = "!";
+    public List<long> GroupIds { get; init; } = [];
+    public JsonNode OriginalConfig { get; private set; } = JsonNode.Parse("{}")!;
+
+    internal void Implement(JsonNode oc)
+    {
+        OriginalConfig = oc;
+    }
 
     public bool IsValid()
     {
@@ -68,7 +73,7 @@ public enum DefaultActionType
 /// <summary>
 /// This class is for program record adapter's properties,include information defined in assembly
 /// </summary>
-[Serializable] public class AdapterProperties(BaseAdapter baseInstance,AdapterConfigData originData)
+[Serializable] public sealed class AdapterProperties(BaseAdapter baseInstance,AdapterConfigData originData)
 {
     public string Id => baseInstance.Id;
     public string Name => baseInstance.Name;
@@ -78,7 +83,7 @@ public enum DefaultActionType
     public string Description => originData.Description;
     public string CommandPrefix => originData.CommandPrefix;
 }
-internal class AdapterInstance(object instance,MethodInfo dah,MethodInfo cah)
+internal sealed class AdapterInstance(object instance,MethodInfo dah,MethodInfo cah)
 {
     private object Instance => instance;
     private MethodInfo DefaultActionHandler => dah;

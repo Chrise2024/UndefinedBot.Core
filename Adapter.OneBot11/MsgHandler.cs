@@ -16,7 +16,7 @@ using Ob11Adapter;
 
 namespace Adapter.OneBot11;
 
-internal partial class MsgHandler(AdapterLogger logger,AdapterConfigData adapterConfig)
+internal sealed partial class MsgHandler(AdapterLogger logger,AdapterConfigData adapterConfig)
 {
     private AdapterLogger Logger => logger;
     private AdapterConfigData AdapterConfig => adapterConfig;
@@ -124,25 +124,25 @@ internal partial class MsgHandler(AdapterLogger logger,AdapterConfigData adapter
     [GeneratedRegex(@"[\""].+?[\""]|[^ ]+")]
     private static partial Regex GetCommandTokenRegex();
 }
-[Serializable] public class MsgSender
+[Serializable] public sealed class MsgSender
 {
-    [JsonPropertyName("user_id")] public long UserId { get; set; } = 0;
-    [JsonPropertyName("nickname")] public string Nickname { get; set; } = "";
-    [JsonPropertyName("sex")] public string Sex { get; set; } = "";
-    [JsonPropertyName("age")] public int Age { get; set; } = 0;
+    [JsonPropertyName("user_id")] public long UserId { get; init; } = 0;
+    [JsonPropertyName("nickname")] public string Nickname { get; init; } = "";
+    [JsonPropertyName("sex")] public string Sex { get; init; } = "";
+    [JsonPropertyName("age")] public int Age { get; init; } = 0;
 }
-[Serializable] public class MsgBody
+[Serializable] public sealed class MsgBody
 {
-    [JsonPropertyName("time")] public long Time { get; set; } = 0;
-    [JsonPropertyName("self_id")] public long SelfId { get; set; } = 0;
-    [JsonPropertyName("post_type")] public string PostType { get; set; } = "";
-    [JsonPropertyName("message_type")] public string MessageType { get; set; } = "";
-    [JsonPropertyName("sub_type")] public string SubType { get; set; } = "";
-    [JsonPropertyName("message_id")] public int MessageId { get; set; } = 0;
-    [JsonPropertyName("group_id")] public long GroupId { get; set; } = 0;
-    [JsonPropertyName("user_id")] public long UserId { get; set; } = 0;
-    [JsonPropertyName("message")] public List<JsonNode> Message { get; set; } = [];
-    [JsonPropertyName("raw_message")] public string RawMessage { get; set; } = "";
-    [JsonPropertyName("font")] public int Font { get; set; } = 0;
-    [JsonPropertyName("sender")] public MsgSender Sender { get; set; } = new();
+    [JsonPropertyName("time")] public long Time { get; init; } = 0;
+    [JsonPropertyName("self_id")] public long SelfId { get; init; } = 0;
+    [JsonPropertyName("post_type")] public string PostType { get; init; } = "";
+    [JsonPropertyName("message_type")] public string MessageType { get; init; } = "";
+    [JsonPropertyName("sub_type")] public string SubType { get; init; } = "";
+    [JsonPropertyName("message_id")] public int MessageId { get; init; } = 0;
+    [JsonPropertyName("group_id")] public long GroupId { get; init; } = 0;
+    [JsonPropertyName("user_id")] public long UserId { get; init; } = 0;
+    [JsonPropertyName("message")] public List<JsonNode> Message { get; init; } = [];
+    [JsonPropertyName("raw_message")] public string RawMessage { get; init; } = "";
+    [JsonPropertyName("font")] public int Font { get; init; } = 0;
+    [JsonPropertyName("sender")] public MsgSender Sender { get; init; } = new();
 }
