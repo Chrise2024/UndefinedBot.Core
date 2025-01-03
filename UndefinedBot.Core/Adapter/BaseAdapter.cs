@@ -1,4 +1,5 @@
 ﻿using System.Reflection;
+using System.Runtime.InteropServices.JavaScript;
 using System.Text.Json.Nodes;
 using UndefinedBot.Core.Command;
 using UndefinedBot.Core.Command.Arguments;
@@ -7,12 +8,33 @@ using UndefinedBot.Core.Utils;
 
 namespace UndefinedBot.Core.Adapter;
 
-public abstract class BaseAdapter(AdapterConfigData adapterConfig)
+public interface IAdapterInstance
+{
+    string Id { get; }
+    string Name { get; }
+    string Platform { get; }
+    string Protocol { get; }
+    public List<long> GroupId { get; }
+    public string CommandPrefix { get; }
+    /// <summary>
+    /// Handle custom action invoked by command
+    /// </summary>
+    byte[]? HandleCustomAction(string action, byte[]? paras);
+
+    /// <summary>
+    /// Handle default action invoked by command
+    /// </summary>
+    byte[]? HandleDefaultAction(DefaultActionType action, byte[]? paras);
+}
+
+public abstract class BaseAdapter(AdapterConfigData adapterConfig) : IAdapterInstance
 {
     public abstract string Id { get; }
     public abstract string Name { get; }
     public abstract string Platform { get; }
     public abstract string Protocol { get; }
+    public List<long> GroupId => adapterConfig.GroupId;
+    public string CommandPrefix => adapterConfig.CommandPrefix;
     protected AdapterLogger Logger => new(Name);
     protected AdapterConfigData AdapterConfig => adapterConfig;
     /// <summary>
@@ -57,7 +79,7 @@ public enum DefaultActionType
     public string EntryFile { get; init; } = "";
     public string Description { get; init; } = "";
     public string CommandPrefix { get; init; } = "!";
-    public List<long> GroupIds { get; init; } = [];
+    public List<long> GroupId { get; init; } = [];
     public JsonNode OriginalConfig { get; private set; } = JsonNode.Parse("{}")!;
 
     internal void Implement(JsonNode oc)
@@ -73,16 +95,18 @@ public enum DefaultActionType
 /// <summary>
 /// This class is for program record adapter's properties,include information defined in assembly
 /// </summary>
+[Obsolete("These Properties Is Already Included in IAdapterInstance",true)]
 [Serializable] public sealed class AdapterProperties(BaseAdapter baseInstance,AdapterConfigData originData)
 {
     public string Id => baseInstance.Id;
     public string Name => baseInstance.Name;
     public string Platform => baseInstance.Platform;
     public string Protocol => baseInstance.Protocol;
-    public List<long> GroupIds => originData.GroupIds;
+    public List<long> GroupIds => originData.GroupId;
     public string Description => originData.Description;
     public string CommandPrefix => originData.CommandPrefix;
 }
+[Obsolete("Don't Use It.Better Method Will Replace",true)]
 internal sealed class AdapterInstance(object instance,MethodInfo dah,MethodInfo cah)
 {
     private object Instance => instance;

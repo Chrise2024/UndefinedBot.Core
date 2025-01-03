@@ -43,7 +43,7 @@ internal sealed partial class MsgHandler(AdapterLogger logger,AdapterConfigData 
         long gid = msgJson["group_id"]?.GetValue<long>() ?? 0;
         return gid != 0 && (msgJson["post_type"]?.GetValue<string>() == "message" &&
                             msgJson["message_type"]?.GetValue<string>() == "group" &&
-                            AdapterConfig.GroupIds.Contains(gid));
+                            AdapterConfig.GroupId.Contains(gid));
     }
 
     /// <summary>

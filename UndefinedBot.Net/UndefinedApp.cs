@@ -104,9 +104,9 @@ public class UndefinedApp(IHost host) : IHost
     private void Init()
     {
         //Load Adapters
-        Dictionary<string, AdapterProperties> adapterReference = AdapterLoader.LoadAdapters();
+        Dictionary<string, IAdapterInstance> adapterReference = AdapterLoader.LoadAdapters();
         //Load Plugins
-        List<PluginProperties> pluginReference = PluginLoader.LoadPlugins();
+        List<IPluginInstance> pluginReference = PluginLoader.LoadPlugins();
         //Get Command References for Help command
         Dictionary<string,CommandProperties> commandReference = PluginLoader.GetCommandReference();
 

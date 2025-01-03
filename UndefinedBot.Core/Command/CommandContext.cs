@@ -19,7 +19,7 @@ public sealed class CommandContext(string commandName,string pluginId,CommandInv
     public Config MainConfigData => UndefinedApi.MainConfigData;
     //public CacheManager Cache => new(pluginName);
     public HttpRequest Request => new(pluginId);
-    public ActionManager Action => new(ip,Logger);
+    public ActionInvokeManager ActionInvoke => new(ip,Logger);
     //public readonly HttpApi Api = baseApi.Api;
     public MsgBuilder GetMessageBuilder() => MsgBuilder.GetInstance();
     public ForwardMessageBuilder GetForwardBuilder() => ForwardMessageBuilder.GetInstance();

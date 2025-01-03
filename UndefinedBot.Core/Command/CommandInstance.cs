@@ -9,6 +9,7 @@ namespace UndefinedBot.Core.Command;
 public sealed class CommandInstance
 {
     [JsonPropertyName("target_adapter_id")] public string TargetAdapterId { get; }
+    [JsonPropertyName("plugin_id")] public string PluginId { get; }
     [JsonPropertyName("name")] public string Name { get; private set; }
     [JsonPropertyName("alias")] public List<string> CommandAlias { get; private set; } = [];
     [JsonPropertyName("description")] public string? CommandDescription { get; private set; }
@@ -16,9 +17,10 @@ public sealed class CommandInstance
     [JsonPropertyName("usage")] public string? CommandUsage { get; private set; }
     [JsonPropertyName("example")] public string? CommandExample { get; private set; }
     [JsonIgnore] private RootCommandNode RootNode { get; set; }
-    internal CommandInstance(string commandName,string targetAdapterId)
+    internal CommandInstance(string commandName,string pluginId,string targetAdapterId)
     {
         TargetAdapterId = targetAdapterId;
+        PluginId = pluginId;
         Name = commandName;
         RootNode = new RootCommandNode(commandName);
     }

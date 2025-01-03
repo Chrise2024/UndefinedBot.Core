@@ -11,10 +11,10 @@ internal static class AdapterLoader
     private static string AdapterRoot => Path.Join(Environment.CurrentDirectory, "Adapters");
     private static string LibSuffix => GetLibSuffix();
     private static GeneralLogger AdapterInitializeLogger => new("AdapterLoad");
-    private static readonly Dictionary<string, AdapterInstance> s_adapterInstances = [];
-    private static readonly Dictionary<string, AdapterProperties> s_adapterReferences = [];
+    private static readonly Dictionary<string, IAdapterInstance> _adapterInstances = [];
+    //private static readonly Dictionary<string, AdapterProperties> _adapterReferences = [];
 
-    public static Dictionary<string, AdapterProperties> LoadAdapters()
+    public static Dictionary<string, IAdapterInstance> LoadAdapters()
     {
         AdapterInitializeLogger.Info("Start Loading Adapters");
         if (!Directory.Exists(AdapterRoot))
@@ -48,23 +48,23 @@ internal static class AdapterLoader
                 AdapterInitializeLogger.Warn($"Adapter: <{af}> Binary EntryFile: <{entryFile}> Not Found");
                 continue;
             }
-            (AdapterProperties? adapterProperties,AdapterInstance? inst) = CreateAdapterInstance(entryFile, adapterConfigData);
-            if (adapterProperties == null || inst == null)
+            IAdapterInstance? inst = CreateAdapterInstance(entryFile, adapterConfigData);
+            if (inst == null)
             {
                 AdapterInitializeLogger.Warn($"Adapter: <{af}> Load Failed");
                 continue;
             }
 
-            s_adapterReferences[adapterProperties.Id] = adapterProperties;
-            s_adapterInstances[adapterProperties.Id] = inst;
-            AdapterInitializeLogger.Info($"Success Load Adapter: {adapterProperties.Id}");
+            //_adapterReferences[inst.Id] = adapterProperties;
+            _adapterInstances[inst.Id] = inst;
+            AdapterInitializeLogger.Info($"Success Load Adapter: {inst.Id}");
         }
         //Mount AdapterInstances on ActionManager to Handle Plugin's Action
-        ActionManager.UpdateAdapterInstances(s_adapterInstances);
-        return s_adapterReferences;
+        ActionInvokeManager.UpdateAdapterInstances(_adapterInstances);
+        return _adapterInstances;
     }
 
-    private static (AdapterProperties?,AdapterInstance?) CreateAdapterInstance(string adapterLibPath,AdapterConfigData config)
+    private static IAdapterInstance? CreateAdapterInstance(string adapterLibPath,AdapterConfigData config)
     {
         try
         {
@@ -75,15 +75,10 @@ internal static class AdapterLoader
                 .ToList()
                 .Find(type => type.BaseType?.FullName == "UndefinedBot.Core.Adapter.BaseAdapter") ?? throw new TypeLoadException(adapterLibPath);
             //Create Adapter Instance
-            object targetClassInstance =
-                Activator.CreateInstance(targetClass,[config]) ??
+            IAdapterInstance targetAdapterInstance =
+                Activator.CreateInstance(targetClass,[config]) as IAdapterInstance ??
                 throw new TypeInitializationException(targetClass.FullName, null);
-            //Get Action Handler
-            MethodInfo defaultHandler = targetClass.GetMethod("HandleDefaultAction") ??
-                                    throw new MethodAccessException();
-            MethodInfo customHandler = targetClass.GetMethod("HandleCustomAction") ??
-                                       throw new MethodAccessException();
-            return (new AdapterProperties((targetClassInstance as BaseAdapter)!,config),new AdapterInstance(targetClassInstance, defaultHandler, customHandler));
+            return targetAdapterInstance;
         }
         catch (TypeLoadException tle)
         {
@@ -102,7 +97,7 @@ internal static class AdapterLoader
             AdapterInitializeLogger.Error($"Unable to Load Adapter From {adapterLibPath}");
             Console.WriteLine(ex.Message);
         }
-        return (null,null);
+        return null;
     }
 
     private static string GetLibSuffix() => "dll";

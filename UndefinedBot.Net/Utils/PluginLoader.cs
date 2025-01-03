@@ -14,11 +14,11 @@ internal static class PluginLoader
     private static string PluginRoot => Path.Join(Program.GetProgramRoot(), "Plugins");
     private static string LibSuffix => GetLibSuffix();
     private static GeneralLogger PluginInitializeLogger => new("Plugin Initialize");
-    private static readonly List<PluginProperties> s_pluginReference = [];
-    private static readonly Dictionary<string, CommandProperties> s_commandReference = [];
-    private static readonly Dictionary<string, CommandInstance> s_commandInstance = [];
+    private static readonly List<IPluginInstance> _pluginReference = [];
+    private static readonly Dictionary<string, CommandProperties> _commandReference = [];
+    private static readonly Dictionary<string, CommandInstance> _commandInstance = [];
 
-    internal static List<PluginProperties> LoadPlugins()
+    internal static List<IPluginInstance> LoadPlugins()
     {
         PluginInitializeLogger.Info("Start Loading Plugins");
         if (!Directory.Exists(PluginRoot))
@@ -58,18 +58,18 @@ internal static class PluginLoader
                 continue;
             }
 
-            (PluginProperties? pluginProperties, Dictionary<string, CommandInstance> cmd) = LoadCommand(entryFile, pluginConfigData);
-            if (pluginProperties == null)
+            IPluginInstance? pluginInstance = LoadCommand(entryFile, pluginConfigData);
+            if (pluginInstance == null)
             {
                 continue;
             }
 
-            foreach (var pair in cmd)
+            foreach (var ci in pluginInstance.GetCommandInstance())
             {
-                s_commandInstance.TryAdd(pair.Key, pair.Value);
+                _commandInstance.TryAdd(ci.Name,ci);
             }
 
-            string pluginCachePath = Path.Join(Program.GetProgramCache(), pluginProperties.Id);
+            string pluginCachePath = Path.Join(Program.GetProgramCache(), pluginInstance.Id);
             FileIO.EnsurePath(pluginCachePath);
             foreach (string cf in Directory.GetFiles(pluginCachePath))
             {
@@ -79,46 +79,33 @@ internal static class PluginLoader
 
             string commandRefPath = Path.Join(
                 Environment.CurrentDirectory, "CommandReference",
-                $"{pluginProperties.Id}.reference.json"
+                $"{pluginInstance.Id}.reference.json"
             );
-            FileIO.WriteAsJson(commandRefPath, cmd.Select(p => p.Value.ExportToCommandProperties()));
-            s_pluginReference.Add(pluginProperties);
+            FileIO.WriteAsJson(commandRefPath, pluginInstance.GetCommandInstance().Select(ci => ci.ExportToCommandProperties()));
+            _pluginReference.Add(pluginInstance);
         }
 
-        return s_pluginReference;
+        return _pluginReference;
     }
 
-    private static (PluginProperties?, Dictionary<string, CommandInstance>) LoadCommand(string pluginLibPath, PluginConfigData config)
+    private static IPluginInstance? LoadCommand(string pluginLibPath, PluginConfigData config)
     {
         try
         {
             //Get Plugin Class
-            Console.WriteLine(1);
             Type targetClass = Assembly
                                    .LoadFrom(pluginLibPath)
                                    .GetTypes()
                                    .ToList()
                                    .Find(type => type.BaseType?.FullName == "UndefinedBot.Core.Plugin.BasePlugin")
                                ?? throw new TypeAccessException("Plugin Class Not Fount");
-            Console.WriteLine(2);
             //Create Plugin Class Instance to Invoke Initialize Method
-            object targetClassInstance =
-                Activator.CreateInstance(targetClass,[config]) ??
+            IPluginInstance targetClassInstance =
+                Activator.CreateInstance(targetClass,[config]) as IPluginInstance ??
                 throw new TypeInitializationException(targetClass.FullName, null);
-            Console.WriteLine(3);
-            //Get and Invoke Initialize Method
-            MethodInfo methodInfo = targetClass.GetMethod("Initialize")!;
-            methodInfo.Invoke(targetClassInstance,[]);
-            Console.WriteLine(4);
-            PropertyInfo instancePropertyInfo = targetClass.GetProperty("CommandInstances")!;
-            PropertyInfo? p = targetClass.GetProperty("CommandInstances");
-            Console.WriteLine(p);
-            Console.WriteLine(5);
-            List<CommandInstance> instances =
-                (instancePropertyInfo.GetValue(targetClassInstance) as List<CommandInstance>)!;
-            Console.WriteLine(6);
-            PropertyInfo idPropertyInfo = targetClass.GetProperty("Id")!;
-            string id = (idPropertyInfo.GetValue(targetClassInstance) as string)!;
+            targetClassInstance.Initialize();
+            List<CommandInstance> instances = targetClassInstance.GetCommandInstance();
+            string id = targetClassInstance.Id;
             //Register Command
             foreach (CommandInstance commandInstance in instances)
             {
@@ -180,9 +167,7 @@ internal static class PluginLoader
                 });
                 //uApi.Logger.Info($"Successful Load Command <{commandInstance.Name}>");
             }
-
-            Dictionary<string, CommandInstance> t = instances.ToDictionary(k => k.Name, v => v);
-            return (new PluginProperties((targetClassInstance as BasePlugin)!, config), t);
+            return targetClassInstance;
         }
         catch (TypeLoadException tle)
         {
@@ -202,7 +187,7 @@ internal static class PluginLoader
             Console.WriteLine(ex.Message);
         }
 
-        return (null, []);
+        return null;
     }
 
     private static string GetLibSuffix() => "dll";
@@ -247,9 +232,9 @@ internal static class PluginLoader
                 .Where(item => item.Value.IsValid())
         )
         {
-            s_commandReference[p.Key] = p.Value;
+            _commandReference[p.Key] = p.Value;
         }
 
-        return s_commandReference;
+        return _commandReference;
     }
 }

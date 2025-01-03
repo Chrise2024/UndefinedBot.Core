@@ -3,30 +3,30 @@ namespace UndefinedBot.Core.Utils;
 
 public static class ConfigManager
 {
-    private static Config s_configData = new();
+    private static Config _configData = new();
 
     //private static Config InitConfig(Config initData) => initData;
     // {
-    //     return FileIO.ReadAsJson<Config>(s_configPath)!;
+    //     return FileIO.ReadAsJson<Config>(_configPath)!;
     // }
     public static void InitConfig(Config initData)
     {
-        s_configData = initData;
+        _configData = initData;
     }
 
     public static List<long> GetGroupList()
     {
-        return s_configData.GroupId;
+        return _configData.GroupId;
     }
 
     public static string GetCommandPrefix()
     {
-        return s_configData.CommandPrefix;
+        return _configData.CommandPrefix;
     }
 
     public static Config GetConfig()
     {
-        return s_configData;
+        return _configData;
     }
 }
 [Serializable] public sealed class Config
