@@ -73,9 +73,7 @@ internal static class CommandInvokeManager
         }
         catch (Exception ex)
         {
-            ctx.Logger.Error("Command Failed");
-            ctx.Logger.Error(ex.Message);
-            ctx.Logger.Error(ex.StackTrace ?? "");
+            ctx.Logger.Error(ex,"Command Failed");
         }
 
         return CommandInvokeResult.SuccessInvoke;

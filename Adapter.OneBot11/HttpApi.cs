@@ -26,7 +26,7 @@ public sealed class HttpApi
         Timeout = TimeSpan.FromSeconds(20)
     };
 
-    private readonly GeneralLogger _httpApiLogger = new("HttpRequest");
+    private readonly ILogger _httpApiLogger = new AdapterSubFeatureLogger("OneBot11Adapter","HttpApi");
     /// <summary>
     /// Send Message to Group
     /// </summary>
@@ -158,9 +158,7 @@ public sealed class HttpApi
     }
     private void PrintExceptionInfo(Exception ex)
     {
-        _httpApiLogger.Error("Error Occured, Error Information:");
-        _httpApiLogger.Error(ex.Message);
-        _httpApiLogger.Error(ex.StackTrace ?? "");
+        _httpApiLogger.Error(ex, "Error Occured, Error Information:");
     }
 }
 

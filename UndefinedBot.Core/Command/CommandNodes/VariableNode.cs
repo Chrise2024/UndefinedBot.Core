@@ -75,8 +75,7 @@ public sealed class VariableNode(string name,IArgumentType argumentType):IComman
             }
             catch (Exception ex)
             {
-                ctx.Logger.Error(ex.Message);
-                ctx.Logger.Error(ex.StackTrace ?? "");
+                ctx.Logger.Error(ex,"Node Execute Failed");
                 throw new CommandAbortException($"Node {NodeName} execute failed");
             }
         }

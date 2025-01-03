@@ -21,36 +21,48 @@ public class UndefinedApp(IHost host) : IHost
 
     private readonly string _programRoot = Environment.CurrentDirectory;
 
-    private readonly JsonSerializerOptions _serializerOptions = new() { WriteIndented = true,IndentSize = 4 };
+    private readonly JsonSerializerOptions _serializerOptions = new() { WriteIndented = true, IndentSize = 4 };
+
+    private LogLevel ConvertLogLevel(UndefinedLogLevel ul)
+    {
+        return ul switch
+        {
+            UndefinedLogLevel.Trace => LogLevel.Trace,
+            UndefinedLogLevel.Debug => LogLevel.Debug,
+            UndefinedLogLevel.Information => LogLevel.Information,
+            UndefinedLogLevel.Warning => LogLevel.Warning,
+            UndefinedLogLevel.Error => LogLevel.Error,
+            UndefinedLogLevel.Critical => LogLevel.Critical,
+            UndefinedLogLevel.None => LogLevel.None,
+            _ => LogLevel.Error,
+        };
+    }
 
     public async Task StartAsync(CancellationToken cancellationToken = new())
     {
         //Add LogEvent Handler
-        LogEventBus.RegisterLogEventHandler((nameSpace, subSpace, undefinedLogLevel, message) =>
+        LogEventBus.RegisterCommonLogEventHandler((time, undefinedLogLevel, message, template, tags) =>
         {
-            Services.GetRequiredService<ILogger<UndefinedApp>>().Log(undefinedLogLevel switch
-            {
-                UndefinedLogLevel.Trace => LogLevel.Trace,
-                UndefinedLogLevel.Debug => LogLevel.Debug,
-                UndefinedLogLevel.Information => LogLevel.Information,
-                UndefinedLogLevel.Warning => LogLevel.Warning,
-                UndefinedLogLevel.Error => LogLevel.Error,
-                UndefinedLogLevel.Critical => LogLevel.Critical,
-                UndefinedLogLevel.None => LogLevel.None,
-                _ => LogLevel.Error,
-            },
-            "[{Time}] [{nameSpace}] [{subSpace}] [{undefinedLogLevel.ToString()}] {message}",
-            DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"),
-            nameSpace,
-            subSpace,
-            undefinedLogLevel.ToString(),
-            message
+            Logger.Log(
+                ConvertLogLevel(undefinedLogLevel),
+                template,
+                [time, ..tags, undefinedLogLevel.ToString(), message]
+            );
+        });
+        LogEventBus.RegisterExceptionLogEventHandler((time, undefinedLogLevel,ex, message, template, tags) =>
+        {
+            Logger.Log(
+                ConvertLogLevel(undefinedLogLevel),
+                ex,
+                template,
+                [time, ..tags, undefinedLogLevel.ToString(), message]
             );
         });
         //Load Root Config
         ConfigManager.InitConfig(new Config
         {
-            GroupId = Configuration.GetSection("GroupId").GetChildren().Select(child => long.Parse(child.Value!)).ToList(),
+            GroupId = Configuration.GetSection("GroupId").GetChildren().Select(child => long.Parse(child.Value!))
+                .ToList(),
             CommandPrefix = Configuration["CommandPrefix"]!
         });
         //Load Adapter and Plugin
@@ -62,18 +74,18 @@ public class UndefinedApp(IHost host) : IHost
         //for test
         CommandEventBus.InvokeCommandEvent(
             CommandInvokeProperties.Group(
-                "test",
-                0,
-                0,
-                0)
+                    "test",
+                    0,
+                    0,
+                    0)
                 .Implement(
                     "OneBot11Adapter",
                     "",
                     "",
                     []
-                    ),
-            UserCommandSource.Friend(0,"",0)
-            );
+                ),
+            UserCommandSource.Friend(0, "", 0)
+        );
         //Console Loop
         while (true)
         {
@@ -96,11 +108,13 @@ public class UndefinedApp(IHost host) : IHost
 
         Logger.LogInformation("UndefinedBot.Net Implementation has stopped");
     }
+
     public void Dispose()
     {
         HostApp.Dispose();
         GC.SuppressFinalize(this);
     }
+
     private void Init()
     {
         //Load Adapters
@@ -108,16 +122,18 @@ public class UndefinedApp(IHost host) : IHost
         //Load Plugins
         List<IPluginInstance> pluginReference = PluginLoader.LoadPlugins();
         //Get Command References for Help command
-        Dictionary<string,CommandProperties> commandReference = PluginLoader.GetCommandReference();
+        Dictionary<string, CommandProperties> commandReference = PluginLoader.GetCommandReference();
 
-        FileIO.WriteAsJson(Path.Join(_programRoot, "adapter_reference.json"),adapterReference);
+        FileIO.WriteAsJson(Path.Join(_programRoot, "adapter_reference.json"), adapterReference);
 
-        FileIO.WriteAsJson(Path.Join(_programRoot, "plugin_reference.json"),pluginReference);
+        FileIO.WriteAsJson(Path.Join(_programRoot, "plugin_reference.json"), pluginReference);
 
         FileIO.WriteAsJson(Path.Join(_programRoot, "command_reference.json"), commandReference);
 
-        Logger.LogInformation("Loaded Adapters:{AdapterList}", JsonSerializer.Serialize(adapterReference.Select(item => item.Value), _serializerOptions));
+        Logger.LogInformation("Loaded Adapters:{AdapterList}",
+            JsonSerializer.Serialize(adapterReference.Select(item => item.Value), _serializerOptions));
 
-        Logger.LogInformation("Loaded Plugins:{PluginList}", JsonSerializer.Serialize(pluginReference.Select(item => item), _serializerOptions));
+        Logger.LogInformation("Loaded Plugins:{PluginList}",
+            JsonSerializer.Serialize(pluginReference.Select(item => item), _serializerOptions));
     }
 }

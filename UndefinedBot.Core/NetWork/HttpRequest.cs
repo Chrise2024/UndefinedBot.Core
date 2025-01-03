@@ -75,8 +75,6 @@ public sealed class HttpRequest(string pluginName)
     }
     private void PrintExceptionInfo(Exception ex)
     {
-        _httpRequestLogger.Error("Error Occured, Error Information:");
-        _httpRequestLogger.Error(ex.Message);
-        _httpRequestLogger.Error(ex.StackTrace ?? "");
+        _httpRequestLogger.Error(ex, "Error Occured, Error Information:");
     }
 }

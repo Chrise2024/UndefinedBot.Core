@@ -10,7 +10,7 @@ internal static class AdapterLoader
 {
     private static string AdapterRoot => Path.Join(Environment.CurrentDirectory, "Adapters");
     private static string LibSuffix => GetLibSuffix();
-    private static GeneralLogger AdapterInitializeLogger => new("AdapterLoad");
+    private static ILogger AdapterInitializeLogger => new GeneralLogger("Adapter Load");
     private static readonly Dictionary<string, IAdapterInstance> _adapterInstances = [];
     //private static readonly Dictionary<string, AdapterProperties> _adapterReferences = [];
 
@@ -82,11 +82,11 @@ internal static class AdapterLoader
         }
         catch (TypeLoadException tle)
         {
-            AdapterInitializeLogger.Error($"Unable to Find Specific Adapter Class: {tle.Message}");
+            AdapterInitializeLogger.Error(tle,"Unable to Find Specific Adapter Class");
         }
         catch (TypeInitializationException tie)
         {
-            AdapterInitializeLogger.Error($"Unable to Create Adapter Instance: {tie.Message}");
+            AdapterInitializeLogger.Error(tie,"Unable to Create Adapter Instance");
         }
         catch (MethodAccessException)
         {
@@ -94,8 +94,7 @@ internal static class AdapterLoader
         }
         catch (Exception ex)
         {
-            AdapterInitializeLogger.Error($"Unable to Load Adapter From {adapterLibPath}");
-            Console.WriteLine(ex.Message);
+            AdapterInitializeLogger.Error(ex,$"Unable to Load Adapter From {adapterLibPath}");
         }
         return null;
     }

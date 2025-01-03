@@ -13,7 +13,7 @@ internal static class PluginLoader
 {
     private static string PluginRoot => Path.Join(Program.GetProgramRoot(), "Plugins");
     private static string LibSuffix => GetLibSuffix();
-    private static GeneralLogger PluginInitializeLogger => new("Plugin Initialize");
+    private static ILogger PluginInitializeLogger => new GeneralLogger("Plugin Load");
     private static readonly List<IPluginInstance> _pluginReference = [];
     private static readonly Dictionary<string, CommandProperties> _commandReference = [];
     private static readonly Dictionary<string, CommandInstance> _commandInstance = [];
@@ -157,9 +157,7 @@ internal static class PluginLoader
                     }
                     catch (Exception ex)
                     {
-                        ctx.Logger.Error("Command Failed");
-                        ctx.Logger.Error(ex.Message);
-                        ctx.Logger.Error(ex.StackTrace ?? "");
+                        ctx.Logger.Error(ex,"Command Failed");
                     }
 
                     ctx.Logger.Info("Command Completed");
@@ -171,20 +169,19 @@ internal static class PluginLoader
         }
         catch (TypeLoadException tle)
         {
-            PluginInitializeLogger.Error($"Unable to Find Specific Plugin Class: {tle.Message}");
+            PluginInitializeLogger.Error(tle,"Unable to Find Specific Plugin Class");
         }
         catch (TypeInitializationException tie)
         {
-            PluginInitializeLogger.Error($"Unable to Create Plugin Instance: {tie.Message}");
+            PluginInitializeLogger.Error(tie,"Unable to Create Plugin Instance");
         }
         catch (MethodAccessException)
         {
-            PluginInitializeLogger.Error($"Unable to Find Specific Plugin Initialize Method");
+            PluginInitializeLogger.Error("Unable to Find Specific Plugin Initialize Method");
         }
         catch (Exception ex)
         {
-            PluginInitializeLogger.Error($"Unable to Load Command From {pluginLibPath}");
-            Console.WriteLine(ex.Message);
+            PluginInitializeLogger.Error(ex,$"Unable to Load Command From {pluginLibPath}");
         }
 
         return null;

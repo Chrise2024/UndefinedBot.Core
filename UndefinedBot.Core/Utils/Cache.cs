@@ -7,12 +7,12 @@ public sealed class CacheManager
 {
     private readonly Dictionary<string,object> _storageCache = [];
     private readonly Dictionary<string, FileCacheProperty> _fileCache = [];
-    private readonly GeneralLogger _cacheLogger;
+    private readonly ILogger _cacheLogger;
     private readonly string _cacheRootPath;
 
     public CacheManager(string pluginName, string cacheRootPath, CommandFinishEvent finishEvent)
     {
-        _cacheLogger = new(pluginName);
+        _cacheLogger = new PluginSubFeatureLogger(pluginName,"Cache");
         _cacheRootPath = cacheRootPath;
         finishEvent.OnCommandFinish += UpdateCache;
     }
@@ -45,9 +45,7 @@ public sealed class CacheManager
         }
         catch (Exception ex)
         {
-            _cacheLogger.Error("Cache Create Failed");
-            _cacheLogger.Error(ex.ToString());
-            _cacheLogger.Error(ex.StackTrace ?? "");
+            _cacheLogger.Error(ex,"Cache Create Failed");
             return "";
         }
     }
@@ -63,9 +61,7 @@ public sealed class CacheManager
         }
         catch (Exception ex)
         {
-            _cacheLogger.Error("Cache Create Failed");
-            _cacheLogger.Error(ex.ToString());
-            _cacheLogger.Error(ex.StackTrace ?? "");
+            _cacheLogger.Error(ex,"Cache Create Failed");
             return false;
         }
     }
@@ -82,9 +78,7 @@ public sealed class CacheManager
         }
         catch (Exception ex)
         {
-            _cacheLogger.Error("Cache Modify Failed");
-            _cacheLogger.Error(ex.ToString());
-            _cacheLogger.Error(ex.StackTrace ?? "");
+            _cacheLogger.Error(ex,"Cache Modify Failed");
             return default;
         }
     }

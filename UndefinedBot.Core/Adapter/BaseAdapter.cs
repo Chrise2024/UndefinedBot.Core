@@ -1,5 +1,4 @@
 ﻿using System.Reflection;
-using System.Runtime.InteropServices.JavaScript;
 using System.Text.Json.Nodes;
 using UndefinedBot.Core.Command;
 using UndefinedBot.Core.Command.Arguments;
@@ -35,7 +34,7 @@ public abstract class BaseAdapter(AdapterConfigData adapterConfig) : IAdapterIns
     public abstract string Protocol { get; }
     public List<long> GroupId => adapterConfig.GroupId;
     public string CommandPrefix => adapterConfig.CommandPrefix;
-    protected AdapterLogger Logger => new(Name);
+    protected ILogger Logger => new AdapterLogger(Name);
     protected AdapterConfigData AdapterConfig => adapterConfig;
     /// <summary>
     /// After processing message, use it to submit this event

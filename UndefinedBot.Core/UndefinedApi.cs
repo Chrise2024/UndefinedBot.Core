@@ -25,7 +25,7 @@ public sealed class UndefinedApi(string pluginName)
     public string RootPath => Environment.CurrentDirectory;
     public string PluginPath => Path.GetDirectoryName(Assembly.GetCallingAssembly().Location) ?? throw new DllNotFoundException("Get Plugin Assembly Failed");
     public string CachePath => Path.Join(RootPath, "Cache", pluginName);
-    public GeneralLogger Logger => new(pluginName);
+    public ILogger Logger => new PluginLogger(pluginName);
     public HttpRequest Request => new(pluginName);
     //public CommandFinishEvent FinishEvent => new();
     //public CacheManager Cache => new(pluginName, CachePath, FinishEvent);

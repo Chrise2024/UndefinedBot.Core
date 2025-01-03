@@ -16,15 +16,15 @@ namespace UndefinedBot.Net;
 
 internal class Program
 {
-    private static readonly string s_programRoot = Environment.CurrentDirectory;
+    private static readonly string _programRoot = Environment.CurrentDirectory;
 
-    private static readonly string s_programCache = Path.Join(s_programRoot, "Cache");
+    private static readonly string _programCache = Path.Join(_programRoot, "Cache");
     static async Task Main(string[] args)
     {
         Console.OutputEncoding = Encoding.UTF8;
         Console.InputEncoding = Encoding.UTF8;
         GCSettings.LatencyMode = GCLatencyMode.Batch;
-        FileIO.EnsurePath(s_programCache);
+        FileIO.EnsurePath(_programCache);
         if (!File.Exists("appsettings.json"))
         {
             Console.WriteLine("No exist config file, create it now...");
@@ -41,15 +41,15 @@ internal class Program
         undefinedAppBuilder.Configuration.AddEnvironmentVariables();
         UndefinedApp undefinedApp = new (undefinedAppBuilder.Build());
         undefinedApp.Start();
-
+        new GeneralLogger("1111").Info("6666666666");
         await undefinedApp.StopAsync();
     }
     public static string GetProgramRoot()
     {
-        return s_programRoot;
+        return _programRoot;
     }
     public static string GetProgramCache()
     {
-        return s_programCache;
+        return _programCache;
     }
 }

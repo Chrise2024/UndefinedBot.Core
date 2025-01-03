@@ -76,8 +76,7 @@ public sealed class SubCommandNode(string name):ICommandNode
             }
             catch (Exception ex)
             {
-                ctx.Logger.Error(ex.Message);
-                ctx.Logger.Error(ex.StackTrace ?? "");
+                ctx.Logger.Error(ex,"Node execute failed");
                 throw new CommandAbortException($"Node {NodeName} execute failed");
             }
         }

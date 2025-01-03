@@ -37,13 +37,13 @@ public sealed class HttpServiceOptions(string host, uint port, string? accessTok
     public string? AccessToken { get; } = accessToken;
 }
 
-internal sealed class HttpServer(AdapterLogger logger,AdapterConfigData adapterConfig,Action<CommandInvokeProperties,BaseCommandSource,List<ParsedToken>> submitter)
+internal sealed class HttpServer(AdapterConfigData adapterConfig,Action<CommandInvokeProperties,BaseCommandSource,List<ParsedToken>> submitter)
 {
 
     private readonly HttpListener _httpListener = new();
     private readonly HttpServiceOptions _options = HttpServiceOptions.CreateFromConfig(adapterConfig);
-    private readonly MsgHandler _handler = new(logger, adapterConfig);
-    private AdapterLogger Logger => logger;
+    private readonly MsgHandler _handler = new(adapterConfig);
+    private ILogger Logger => new AdapterSubFeatureLogger("OneBot11Adapter","HttpServer");
     private Action<CommandInvokeProperties, BaseCommandSource, List<ParsedToken>> Submitter => submitter;
     public async Task ExecuteAsync(CancellationToken token)
     {
@@ -171,8 +171,6 @@ internal sealed class HttpServer(AdapterLogger logger,AdapterConfigData adapterC
     }
     private void PrintExceptionInfo(Exception ex)
     {
-        Logger.Error("Error Occured, Error Information:");
-        Logger.Error(ex.Message);
-        Logger.Error(ex.StackTrace ?? "");
+        Logger.Error(ex, "Error Occured, Error Information:");
     }
 }

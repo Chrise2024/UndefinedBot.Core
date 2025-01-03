@@ -12,7 +12,7 @@ public sealed class OneBot11Adapter : BaseAdapter
     private HttpApi HApi => new(AdapterConfig);
     public OneBot11Adapter(AdapterConfigData adapterConfig) : base(adapterConfig)
     {
-        HttpServer hs  = new(Logger,adapterConfig,SubmitCommandEvent);
+        HttpServer hs  = new(adapterConfig,SubmitCommandEvent);
         MainLoopInstance = hs.ExecuteAsync(new CancellationToken());
     }
 

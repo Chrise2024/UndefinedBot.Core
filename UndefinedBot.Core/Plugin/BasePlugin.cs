@@ -21,7 +21,7 @@ public abstract class BasePlugin(PluginConfigData pluginConfig) : IPluginInstanc
     public abstract string TargetAdapterId { get; }
     public List<long> GroupId => pluginConfig.GroupId;
     public abstract void Initialize();
-    protected PluginLogger Logger => new(Name);
+    protected ILogger Logger => new PluginLogger(Name);
     protected UndefinedApi BaseApi => new(Name);
     protected PluginConfigData PluginConfig => pluginConfig;
     private List<CommandInstance> CommandInstances { get; } = [];

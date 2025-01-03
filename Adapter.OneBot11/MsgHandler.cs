@@ -16,9 +16,9 @@ using Ob11Adapter;
 
 namespace Adapter.OneBot11;
 
-internal sealed partial class MsgHandler(AdapterLogger logger,AdapterConfigData adapterConfig)
+internal sealed partial class MsgHandler(AdapterConfigData adapterConfig)
 {
-    private AdapterLogger Logger => logger;
+    private ILogger Logger => new AdapterSubFeatureLogger("OneBot11Adapter","MsgHandler");
     private AdapterConfigData AdapterConfig => adapterConfig;
     public (CommandInvokeProperties?,BaseCommandSource?, List<ParsedToken>?) HandleMsg(JsonNode msgJson)
     {
