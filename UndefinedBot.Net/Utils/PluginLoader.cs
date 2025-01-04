@@ -3,8 +3,6 @@ using System.Text.Json;
 using System.Text.Json.Nodes;
 using UndefinedBot.Core.Utils;
 using UndefinedBot.Core.Command;
-using UndefinedBot.Core.Command.CommandNodes;
-using UndefinedBot.Core.Command.CommandResult;
 using UndefinedBot.Core.Plugin;
 
 namespace UndefinedBot.Net.Utils;
@@ -14,17 +12,16 @@ internal static class PluginLoader
     private static string PluginRoot => Path.Join(Program.GetProgramRoot(), "Plugins");
     private static string LibSuffix => GetLibSuffix();
     private static ILogger PluginInitializeLogger => new GeneralLogger("Plugin Load");
-    private static readonly List<IPluginInstance> _pluginReference = [];
-    private static readonly Dictionary<string, CommandProperties> _commandReference = [];
-    private static readonly Dictionary<string, CommandInstance> _commandInstance = [];
 
     internal static List<IPluginInstance> LoadPlugins()
     {
+        List<CommandInstance> commandInstanceList = [];
+        List<IPluginInstance> pluginInstanceList = [];
         PluginInitializeLogger.Info("Start Loading Plugins");
         if (!Directory.Exists(PluginRoot))
         {
             Directory.CreateDirectory(PluginRoot);
-            throw new FileNotFoundException("Plugins Folder Not Fount, Restart.");
+            throw new FileNotFoundException("Plugins Folder Not Fount, Restart Please.");
         }
 
         string[] pluginFolders = Directory.GetDirectories(PluginRoot);
@@ -63,11 +60,8 @@ internal static class PluginLoader
             {
                 continue;
             }
-
-            foreach (var ci in pluginInstance.GetCommandInstance())
-            {
-                _commandInstance.TryAdd(ci.Name, ci);
-            }
+            
+            commandInstanceList.AddRange(pluginInstance.GetCommandInstance());
 
             string pluginCachePath = Path.Join(Program.GetProgramCache(), pluginInstance.Id);
             FileIO.EnsurePath(pluginCachePath);
@@ -83,10 +77,10 @@ internal static class PluginLoader
             );
             FileIO.WriteAsJson(commandRefPath,
                 pluginInstance.GetCommandInstance().Select(ci => ci.ExportToCommandProperties()));
-            _pluginReference.Add(pluginInstance);
+            pluginInstanceList.Add(pluginInstance);
         }
-
-        return _pluginReference;
+        CommandInvokeManager.UpdateCommandInstances(commandInstanceList);
+        return pluginInstanceList;
     }
 
     private static IPluginInstance? LoadCommand(string pluginLibPath, PluginConfigData config)
@@ -105,68 +99,6 @@ internal static class PluginLoader
                 Activator.CreateInstance(targetClass, [config]) as IPluginInstance ??
                 throw new TypeInitializationException(targetClass.FullName, null);
             targetClassInstance.Initialize();
-            List<CommandInstance> instances = targetClassInstance.GetCommandInstance();
-            string id = targetClassInstance.Id;
-            //Register Command
-            foreach (CommandInstance commandInstance in instances)
-            {
-                CommandEventBus.RegisterCommandEventHandler(async (invokeProperties, commandSource) =>
-                {
-                    if (commandInstance.TargetAdapterId != invokeProperties.AdapterId)
-                    {
-                        return;
-                    }
-
-                    if (commandInstance.Name != invokeProperties.Command &&
-                        !commandInstance.CommandAlias.Contains(invokeProperties.Command))
-                    {
-                        return;
-                    }
-
-                    CommandContext ctx = new(commandInstance.Name, id, invokeProperties);
-                    ctx.Logger.Info("Command Triggered");
-                    //While any node matches the token,control flow will execute this node and throw CommandFinishException to exit.
-                    try
-                    {
-                        ICommandResult result = await commandInstance.Run(ctx, commandSource, invokeProperties.Tokens);
-                        switch (result)
-                        {
-                            case CommandSuccess:
-                                //ignore
-                                break;
-                            case InvalidArgument iae:
-                                ctx.Logger.Error(
-                                    $"Invalid argument: {iae.ErrorToken}, require {JsonSerializer.Serialize(iae.RequiredType)}");
-                                break;
-                            case TooLessArgument tae:
-                                ctx.Logger.Error(
-                                    $"To less arguments, require {JsonSerializer.Serialize(tae.RequiredType)}");
-                                break;
-                            case PermissionDenied pde:
-                                ctx.Logger.Error(
-                                    $"Not enough permission: {pde.CurrentPermission} at {pde.CurrentNode}, require {pde.RequiredPermission}");
-                                break;
-                        }
-                    }
-                    catch (CommandAbortException)
-                    {
-                        ctx.Logger.Error($"Command Execute Aborted");
-                    }
-                    catch (CommandSyntaxException cse)
-                    {
-                        ctx.Logger.Error($"Node {cse.CurrentNode} Not Implemented");
-                    }
-                    catch (Exception ex)
-                    {
-                        ctx.Logger.Error(ex, "Command Failed");
-                    }
-
-                    ctx.Logger.Info("Command Completed");
-                    //uApi.FinishEvent.Trigger();
-                });
-                //uApi.Logger.Info($"Successful Load Command <{commandInstance.Name}>");
-            }
-
             return targetClassInstance;
         }
         catch (TypeLoadException tle)
@@ -219,21 +151,15 @@ internal static class PluginLoader
             throw new TargetException("CommandReference Folder Not Exist");
         }
 
-        foreach (
-            var p in Directory
-                .GetFiles(Path.Join(Program.GetProgramRoot(), "CommandReference"))
-                .Select(cfp =>
-                    (FileIO.ReadAsJson<List<CommandProperties>>(cfp) ?? [])
-                    .ToDictionary(k =>
-                        $"{Path.GetFileName(cfp).Split(".")[0]}:{k.Name}", v => v)
-                )
-                .SelectMany(item => item)
-                .Where(item => item.Value.IsValid())
-        )
-        {
-            _commandReference[p.Key] = p.Value;
-        }
-
-        return _commandReference;
+        return Directory
+            .GetFiles(Path.Join(Program.GetProgramRoot(), "CommandReference"))
+            .Select(cfp =>
+                (FileIO.ReadAsJson<List<CommandProperties>>(cfp) ?? [])
+                .ToDictionary(k =>
+                    $"{Path.GetFileName(cfp).Split(".")[0]}:{k.Name}", v => v)
+            )
+            .SelectMany(item => item)
+            .Where(item => item.Value.IsValid())
+            .ToDictionary(k => k.Key, v => v.Value);
     }
 }

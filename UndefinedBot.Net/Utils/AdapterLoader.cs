@@ -1,4 +1,5 @@
 ﻿using System.Reflection;
+using System.Runtime.Loader;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using UndefinedBot.Core.Adapter;
@@ -11,11 +12,10 @@ internal static class AdapterLoader
     private static string AdapterRoot => Path.Join(Environment.CurrentDirectory, "Adapters");
     private static string LibSuffix => GetLibSuffix();
     private static ILogger AdapterInitializeLogger => new GeneralLogger("Adapter Load");
-    private static readonly Dictionary<string, IAdapterInstance> _adapterInstances = [];
-    //private static readonly Dictionary<string, AdapterProperties> _adapterReferences = [];
-
-    public static Dictionary<string, IAdapterInstance> LoadAdapters()
+    private static AssemblyLoadContext AssemblyLoadContext => new("PluginAssemblyLoaderContext");
+    public static List<IAdapterInstance> LoadAdapters()
     {
+        List<IAdapterInstance> adapterInstances = [];
         AdapterInitializeLogger.Info("Start Loading Adapters");
         if (!Directory.Exists(AdapterRoot))
         {
@@ -59,13 +59,13 @@ internal static class AdapterLoader
             }
 
             //_adapterReferences[inst.Id] = adapterProperties;
-            _adapterInstances[inst.Id] = inst;
+            adapterInstances.Add(inst);
             AdapterInitializeLogger.Info($"Success Load Adapter: {inst.Id}");
         }
 
         //Mount AdapterInstances on ActionManager to Handle Plugin's Action
-        ActionInvokeManager.UpdateAdapterInstances(_adapterInstances);
-        return _adapterInstances;
+        ActionInvokeManager.UpdateAdapterInstances(adapterInstances);
+        return adapterInstances;
     }
 
     private static IAdapterInstance? CreateAdapterInstance(string adapterLibPath, AdapterConfigData config)

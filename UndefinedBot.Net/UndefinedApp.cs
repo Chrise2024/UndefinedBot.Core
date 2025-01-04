@@ -118,22 +118,25 @@ public class UndefinedApp(IHost host) : IHost
     private void Init()
     {
         //Load Adapters
-        Dictionary<string, IAdapterInstance> adapterReference = AdapterLoader.LoadAdapters();
+        List<IAdapterInstance> adapterList = AdapterLoader.LoadAdapters();
         //Load Plugins
-        List<IPluginInstance> pluginReference = PluginLoader.LoadPlugins();
+        List<IPluginInstance> pluginList = PluginLoader.LoadPlugins();
         //Get Command References for Help command
         Dictionary<string, CommandProperties> commandReference = PluginLoader.GetCommandReference();
+        string pluginListText = JsonSerializer.Serialize(pluginList, _serializerOptions);
+        string adapterListText = JsonSerializer.Serialize(adapterList, _serializerOptions);
+        string commandReferenceText = JsonSerializer.Serialize(commandReference, _serializerOptions);
 
-        FileIO.WriteAsJson(Path.Join(_programRoot, "adapter_reference.json"), adapterReference);
+        FileIO.WriteFile(Path.Join(_programRoot, "loaded_adapters.json"), adapterListText);
 
-        FileIO.WriteAsJson(Path.Join(_programRoot, "plugin_reference.json"), pluginReference);
+        FileIO.WriteFile(Path.Join(_programRoot, "loaded_plugins.json"), pluginListText);
 
-        FileIO.WriteAsJson(Path.Join(_programRoot, "command_reference.json"), commandReference);
+        FileIO.WriteFile(Path.Join(_programRoot, "command_reference.json"), commandReferenceText);
 
-        Logger.LogInformation("Loaded Adapters:{AdapterList}",
-            JsonSerializer.Serialize(adapterReference.Select(item => item.Value), _serializerOptions));
+        Logger.LogInformation("Loaded Adapters:{AdapterList}", adapterListText);
 
-        Logger.LogInformation("Loaded Plugins:{PluginList}",
-            JsonSerializer.Serialize(pluginReference.Select(item => item), _serializerOptions));
+        Logger.LogInformation("Loaded Plugins:{PluginList}", pluginListText);
+
+        Logger.LogInformation("Loaded Commands:{CommandList}", commandReferenceText);
     }
 }

@@ -44,8 +44,10 @@ public sealed class ActionInvokeManager(CommandInvokeProperties cip, ILogger log
         return null;
     }
 
-    internal static void UpdateAdapterInstances(Dictionary<string, IAdapterInstance> ir)
+    internal static void UpdateAdapterInstances(IEnumerable<IAdapterInstance> ir)
     {
-        AdapterInstanceReference = ir;
+        AdapterInstanceReference.Clear();
+        GC.Collect();
+        AdapterInstanceReference = ir.ToDictionary(k => k.Id,v => v);
     }
 }

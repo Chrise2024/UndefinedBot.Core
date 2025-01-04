@@ -10,19 +10,6 @@ internal static class CommandInvokeManager
 {
     private static Dictionary<string, CommandInstance[]> CommandInstanceIndexByAdapter { get; set; } = [];
 
-    public static void UpdateAdapterInstances(List<CommandInstance> ci)
-    {
-        CommandInstanceIndexByAdapter = ci
-            .GroupBy(
-                i => i.TargetAdapterId,
-                p => p
-            )
-            .ToDictionary(
-                k => k.Key,
-                v => v.ToArray()
-            );
-    }
-
     public static async Task<CommandInvokeResult> InvokeCommand(CommandInvokeProperties invokeProperties,
         BaseCommandSource source)
     {
@@ -79,6 +66,21 @@ internal static class CommandInvokeManager
         }
 
         return CommandInvokeResult.SuccessInvoke;
+    }
+
+    public static void UpdateCommandInstances(IEnumerable<CommandInstance> ci)
+    {
+        CommandInstanceIndexByAdapter.Clear();
+        GC.Collect();
+        CommandInstanceIndexByAdapter = ci
+            .GroupBy(
+                i => i.TargetAdapterId,
+                p => p
+            )
+            .ToDictionary(
+                k => k.Key,
+                v => v.ToArray()
+            );
     }
 }
 
