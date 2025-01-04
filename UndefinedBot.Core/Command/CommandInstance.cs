@@ -8,19 +8,14 @@ namespace UndefinedBot.Core.Command;
 
 public sealed class CommandInstance
 {
-    [JsonPropertyName("target_adapter_id")]
-    public string TargetAdapterId { get; }
-
-    [JsonPropertyName("plugin_id")] public string PluginId { get; }
-    [JsonPropertyName("name")] public string Name { get; private set; }
-    [JsonPropertyName("alias")] public List<string> CommandAlias { get; private set; } = [];
-    [JsonPropertyName("description")] public string? CommandDescription { get; private set; }
-
-    [JsonPropertyName("short_description")]
-    public string? CommandShortDescription { get; private set; }
-
-    [JsonPropertyName("usage")] public string? CommandUsage { get; private set; }
-    [JsonPropertyName("example")] public string? CommandExample { get; private set; }
+    [JsonPropertyName("target_adapter_id")]  internal string TargetAdapterId { get; set; }
+    [JsonPropertyName("plugin_id")] internal string PluginId { get; }
+    [JsonPropertyName("name")] internal string Name { get; set; }
+    [JsonPropertyName("alias")] private List<string> CommandAlias { get; set; } = [];
+    [JsonPropertyName("description")] private string? CommandDescription { get; set; }
+    [JsonPropertyName("short_description")]private string? CommandShortDescription { get; set; }
+    [JsonPropertyName("usage")] private string? CommandUsage { get; set; }
+    [JsonPropertyName("example")] private string? CommandExample { get; set; }
     [JsonIgnore] private RootCommandNode RootNode { get; set; }
 
     internal CommandInstance(string commandName, string pluginId, string targetAdapterId)
@@ -29,6 +24,11 @@ public sealed class CommandInstance
         PluginId = pluginId;
         Name = commandName;
         RootNode = new RootCommandNode(commandName);
+    }
+
+    internal bool IsTargetCommand(string commandName)
+    {
+        return Name == commandName || CommandAlias.Contains(commandName);
     }
 
     internal async Task<ICommandResult> Run(CommandContext ctx, BaseCommandSource source, List<ParsedToken> tokens)

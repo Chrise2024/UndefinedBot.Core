@@ -3,7 +3,7 @@
 
 namespace UndefinedBot.Core.Command.CommandResult;
 
-public sealed class CommandSuccess : ICommandResult
+internal sealed class CommandSuccess : ICommandResult
 {
     public ExecuteStatus Status => ExecuteStatus.Success;
 }

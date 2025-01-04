@@ -1,6 +1,6 @@
 ﻿namespace UndefinedBot.Core.Command.CommandResult;
 
-public sealed class PermissionDenied(string currentNode, string currentPermission, string requiredPermission)
+internal sealed class PermissionDenied(string currentNode, string currentPermission, string requiredPermission)
     : ICommandResult
 {
     public ExecuteStatus Status => ExecuteStatus.PermissionDenied;

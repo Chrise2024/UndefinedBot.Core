@@ -21,7 +21,7 @@ public interface ICommandNode
     public ICommandNode Then(ICommandNode nextNode);
     public ICommandNode Execute(Func<CommandContext, BaseCommandSource, Task> action);
     internal Task<ICommandResult> ExecuteSelf(CommandContext ctx, BaseCommandSource source, List<ParsedToken> tokens);
-    public string GetArgumentRequire();
+    string GetArgumentRequire();
 }
 
 public class CommandAbortException(string? message = null) : Exception(message);

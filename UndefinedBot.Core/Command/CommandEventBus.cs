@@ -3,11 +3,12 @@ using UndefinedBot.Core.Command.CommandSource;
 
 namespace UndefinedBot.Core.Command;
 
-public delegate Task UniversalCommandEventHandler(CommandInvokeProperties invokeProperties, BaseCommandSource source);
+internal delegate Task UniversalCommandEventHandler(CommandInvokeProperties invokeProperties, BaseCommandSource source);
 
 /// <summary>
 /// Plan to assign standalone bus for each adapter
 /// </summary>
+[Obsolete("Use CommandInvokeManager Instead",true)]
 internal static class CommandEventBus
 {
     private static event UniversalCommandEventHandler? UniversalCommandEvent;
@@ -36,15 +37,10 @@ public sealed class CommandInvokeProperties
     public int MsgId { get; }
     public MessageSubType SubType { get; }
     public long Time { get; }
-
     public bool IsGroup() => SubType == MessageSubType.Group;
-
     public bool IsFriend() => SubType == MessageSubType.Friend;
-
     public bool IsGuild() => SubType == MessageSubType.Guild;
-
     public bool IsValid() => SubType != MessageSubType.Other;
-
     //Below properties will be filled by program
     public string AdapterId { get; private set; } = "";
     public string Platform { get; private set; } = "";
