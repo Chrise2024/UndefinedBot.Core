@@ -1,5 +1,4 @@
-﻿
-namespace UndefinedBot.Core.Command.CommandSource;
+﻿namespace UndefinedBot.Core.Command.CommandSource;
 
 public sealed class UserCommandSource : BaseCommandSource
 {
@@ -25,7 +24,7 @@ public sealed class UserCommandSource : BaseCommandSource
         string userName,
         CommandSourceAuthority authorityLevel,
         string userCard = ""
-        )
+    )
     {
         UserId = userId;
         UserName = userName;
@@ -41,8 +40,9 @@ public sealed class UserCommandSource : BaseCommandSource
         string userCard = ""
     )
     {
-        return new UserCommandSource(userId,0, userName, authorityLevel, userCard);
+        return new UserCommandSource(userId, 0, userName, authorityLevel, userCard);
     }
+
     public static UserCommandSource Group(
         long userId,
         long groupId,
@@ -51,6 +51,6 @@ public sealed class UserCommandSource : BaseCommandSource
         string userCard = ""
     )
     {
-        return new UserCommandSource(userId,groupId, userName, authorityLevel, userCard);
+        return new UserCommandSource(userId, groupId, userName, authorityLevel, userCard);
     }
 }

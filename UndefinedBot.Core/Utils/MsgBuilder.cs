@@ -23,9 +23,13 @@ public sealed class MsgBuilder
 {
     private static readonly JsonNode _textElementBase = JsonNode.Parse("""{"type": "text", "data": {"text": ""}}""")!;
     private static readonly JsonNode _faceElementBase = JsonNode.Parse("""{"type": "face", "data": {"id": ""}}""")!;
-    private static readonly JsonNode _imageElementBase = JsonNode.Parse("""{"type": "image", "data": {"file": "", "subType": ""}}""")!;
+
+    private static readonly JsonNode _imageElementBase =
+        JsonNode.Parse("""{"type": "image", "data": {"file": "", "subType": ""}}""")!;
+
     private static readonly JsonNode _atElementBase = JsonNode.Parse("""{"type": "at", "data": {"qq": ""}}""")!;
     private static readonly JsonNode _replyElementBase = JsonNode.Parse("""{"type": "reply", "data": {"id": ""}}""")!;
+
     private MsgBuilder()
     {
     }
@@ -76,6 +80,7 @@ public sealed class MsgBuilder
         _msgChain.Add(temp);
         return this;
     }
+
     public MsgBuilder At(string atUin)
     {
         JsonNode temp = _atElementBase.DeepClone();
@@ -125,6 +130,7 @@ public sealed class ForwardMessageBuilder
         _prompt = prompt;
         return this;
     }
+
     public ForwardMessageBuilder CustomNews(List<string> newsText)
     {
         _forwardNews.AddRange(newsText.Select(item => new ForwardSummaryNewsEntity(item)));
@@ -133,17 +139,28 @@ public sealed class ForwardMessageBuilder
 
     public ForwardPropertiesData Finish()
     {
-        return new ForwardPropertiesData(_forwardNodes,_forwardNews.Count == 0 ? null : _forwardNews,_prompt);
+        return new ForwardPropertiesData(_forwardNodes, _forwardNews.Count == 0 ? null : _forwardNews, _prompt);
     }
 }
 
-[Serializable]public sealed class ForwardMessageNode(string name, string uin, ForwardMessageBuilder instance)
+[Serializable]
+public sealed class ForwardMessageNode(string name, string uin, ForwardMessageBuilder instance)
 {
-    [JsonIgnore] private static readonly JsonNode _textElementBase = JsonNode.Parse("""{"type": "text", "data": {"text": ""}}""")!;
-    [JsonIgnore] private static readonly JsonNode _faceElementBase = JsonNode.Parse("""{"type": "face", "data": {"id": ""}}""")!;
-    [JsonIgnore] private static readonly JsonNode _imageElementBase = JsonNode.Parse("""{"type": "image", "data": {"file": "", "subType": ""}}""")!;
-    [JsonIgnore] private static readonly JsonNode _atElementBase = JsonNode.Parse("""{"type": "at", "data": {"qq": ""}}""")!;
-    [JsonIgnore] private static readonly JsonNode _replyElementBase = JsonNode.Parse("""{"type": "reply", "data": {"id": ""}}""")!;
+    [JsonIgnore]
+    private static readonly JsonNode _textElementBase = JsonNode.Parse("""{"type": "text", "data": {"text": ""}}""")!;
+
+    [JsonIgnore]
+    private static readonly JsonNode _faceElementBase = JsonNode.Parse("""{"type": "face", "data": {"id": ""}}""")!;
+
+    [JsonIgnore] private static readonly JsonNode _imageElementBase =
+        JsonNode.Parse("""{"type": "image", "data": {"file": "", "subType": ""}}""")!;
+
+    [JsonIgnore]
+    private static readonly JsonNode _atElementBase = JsonNode.Parse("""{"type": "at", "data": {"qq": ""}}""")!;
+
+    [JsonIgnore]
+    private static readonly JsonNode _replyElementBase = JsonNode.Parse("""{"type": "reply", "data": {"id": ""}}""")!;
+
     [JsonPropertyName("type")] public string Type => "node";
     [JsonPropertyName("data")] public ForwardNodeData Data => new(name, uin, []);
     [JsonIgnore] private readonly ForwardMessageBuilder _parentInstance = instance;
@@ -200,10 +217,12 @@ public sealed class ForwardMessageBuilder
         return _parentInstance;
     }
 }
-public sealed class ForwardPropertiesData(List<ForwardMessageNode> content,
+
+public sealed class ForwardPropertiesData(
+    List<ForwardMessageNode> content,
     List<ForwardSummaryNewsEntity>? news = null,
     string? prompt = null
-    )
+)
 {
     [JsonPropertyName("message")] public List<ForwardMessageNode> Message => content;
     [JsonPropertyName("news")] public List<ForwardSummaryNewsEntity>? News => news;
@@ -214,6 +233,7 @@ public sealed class ForwardSummaryNewsEntity(string text)
 {
     [JsonPropertyName("text")] public string Text => text;
 }
+
 public sealed class ForwardNodeData(string name, string uin, List<JsonNode> content)
 {
     [JsonPropertyName("name")] public string Name => name;

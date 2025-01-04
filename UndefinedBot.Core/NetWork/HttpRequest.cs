@@ -12,17 +12,19 @@ public sealed class HttpRequest(string pluginName)
         Timeout = TimeSpan.FromSeconds(10)
     };
 
-    private readonly CommandLogger _httpRequestLogger = new(pluginName,"HttpRequest");
+    private readonly CommandLogger _httpRequestLogger = new(pluginName, "HttpRequest");
 
-    public async Task<string> Post([StringSyntax("Uri")]string url, object? content = null)
+    public async Task<string> Post([StringSyntax("Uri")] string url, object? content = null)
     {
         try
         {
-            HttpResponseMessage response = await _httpClient.PostAsync(url, content == null ? null : new StringContent(
-                JsonSerializer.Serialize(content),
-                Encoding.UTF8,
-                "application/json"
-            ));
+            HttpResponseMessage response = await _httpClient.PostAsync(url, content == null
+                ? null
+                : new StringContent(
+                    JsonSerializer.Serialize(content),
+                    Encoding.UTF8,
+                    "application/json"
+                ));
             return response.IsSuccessStatusCode ? await response.Content.ReadAsStringAsync() : "";
         }
         catch (TaskCanceledException)
@@ -36,7 +38,8 @@ public sealed class HttpRequest(string pluginName)
             return "";
         }
     }
-    public async Task<string> Get([StringSyntax("Uri")]string url)
+
+    public async Task<string> Get([StringSyntax("Uri")] string url)
     {
         try
         {
@@ -55,7 +58,7 @@ public sealed class HttpRequest(string pluginName)
         }
     }
 
-    public async Task<byte[]> GetBinary([StringSyntax("Uri")]string url)
+    public async Task<byte[]> GetBinary([StringSyntax("Uri")] string url)
     {
         try
         {
@@ -73,6 +76,7 @@ public sealed class HttpRequest(string pluginName)
             return [];
         }
     }
+
     private void PrintExceptionInfo(Exception ex)
     {
         _httpRequestLogger.Error(ex, "Error Occured, Error Information:");

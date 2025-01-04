@@ -15,19 +15,22 @@ internal sealed class RootCommandNode(string name) : ICommandNode
     public IArgumentType ArgumentType => new StringArgument();
     public ICommandNode? Parent { get; private set; }
     public List<ICommandNode> Child { get; private set; } = [];
-    public Func<CommandContext,BaseCommandSource, Task>? NodeAction { get; private set; }
+    public Func<CommandContext, BaseCommandSource, Task>? NodeAction { get; private set; }
+
     /// <summary>
     /// <para>Set action of the node</para>
     /// <para>Only use in api internal</para>
     /// </summary>
-    public void SetAction(Func<CommandContext,BaseCommandSource, Task> action)
+    public void SetAction(Func<CommandContext, BaseCommandSource, Task> action)
     {
         NodeAction = action;
     }
+
     public void SetParent(ICommandNode parentNode)
     {
         Parent = parentNode;
     }
+
     /// <summary>
     /// Add child node to this node
     /// </summary>
@@ -43,6 +46,7 @@ internal sealed class RootCommandNode(string name) : ICommandNode
         Child.Add(nextNode);
         return this;
     }
+
     /// <summary>
     /// Set node's action
     /// </summary>
@@ -55,24 +59,26 @@ internal sealed class RootCommandNode(string name) : ICommandNode
     /// </code>
     /// </example>
     /// <returns>This node self</returns>
-    public ICommandNode Execute(Func<CommandContext,BaseCommandSource,Task> action)
+    public ICommandNode Execute(Func<CommandContext, BaseCommandSource, Task> action)
     {
         NodeAction = action;
         return this;
     }
-    public async Task<ICommandResult> ExecuteSelf(CommandContext ctx,BaseCommandSource source, List<ParsedToken> tokens)
+
+    public async Task<ICommandResult> ExecuteSelf(CommandContext ctx, BaseCommandSource source,
+        List<ParsedToken> tokens)
     {
         if (NodeAction != null && (tokens.Count == 0 || Child.Count == 0))
         {
             //无后续token或无子节点 且 定义了节点Action，执行自身
             try
             {
-                await Task.WhenAny(NodeAction(ctx,source),Task.Delay(TimeSpan.FromSeconds(20)));
+                await Task.WhenAny(NodeAction(ctx, source), Task.Delay(TimeSpan.FromSeconds(20)));
                 return new CommandSuccess();
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
-                ctx.Logger.Error(ex,"Node execute failed");
+                ctx.Logger.Error(ex, "Node execute failed");
                 throw new CommandAbortException($"Node {NodeName} execute failed");
             }
         }
@@ -93,6 +99,7 @@ internal sealed class RootCommandNode(string name) : ICommandNode
                 //有一个子节点可以执行
                 return res;
             }
+
             result.Add(res);
         }
 
@@ -111,6 +118,7 @@ internal sealed class RootCommandNode(string name) : ICommandNode
             il.SelectMany(item => item.RequiredType).ToList()
         );
     }
+
     public string GetArgumentRequire()
     {
         return $"<{NodeName}>";

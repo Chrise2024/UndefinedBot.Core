@@ -6,6 +6,7 @@ public sealed class RangeIn<T> : IArgumentRange where T : IEquatable<T>
 {
     public List<T> Range { get; }
     public string DescriptionString { get; }
+
     public RangeIn(List<T> range)
     {
         Range = range.ToList();

@@ -5,14 +5,14 @@ namespace UndefinedBot.Core.Utils;
 
 public sealed class CacheManager
 {
-    private readonly Dictionary<string,object> _storageCache = [];
+    private readonly Dictionary<string, object> _storageCache = [];
     private readonly Dictionary<string, FileCacheProperty> _fileCache = [];
     private readonly ILogger _cacheLogger;
     private readonly string _cacheRootPath;
 
     public CacheManager(string pluginName, string cacheRootPath, CommandFinishEvent finishEvent)
     {
-        _cacheLogger = new PluginSubFeatureLogger(pluginName,"Cache");
+        _cacheLogger = new PluginSubFeatureLogger(pluginName, "Cache");
         _cacheRootPath = cacheRootPath;
         finishEvent.OnCommandFinish += UpdateCache;
     }
@@ -22,7 +22,8 @@ public sealed class CacheManager
         long curTime = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
 
 
-        foreach (var pair in _storageCache.Where(pair => ((pair.Value as StorageCacheProperty<object>)?.ExpiredTime ?? 0) < curTime))
+        foreach (var pair in _storageCache.Where(pair =>
+                     ((pair.Value as StorageCacheProperty<object>)?.ExpiredTime ?? 0) < curTime))
         {
             _storageCache.Remove(pair.Key);
         }
@@ -45,7 +46,7 @@ public sealed class CacheManager
         }
         catch (Exception ex)
         {
-            _cacheLogger.Error(ex,"Cache Create Failed");
+            _cacheLogger.Error(ex, "Cache Create Failed");
             return "";
         }
     }
@@ -55,13 +56,14 @@ public sealed class CacheManager
         try
         {
             _storageCache[cacheName] =
-                JsonSerializer.SerializeToNode(new StorageCacheProperty<T>(cacheContent ?? throw new NoNullAllowedException(),
+                JsonSerializer.SerializeToNode(new StorageCacheProperty<T>(
+                    cacheContent ?? throw new NoNullAllowedException(),
                     cacheDuration))!;
             return true;
         }
         catch (Exception ex)
         {
-            _cacheLogger.Error(ex,"Cache Create Failed");
+            _cacheLogger.Error(ex, "Cache Create Failed");
             return false;
         }
     }
@@ -78,7 +80,7 @@ public sealed class CacheManager
         }
         catch (Exception ex)
         {
-            _cacheLogger.Error(ex,"Cache Modify Failed");
+            _cacheLogger.Error(ex, "Cache Modify Failed");
             return default;
         }
     }

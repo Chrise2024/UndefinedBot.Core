@@ -10,6 +10,7 @@ public interface IArgumentType
     public bool IsValid(ParsedToken token);
     public object GetValue(ParsedToken token);
 }
+
 public class ArgumentInvalidException(string message) : Exception(message);
 
 public enum ArgumentTypes

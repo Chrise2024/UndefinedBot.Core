@@ -6,11 +6,12 @@ using UndefinedBot.Core.Utils;
 
 namespace UndefinedBot.Core.Adapter;
 
-public sealed class ActionInvokeManager(CommandInvokeProperties cip,ILogger logger)
+public sealed class ActionInvokeManager(CommandInvokeProperties cip, ILogger logger)
 {
     private static Dictionary<string, IAdapterInstance> AdapterInstanceReference { get; set; } = [];
     private CommandInvokeProperties InvokeProperties => cip;
     private ILogger Logger => logger;
+
     public byte[]? InvokeDefaultAction(DefaultActionType action, byte[]? paras = null)
     {
         try
@@ -26,6 +27,7 @@ public sealed class ActionInvokeManager(CommandInvokeProperties cip,ILogger logg
 
         return null;
     }
+
     public byte[]? InvokeCustomAction(string action, byte[]? paras = null)
     {
         try
@@ -41,6 +43,7 @@ public sealed class ActionInvokeManager(CommandInvokeProperties cip,ILogger logg
 
         return null;
     }
+
     internal static void UpdateAdapterInstances(Dictionary<string, IAdapterInstance> ir)
     {
         AdapterInstanceReference = ir;

@@ -11,6 +11,7 @@ namespace Adapter.OneBot11;
 public sealed class HttpApi
 {
     private string HttpPostUrl { get; }
+
     public HttpApi(AdapterConfigData adapterConfig)
     {
         HttpServiceOptions? postConfig = adapterConfig.OriginalConfig["Post"]?.Deserialize<HttpServiceOptions>();
@@ -18,21 +19,24 @@ public sealed class HttpApi
         {
             throw new Exception("Server Properties Not Implemented");
         }
+
         HttpClient.DefaultRequestHeaders.Add("Authorization", postConfig.AccessToken);
         HttpPostUrl = $"http://{postConfig.Host}:{postConfig.Port}";
     }
+
     private static HttpClient HttpClient => new()
     {
         Timeout = TimeSpan.FromSeconds(20)
     };
 
-    private readonly ILogger _httpApiLogger = new AdapterSubFeatureLogger("OneBot11Adapter","HttpApi");
+    private readonly ILogger _httpApiLogger = new AdapterSubFeatureLogger("OneBot11Adapter", "HttpApi");
+
     /// <summary>
     /// Send Message to Group
     /// </summary>
     /// <param name="targetGroupId">Group Id to send</param>
     /// <param name="msgChain">Onebot11 MessageChain</param>
-    public async Task SendGroupMsg(object targetGroupId,List<JsonNode> msgChain)
+    public async Task SendGroupMsg(object targetGroupId, List<JsonNode> msgChain)
     {
         await ApiPostRequestWithoutResponse("/send_group_msg", new
         {
@@ -40,18 +44,20 @@ public sealed class HttpApi
             message = msgChain
         });
     }
+
     /// <summary>
     /// Send Forward to Group
     /// </summary>
     /// <param name="targetGroupId">Group Id to send</param>
     /// <param name="forwardPropertiesData">Onebot11 Forward MessageChain</param>
-    public async Task SendGroupForward(object targetGroupId,ForwardPropertiesData forwardPropertiesData)
+    public async Task SendGroupForward(object targetGroupId, ForwardPropertiesData forwardPropertiesData)
     {
         //JsonNode reqJson = JsonNode.FromObject(forwardSummaryData);
         JsonNode reqJson = JsonSerializer.SerializeToNode(forwardPropertiesData)!;
         reqJson["group_id"] = $"{targetGroupId}";
         await ApiPostRequestWithoutResponse("/send_group_forward_msg", reqJson);
     }
+
     /// <summary>
     /// Recall Message in Group
     /// </summary>
@@ -63,6 +69,7 @@ public sealed class HttpApi
             message_id = msgId
         });
     }
+
     /// <summary>
     /// Get Message
     /// </summary>
@@ -105,23 +112,28 @@ public sealed class HttpApi
             no_cache = false
         }) ?? [];
     }
+
     public async Task<bool> CheckUin(long targetGroupId, long targetUin)
     {
-        return ((await GetGroupMember(targetGroupId, targetUin))?.GroupId ?? 0)  != 0;
+        return ((await GetGroupMember(targetGroupId, targetUin))?.GroupId ?? 0) != 0;
     }
+
     private async Task<T?> ApiPostRequestWithResponse<T>(string subUrl, object? content = null)
     {
         try
         {
             HttpResponseMessage response = await HttpClient.PostAsync(HttpPostUrl + subUrl,
-                content != null ?
-                    new StringContent(
+                content != null
+                    ? new StringContent(
                         JsonSerializer.Serialize(content),
                         Encoding.UTF8,
                         "application/json"
-                    ) : null
+                    )
+                    : null
             );
-            return response.IsSuccessStatusCode ? JsonSerializer.Deserialize<T>(await response.Content.ReadAsStringAsync()) : default;
+            return response.IsSuccessStatusCode
+                ? JsonSerializer.Deserialize<T>(await response.Content.ReadAsStringAsync())
+                : default;
         }
         catch (TaskCanceledException)
         {
@@ -134,17 +146,19 @@ public sealed class HttpApi
             return default;
         }
     }
+
     private async Task ApiPostRequestWithoutResponse(string subUrl, object? content = null)
     {
         try
         {
             _ = await HttpClient.PostAsync(HttpPostUrl + subUrl,
-                content != null ?
-                    new StringContent(
+                content != null
+                    ? new StringContent(
                         JsonSerializer.Serialize(content),
                         Encoding.UTF8,
                         "application/json"
-                    ) : null
+                    )
+                    : null
             );
         }
         catch (TaskCanceledException)
@@ -156,13 +170,15 @@ public sealed class HttpApi
             PrintExceptionInfo(ex);
         }
     }
+
     private void PrintExceptionInfo(Exception ex)
     {
         _httpApiLogger.Error(ex, "Error Occured, Error Information:");
     }
 }
 
-[Serializable] public sealed class GroupMember
+[Serializable]
+public sealed class GroupMember
 {
     [JsonPropertyName("group_id")] public long GroupId { get; init; } = 0;
     [JsonPropertyName("user_id")] public long UserId { get; init; } = 0;
@@ -177,6 +193,9 @@ public sealed class HttpApi
     [JsonPropertyName("role")] public string Role { get; init; } = "member";
     [JsonPropertyName("unfriendly")] public bool Unfriendly { get; init; } = false;
     [JsonPropertyName("title")] public string Title { get; init; } = "";
-    [JsonPropertyName("title_expire_time")] public int TitleExpireTime { get; init; } = 0;
+
+    [JsonPropertyName("title_expire_time")]
+    public int TitleExpireTime { get; init; } = 0;
+
     [JsonPropertyName("card_changeable")] public bool CardChangeable { get; init; } = true;
 }

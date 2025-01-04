@@ -66,7 +66,7 @@ internal static class PluginLoader
 
             foreach (var ci in pluginInstance.GetCommandInstance())
             {
-                _commandInstance.TryAdd(ci.Name,ci);
+                _commandInstance.TryAdd(ci.Name, ci);
             }
 
             string pluginCachePath = Path.Join(Program.GetProgramCache(), pluginInstance.Id);
@@ -81,7 +81,8 @@ internal static class PluginLoader
                 Environment.CurrentDirectory, "CommandReference",
                 $"{pluginInstance.Id}.reference.json"
             );
-            FileIO.WriteAsJson(commandRefPath, pluginInstance.GetCommandInstance().Select(ci => ci.ExportToCommandProperties()));
+            FileIO.WriteAsJson(commandRefPath,
+                pluginInstance.GetCommandInstance().Select(ci => ci.ExportToCommandProperties()));
             _pluginReference.Add(pluginInstance);
         }
 
@@ -101,7 +102,7 @@ internal static class PluginLoader
                                ?? throw new TypeAccessException("Plugin Class Not Fount");
             //Create Plugin Class Instance to Invoke Initialize Method
             IPluginInstance targetClassInstance =
-                Activator.CreateInstance(targetClass,[config]) as IPluginInstance ??
+                Activator.CreateInstance(targetClass, [config]) as IPluginInstance ??
                 throw new TypeInitializationException(targetClass.FullName, null);
             targetClassInstance.Initialize();
             List<CommandInstance> instances = targetClassInstance.GetCommandInstance();
@@ -157,7 +158,7 @@ internal static class PluginLoader
                     }
                     catch (Exception ex)
                     {
-                        ctx.Logger.Error(ex,"Command Failed");
+                        ctx.Logger.Error(ex, "Command Failed");
                     }
 
                     ctx.Logger.Info("Command Completed");
@@ -165,15 +166,16 @@ internal static class PluginLoader
                 });
                 //uApi.Logger.Info($"Successful Load Command <{commandInstance.Name}>");
             }
+
             return targetClassInstance;
         }
         catch (TypeLoadException tle)
         {
-            PluginInitializeLogger.Error(tle,"Unable to Find Specific Plugin Class");
+            PluginInitializeLogger.Error(tle, "Unable to Find Specific Plugin Class");
         }
         catch (TypeInitializationException tie)
         {
-            PluginInitializeLogger.Error(tie,"Unable to Create Plugin Instance");
+            PluginInitializeLogger.Error(tie, "Unable to Create Plugin Instance");
         }
         catch (MethodAccessException)
         {
@@ -181,7 +183,7 @@ internal static class PluginLoader
         }
         catch (Exception ex)
         {
-            PluginInitializeLogger.Error(ex,$"Unable to Load Command From {pluginLibPath}");
+            PluginInitializeLogger.Error(ex, $"Unable to Load Command From {pluginLibPath}");
         }
 
         return null;

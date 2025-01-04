@@ -5,21 +5,24 @@ using UndefinedBot.Core.Command.CommandSource;
 
 namespace UndefinedBot.Core.Command.CommandNodes;
 
-public sealed class VariableNode(string name,IArgumentType argumentType):ICommandNode
+public sealed class VariableNode(string name, IArgumentType argumentType) : ICommandNode
 {
     public string NodeName => name;
     public IArgumentType ArgumentType => argumentType;
     public ICommandNode? Parent { get; private set; }
-    public List<ICommandNode> Child  { get; private set; } = [];
-    public Func<CommandContext,BaseCommandSource, Task>? NodeAction { get; private set; }
-    public void SetAction(Func<CommandContext,BaseCommandSource, Task> action)
+    public List<ICommandNode> Child { get; private set; } = [];
+    public Func<CommandContext, BaseCommandSource, Task>? NodeAction { get; private set; }
+
+    public void SetAction(Func<CommandContext, BaseCommandSource, Task> action)
     {
         NodeAction = action;
     }
+
     public void SetParent(ICommandNode parentNode)
     {
         Parent = parentNode;
     }
+
     /// <summary>
     /// Add child node to this node
     /// </summary>
@@ -35,6 +38,7 @@ public sealed class VariableNode(string name,IArgumentType argumentType):IComman
         Child.Add(nextNode);
         return this;
     }
+
     /// <summary>
     /// Set node's action
     /// </summary>
@@ -47,12 +51,14 @@ public sealed class VariableNode(string name,IArgumentType argumentType):IComman
     /// </code>
     /// </example>
     /// <returns>This node self</returns>
-    public ICommandNode Execute(Func<CommandContext,BaseCommandSource, Task> action)
+    public ICommandNode Execute(Func<CommandContext, BaseCommandSource, Task> action)
     {
         NodeAction = action;
         return this;
     }
-    public async Task<ICommandResult> ExecuteSelf(CommandContext ctx,BaseCommandSource source,List<ParsedToken> tokens)
+
+    public async Task<ICommandResult> ExecuteSelf(CommandContext ctx, BaseCommandSource source,
+        List<ParsedToken> tokens)
     {
         if (tokens.Count == 0)
         {
@@ -70,12 +76,12 @@ public sealed class VariableNode(string name,IArgumentType argumentType):IComman
             //无后续token或无子节点 且 定义了节点Action，执行自身
             try
             {
-                await Task.WhenAny(NodeAction(ctx,source),Task.Delay(TimeSpan.FromSeconds(20)));
+                await Task.WhenAny(NodeAction(ctx, source), Task.Delay(TimeSpan.FromSeconds(20)));
                 return new CommandSuccess();
             }
             catch (Exception ex)
             {
-                ctx.Logger.Error(ex,"Node Execute Failed");
+                ctx.Logger.Error(ex, "Node Execute Failed");
                 throw new CommandAbortException($"Node {NodeName} execute failed");
             }
         }
@@ -90,7 +96,7 @@ public sealed class VariableNode(string name,IArgumentType argumentType):IComman
         List<ICommandResult> result = [];
         foreach (ICommandNode node in Child)
         {
-            ICommandResult res = await node.ExecuteSelf(ctx,source, tokens[1..]);
+            ICommandResult res = await node.ExecuteSelf(ctx, source, tokens[1..]);
             if (res is CommandSuccess)
             {
                 //有一个子节点可以执行
@@ -115,8 +121,11 @@ public sealed class VariableNode(string name,IArgumentType argumentType):IComman
             il.SelectMany(item => item.RequiredType).ToList()
         );
     }
+
     public string GetArgumentRequire()
     {
-        return ArgumentType.Range == null ? $"[{ArgumentType.ArgumentTypeName}]" : $"[{ArgumentType.ArgumentTypeName} ({ArgumentType.Range.GetRangeDescription()})]";
+        return ArgumentType.Range == null
+            ? $"[{ArgumentType.ArgumentTypeName}]"
+            : $"[{ArgumentType.ArgumentTypeName} ({ArgumentType.Range.GetRangeDescription()})]";
     }
 }

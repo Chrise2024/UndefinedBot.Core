@@ -15,6 +15,7 @@ public interface IAdapterInstance
     string Protocol { get; }
     public List<long> GroupId { get; }
     public string CommandPrefix { get; }
+
     /// <summary>
     /// Handle custom action invoked by command
     /// </summary>
@@ -36,6 +37,7 @@ public abstract class BaseAdapter(AdapterConfigData adapterConfig) : IAdapterIns
     public string CommandPrefix => adapterConfig.CommandPrefix;
     protected ILogger Logger => new AdapterLogger(Name);
     protected AdapterConfigData AdapterConfig => adapterConfig;
+
     /// <summary>
     /// After processing message, use it to submit this event
     /// </summary>
@@ -46,19 +48,22 @@ public abstract class BaseAdapter(AdapterConfigData adapterConfig) : IAdapterIns
         CommandInvokeProperties invokeProperties,
         BaseCommandSource source,
         List<ParsedToken> tokens
-        )
+    )
     {
-        CommandEventBus.InvokeCommandEvent(invokeProperties.Implement(Id,Platform, Protocol, tokens), source);
+        CommandEventBus.InvokeCommandEvent(invokeProperties.Implement(Id, Platform, Protocol, tokens), source);
     }
+
     /// <summary>
     /// Handle custom action invoked by command
     /// </summary>
     public abstract byte[]? HandleCustomAction(string action, byte[]? paras);
+
     /// <summary>
     /// Handle default action invoked by command
     /// </summary>
     public abstract byte[]? HandleDefaultAction(DefaultActionType action, byte[]? paras);
 }
+
 public enum DefaultActionType
 {
     SendPrivateMsg = 0,
@@ -70,10 +75,12 @@ public enum DefaultActionType
     GroupMute = 6,
     GroupKick = 7,
 }
+
 /// <summary>
 /// This Class records what write in config file
 /// </summary>
-[Serializable] public sealed class AdapterConfigData
+[Serializable]
+public sealed class AdapterConfigData
 {
     public string EntryFile { get; init; } = "";
     public string Description { get; init; } = "";
@@ -91,11 +98,13 @@ public enum DefaultActionType
         return !(string.IsNullOrEmpty(EntryFile) || string.IsNullOrEmpty(CommandPrefix));
     }
 }
+
 /// <summary>
 /// This class is for program record adapter's properties,include information defined in assembly
 /// </summary>
-[Obsolete("These Properties Is Already Included in IAdapterInstance",true)]
-[Serializable] public sealed class AdapterProperties(BaseAdapter baseInstance,AdapterConfigData originData)
+[Obsolete("These Properties Is Already Included in IAdapterInstance", true)]
+[Serializable]
+public sealed class AdapterProperties(BaseAdapter baseInstance, AdapterConfigData originData)
 {
     public string Id => baseInstance.Id;
     public string Name => baseInstance.Name;
@@ -105,16 +114,19 @@ public enum DefaultActionType
     public string Description => originData.Description;
     public string CommandPrefix => originData.CommandPrefix;
 }
-[Obsolete("Don't Use It.Better Method Will Replace",true)]
-internal sealed class AdapterInstance(object instance,MethodInfo dah,MethodInfo cah)
+
+[Obsolete("Don't Use It.Better Method Will Replace", true)]
+internal sealed class AdapterInstance(object instance, MethodInfo dah, MethodInfo cah)
 {
     private object Instance => instance;
     private MethodInfo DefaultActionHandler => dah;
     private MethodInfo CustomActionHandler => cah;
+
     public byte[]? InvokeAction(DefaultActionType action, byte[]? paras = null)
     {
         return DefaultActionHandler.Invoke(Instance, [action, paras]) as byte[];
     }
+
     public byte[]? InvokeAction(string action, byte[]? paras = null)
     {
         return CustomActionHandler.Invoke(Instance, [action, paras]) as byte[];

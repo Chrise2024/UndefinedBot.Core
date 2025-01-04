@@ -8,22 +8,23 @@ namespace UndefinedBot.Core.Plugin;
 
 internal static class CommandInvokeManager
 {
-    private static Dictionary<string,CommandInstance[]> CommandInstanceIndexByAdapter  { get; set; } = [];
-    
+    private static Dictionary<string, CommandInstance[]> CommandInstanceIndexByAdapter { get; set; } = [];
+
     public static void UpdateAdapterInstances(List<CommandInstance> ci)
     {
         CommandInstanceIndexByAdapter = ci
             .GroupBy(
                 i => i.TargetAdapterId,
-                p =>p
-                )
+                p => p
+            )
             .ToDictionary(
                 k => k.Key,
                 v => v.ToArray()
             );
     }
 
-    public static async Task<CommandInvokeResult> InvokeCommand(CommandInvokeProperties invokeProperties, BaseCommandSource source)
+    public static async Task<CommandInvokeResult> InvokeCommand(CommandInvokeProperties invokeProperties,
+        BaseCommandSource source)
     {
         if (!CommandInstanceIndexByAdapter.TryGetValue(invokeProperties.AdapterId, out var refCollection))
         {
@@ -34,11 +35,12 @@ internal static class CommandInvokeManager
             .Find(
                 refCollection,
                 t => t.Name == invokeProperties.Command || t.CommandAlias.Contains(invokeProperties.Command)
-                );
+            );
         if (targetCommand == null)
         {
             return CommandInvokeResult.NoSuchCommand;
         }
+
         CommandContext ctx = new(targetCommand.Name, targetCommand.PluginId, invokeProperties);
         ctx.Logger.Info("Command Triggered");
         try
@@ -73,7 +75,7 @@ internal static class CommandInvokeManager
         }
         catch (Exception ex)
         {
-            ctx.Logger.Error(ex,"Command Failed");
+            ctx.Logger.Error(ex, "Command Failed");
         }
 
         return CommandInvokeResult.SuccessInvoke;

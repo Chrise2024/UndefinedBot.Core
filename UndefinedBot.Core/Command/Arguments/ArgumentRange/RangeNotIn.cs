@@ -6,6 +6,7 @@ public sealed class RangeNotIn<T> : IArgumentRange where T : IEquatable<T>
 {
     public List<T> Range { get; }
     public string DescriptionString { get; }
+
     public RangeNotIn(List<T> range)
     {
         Range = range.ToList();
@@ -16,6 +17,7 @@ public sealed class RangeNotIn<T> : IArgumentRange where T : IEquatable<T>
     {
         return current is not T tc || !Range.Any(item => item.Equals(tc));
     }
+
     public string GetRangeDescription()
     {
         return $"Not In {{{DescriptionString}}}";

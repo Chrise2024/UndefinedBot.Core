@@ -26,6 +26,7 @@ public abstract class BasePlugin(PluginConfigData pluginConfig) : IPluginInstanc
     protected PluginConfigData PluginConfig => pluginConfig;
     private List<CommandInstance> CommandInstances { get; } = [];
     List<CommandInstance> IPluginInstance.GetCommandInstance() => CommandInstances;
+
     /// <summary>
     /// Register Command
     /// </summary>
@@ -37,7 +38,7 @@ public abstract class BasePlugin(PluginConfigData pluginConfig) : IPluginInstanc
     /// </returns>
     protected CommandInstance RegisterCommand(string commandName)
     {
-        CommandInstance ci = new(commandName,Id,TargetAdapterId);
+        CommandInstance ci = new(commandName, Id, TargetAdapterId);
         CommandInstances.Add(ci);
         return ci;
     }
@@ -46,12 +47,14 @@ public abstract class BasePlugin(PluginConfigData pluginConfig) : IPluginInstanc
 /// <summary>
 /// This Class records what write in config file
 /// </summary>
-[Serializable] public sealed class PluginConfigData
+[Serializable]
+public sealed class PluginConfigData
 {
     public string EntryFile { get; init; } = "";
     public string Description { get; init; } = "";
     public List<long> GroupId { get; init; } = [];
     public JsonNode OriginalConfig { get; private set; } = JsonNode.Parse("{}")!;
+
     internal void Implement(JsonNode oc)
     {
         OriginalConfig = oc;
@@ -62,11 +65,13 @@ public abstract class BasePlugin(PluginConfigData pluginConfig) : IPluginInstanc
         return !string.IsNullOrEmpty(EntryFile);
     }
 }
+
 /// <summary>
 /// This class is for program record plugin's properties,include information defined in assembly
 /// </summary>
-[Obsolete("These Properties Is Already Included in IPluginInstance",true)]
-[Serializable] public sealed class PluginProperties(BasePlugin baseInstance,PluginConfigData originData)
+[Obsolete("These Properties Is Already Included in IPluginInstance", true)]
+[Serializable]
+public sealed class PluginProperties(BasePlugin baseInstance, PluginConfigData originData)
 {
     public string Id => baseInstance.Id;
     public string Name => baseInstance.Name;

@@ -49,7 +49,7 @@ public class UndefinedApp(IHost host) : IHost
                 [time, ..tags, undefinedLogLevel.ToString(), message]
             );
         });
-        LogEventBus.RegisterExceptionLogEventHandler((time, undefinedLogLevel,ex, message, template, tags) =>
+        LogEventBus.RegisterExceptionLogEventHandler((time, undefinedLogLevel, ex, message, template, tags) =>
         {
             Logger.Log(
                 ConvertLogLevel(undefinedLogLevel),
@@ -59,7 +59,7 @@ public class UndefinedApp(IHost host) : IHost
             );
         });
         //Load Root Config
-        ConfigManager.InitConfig(new Config
+        RootConfigManager.InitConfig(new RootConfigData
         {
             GroupId = Configuration.GetSection("GroupId").GetChildren().Select(child => long.Parse(child.Value!))
                 .ToList(),

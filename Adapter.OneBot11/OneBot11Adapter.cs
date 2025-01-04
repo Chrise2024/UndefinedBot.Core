@@ -10,9 +10,10 @@ public sealed class OneBot11Adapter : BaseAdapter
     public override string Protocol => "OneBot11";
     private Task MainLoopInstance { get; set; }
     private HttpApi HApi => new(AdapterConfig);
+
     public OneBot11Adapter(AdapterConfigData adapterConfig) : base(adapterConfig)
     {
-        HttpServer hs  = new(adapterConfig,SubmitCommandEvent);
+        HttpServer hs = new(adapterConfig, SubmitCommandEvent);
         MainLoopInstance = hs.ExecuteAsync(new CancellationToken());
     }
 
@@ -21,6 +22,7 @@ public sealed class OneBot11Adapter : BaseAdapter
         //None
         return null;
     }
+
     public override byte[]? HandleDefaultAction(DefaultActionType action, byte[]? paras)
     {
         //None

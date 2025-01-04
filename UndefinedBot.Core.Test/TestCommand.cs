@@ -10,6 +10,7 @@ public sealed class TestCommand(PluginConfigData pluginConfig) : BasePlugin(plug
     public override string Id => "Test";
     public override string Name => "Test Plugin";
     public override string TargetAdapterId => "OneBot11Adapter";
+
     public override void Initialize()
     {
         RegisterCommand("test")
@@ -17,10 +18,10 @@ public sealed class TestCommand(PluginConfigData pluginConfig) : BasePlugin(plug
             .ShortDescription("帮助")
             .Usage("{0}help [指令名]")
             .Example("{0}help help")
-            .Execute(async (ctx,source) => { Console.WriteLine("root"); })
+            .Execute(async (ctx, source) => { Console.WriteLine("root"); })
             .Then(new VariableNode("var1", new ReplyArgument())
                 .Then(new VariableNode("var2", new StringArgument())
-                    .Execute(async (ctx,source) =>
+                    .Execute(async (ctx, source) =>
                     {
                         //long v1 = IntegerArgument.GetInteger("var1", ctx);
                         //double v2 = NumberArgument.GetNumber("var2", ctx);
@@ -28,7 +29,7 @@ public sealed class TestCommand(PluginConfigData pluginConfig) : BasePlugin(plug
                     })))
             .Then(new VariableNode("var3", new StringArgument())
                 .Then(new VariableNode("var4", new ImageArgument())
-                    .Execute(async (ctx,source) =>
+                    .Execute(async (ctx, source) =>
                     {
                         //long v3 = IntegerArgument.GetInteger("var3", ctx);
                         //long v4 = IntegerArgument.GetInteger("var4", ctx);

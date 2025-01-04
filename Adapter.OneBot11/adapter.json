@@ -1,14 +1,16 @@
 ﻿{
-    "Description": "OneBot11",
-    "EntryFile": "Adapter.OneBot11",
-    "CommandPrefix" : "$",
-    "GroupIds": [0],
-    "Post": {
-        "Host" : "127.0.0.1",
-        "Port": 8089
-    },
-    "Server": {
-        "Host" : "127.0.0.1",
-        "Port": 8088
-    }
+  "Description": "OneBot11",
+  "EntryFile": "Adapter.OneBot11",
+  "CommandPrefix": "$",
+  "GroupIds": [
+    0
+  ],
+  "Post": {
+    "Host": "127.0.0.1",
+    "Port": 8089
+  },
+  "Server": {
+    "Host": "127.0.0.1",
+    "Port": 8088
+  }
 }

@@ -2,7 +2,7 @@
 
 namespace UndefinedBot.Core.Utils;
 
-[Obsolete("wasted",true)]
+[Obsolete("wasted", true)]
 internal partial class RegexProvider
 {
     [GeneratedRegex(@"\[CQ:at,qq=\d+\S*\]")]

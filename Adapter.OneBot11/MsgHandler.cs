@@ -18,22 +18,25 @@ namespace Adapter.OneBot11;
 
 internal sealed partial class MsgHandler(AdapterConfigData adapterConfig)
 {
-    private ILogger Logger => new AdapterSubFeatureLogger("OneBot11Adapter","MsgHandler");
+    private ILogger Logger => new AdapterSubFeatureLogger("OneBot11Adapter", "MsgHandler");
     private AdapterConfigData AdapterConfig => adapterConfig;
-    public (CommandInvokeProperties?,BaseCommandSource?, List<ParsedToken>?) HandleMsg(JsonNode msgJson)
+
+    public (CommandInvokeProperties?, BaseCommandSource?, List<ParsedToken>?) HandleMsg(JsonNode msgJson)
     {
         if (!IsGroupMessageToHandle(msgJson))
         {
-            return (null,null,null);
+            return (null, null, null);
         }
 
         MsgBody? msgBody = msgJson.Deserialize<MsgBody>();
         (string? cmdName, List<ParsedToken> tokens) = Tokenize(msgBody?.RawMessage ?? "");
         if (msgBody == null || cmdName == null)
         {
-            return (null,null,null);
+            return (null, null, null);
         }
-        CommandInvokeProperties cip = CommandInvokeProperties.Group(cmdName,msgBody.UserId,msgBody.MessageId,msgBody.Time);
+
+        CommandInvokeProperties cip =
+            CommandInvokeProperties.Group(cmdName, msgBody.UserId, msgBody.MessageId, msgBody.Time);
         UserCommandSource ucs = UserCommandSource.Group(msgBody.UserId, msgBody.GroupId, msgBody.Sender.Nickname, 0);
         return (cip, ucs, tokens);
     }
@@ -51,21 +54,25 @@ internal sealed partial class MsgHandler(AdapterConfigData adapterConfig)
     /// </summary>
     /// <param name="msgString">Raw CQMessage string</param>
     /// <returns>tokens</returns>
-    private (string?,List<ParsedToken>) Tokenize(string msgString)
+    private (string?, List<ParsedToken>) Tokenize(string msgString)
     {
         Logger.Info($"Processing: {msgString}");
         List<ParsedToken> unsortedTokens = SplitRawCqMessage(msgString);
         int commandTokenIndex = unsortedTokens.FindIndex(item =>
-            item.TokenType == ParsedTokenTypes.Normal && Encoding.UTF8.GetString(item.SerializedContent).StartsWith(AdapterConfig.CommandPrefix)
+            item.TokenType == ParsedTokenTypes.Normal && Encoding.UTF8.GetString(item.SerializedContent)
+                .StartsWith(AdapterConfig.CommandPrefix)
         );
         if (commandTokenIndex is -1 or > 1)
         {
             return (null, []);
         }
-        unsortedTokens.RemoveAt(commandTokenIndex);
-        return (Encoding.UTF8.GetString(unsortedTokens[commandTokenIndex].SerializedContent)[AdapterConfig.CommandPrefix.Length..],unsortedTokens);
 
+        unsortedTokens.RemoveAt(commandTokenIndex);
+        return (
+            Encoding.UTF8.GetString(unsortedTokens[commandTokenIndex].SerializedContent)[
+                AdapterConfig.CommandPrefix.Length..], unsortedTokens);
     }
+
     private List<ParsedToken> SplitRawCqMessage(string cqString)
     {
         if (cqString.Length == 0)
@@ -85,6 +92,7 @@ internal sealed partial class MsgHandler(AdapterConfigData adapterConfig)
             .OfType<ParsedToken>()
             .ToList();
     }
+
     private ParsedToken? DecodeCqEntity(string cqEntityString)
     {
         string[] cqPieces = cqEntityString[1..^1]
@@ -119,19 +127,25 @@ internal sealed partial class MsgHandler(AdapterConfigData adapterConfig)
             _ => null
         };
     }
+
     [GeneratedRegex(@"\[CQ:\S+\]")]
     private static partial Regex GetCqEntityRegex();
+
     [GeneratedRegex(@"[\""].+?[\""]|[^ ]+")]
     private static partial Regex GetCommandTokenRegex();
 }
-[Serializable] public sealed class MsgSender
+
+[Serializable]
+public sealed class MsgSender
 {
     [JsonPropertyName("user_id")] public long UserId { get; init; } = 0;
     [JsonPropertyName("nickname")] public string Nickname { get; init; } = "";
     [JsonPropertyName("sex")] public string Sex { get; init; } = "";
     [JsonPropertyName("age")] public int Age { get; init; } = 0;
 }
-[Serializable] public sealed class MsgBody
+
+[Serializable]
+public sealed class MsgBody
 {
     [JsonPropertyName("time")] public long Time { get; init; } = 0;
     [JsonPropertyName("self_id")] public long SelfId { get; init; } = 0;

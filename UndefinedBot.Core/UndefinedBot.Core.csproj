@@ -1,27 +1,27 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-  <PropertyGroup>
-    <TargetFramework>net8.0</TargetFramework>
-    <ImplicitUsings>enable</ImplicitUsings>
-    <Nullable>enable</Nullable>
-    <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
-    
-    <!-- NuGet 包信息 -->
-    <PackageId>UndefinedBot.Core</PackageId>
-	<Title>UndefinedBot.Core</Title>
-    <Version>1.2.0.0-alpha</Version>
-    <Authors>ChriseCecilia</Authors>
-    <Description>UndefinedBot's Plugin and Adapter SDK</Description>
-    <Copyright>Copyright © 2024</Copyright>
-    <PackageLicenseExpression> MIT</PackageLicenseExpression>
-    <PackageProjectUrl>https://github.com/Chrise2024/UndefinedBot.Core</PackageProjectUrl>
-    <RepositoryUrl>https://github.com/Chrise2024/UndefinedBot.Core</RepositoryUrl>
-    <RepositoryType>git</RepositoryType>
-  </PropertyGroup>
+    <PropertyGroup>
+        <TargetFramework>net8.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+        <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
 
-  <ItemGroup>
-    <None Remove="Readme.md" />
-    <Content Include="Readme.md" />
-  </ItemGroup>
+        <!-- NuGet 包信息 -->
+        <PackageId>UndefinedBot.Core</PackageId>
+        <Title>UndefinedBot.Core</Title>
+        <Version>1.2.0.0-alpha</Version>
+        <Authors>ChriseCecilia</Authors>
+        <Description>UndefinedBot's Plugin and Adapter SDK</Description>
+        <Copyright>Copyright © 2024</Copyright>
+        <PackageLicenseExpression>MIT</PackageLicenseExpression>
+        <PackageProjectUrl>https://github.com/Chrise2024/UndefinedBot.Core</PackageProjectUrl>
+        <RepositoryUrl>https://github.com/Chrise2024/UndefinedBot.Core</RepositoryUrl>
+        <RepositoryType>git</RepositoryType>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <None Remove="Readme.md"/>
+        <Content Include="Readme.md"/>
+    </ItemGroup>
 
 </Project>

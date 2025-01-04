@@ -5,7 +5,8 @@ namespace UndefinedBot.Core.Utils;
 
 internal static class FileIO
 {
-    private static readonly JsonSerializerOptions _serializerOptio = new(){ WriteIndented = true };
+    private static readonly JsonSerializerOptions _serializerOptio = new() { WriteIndented = true };
+
     public static bool EnsurePath(string? tPath)
     {
         if (tPath == null)
@@ -20,7 +21,6 @@ internal static class FileIO
 
         Directory.CreateDirectory(tPath);
         return false;
-
     }
 
     public static bool EnsureFile(string tPath, string initData = "")

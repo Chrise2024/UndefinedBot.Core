@@ -8,16 +8,22 @@ namespace UndefinedBot.Core.Command;
 
 public sealed class CommandInstance
 {
-    [JsonPropertyName("target_adapter_id")] public string TargetAdapterId { get; }
+    [JsonPropertyName("target_adapter_id")]
+    public string TargetAdapterId { get; }
+
     [JsonPropertyName("plugin_id")] public string PluginId { get; }
     [JsonPropertyName("name")] public string Name { get; private set; }
     [JsonPropertyName("alias")] public List<string> CommandAlias { get; private set; } = [];
     [JsonPropertyName("description")] public string? CommandDescription { get; private set; }
-    [JsonPropertyName("short_description")] public string? CommandShortDescription { get; private set; }
+
+    [JsonPropertyName("short_description")]
+    public string? CommandShortDescription { get; private set; }
+
     [JsonPropertyName("usage")] public string? CommandUsage { get; private set; }
     [JsonPropertyName("example")] public string? CommandExample { get; private set; }
     [JsonIgnore] private RootCommandNode RootNode { get; set; }
-    internal CommandInstance(string commandName,string pluginId,string targetAdapterId)
+
+    internal CommandInstance(string commandName, string pluginId, string targetAdapterId)
     {
         TargetAdapterId = targetAdapterId;
         PluginId = pluginId;
@@ -25,9 +31,9 @@ public sealed class CommandInstance
         RootNode = new RootCommandNode(commandName);
     }
 
-    internal async Task<ICommandResult> Run(CommandContext ctx,BaseCommandSource source, List<ParsedToken> tokens)
+    internal async Task<ICommandResult> Run(CommandContext ctx, BaseCommandSource source, List<ParsedToken> tokens)
     {
-        return await RootNode.ExecuteSelf(ctx,source, tokens);
+        return await RootNode.ExecuteSelf(ctx, source, tokens);
     }
 
     /// <summary>
@@ -104,7 +110,7 @@ public sealed class CommandInstance
     /// </example>
     /// <remarks>While action added,control flow will goto command tree building.</remarks>
     /// <returns>self</returns>
-    public ICommandNode Execute(Func<CommandContext,BaseCommandSource, Task> action)
+    public ICommandNode Execute(Func<CommandContext, BaseCommandSource, Task> action)
     {
         //RootNode.SetAction(action);
         return RootNode.Execute(action);
@@ -144,7 +150,10 @@ public sealed class CommandProperties
     [JsonPropertyName("name")] public string Name { get; init; } = "";
     [JsonPropertyName("alias")] public List<string> CommandAlias { get; init; } = [];
     [JsonPropertyName("description")] public string? CommandDescription { get; init; }
-    [JsonPropertyName("short_description")] public string? CommandShortDescription { get; init; }
+
+    [JsonPropertyName("short_description")]
+    public string? CommandShortDescription { get; init; }
+
     [JsonPropertyName("usage")] public string? CommandUsage { get; init; }
     [JsonPropertyName("example")] public string? CommandExample { get; init; }
 

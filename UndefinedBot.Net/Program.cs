@@ -19,6 +19,7 @@ internal class Program
     private static readonly string _programRoot = Environment.CurrentDirectory;
 
     private static readonly string _programCache = Path.Join(_programRoot, "Cache");
+
     static async Task Main(string[] args)
     {
         Console.OutputEncoding = Encoding.UTF8;
@@ -28,7 +29,8 @@ internal class Program
         if (!File.Exists("appsettings.json"))
         {
             Console.WriteLine("No exist config file, create it now...");
-            Stream resStream = Assembly.GetExecutingAssembly().GetManifestResourceStream("UndefinedBot.Net.appsettings.json")!;
+            Stream resStream = Assembly.GetExecutingAssembly()
+                .GetManifestResourceStream("UndefinedBot.Net.appsettings.json")!;
             FileStream tempStream = File.Create("appsettings.json");
             await resStream.CopyToAsync(tempStream);
             resStream.Close();
@@ -36,18 +38,21 @@ internal class Program
             Console.WriteLine("Please Edit the appsettings.json to set configs");
             return;
         }
-        HostApplicationBuilder undefinedAppBuilder = new (args);
+
+        HostApplicationBuilder undefinedAppBuilder = new(args);
         undefinedAppBuilder.Configuration.AddJsonFile("appsettings.json", false, true);
         undefinedAppBuilder.Configuration.AddEnvironmentVariables();
-        UndefinedApp undefinedApp = new (undefinedAppBuilder.Build());
+        UndefinedApp undefinedApp = new(undefinedAppBuilder.Build());
         undefinedApp.Start();
         new GeneralLogger("1111").Info("6666666666");
         await undefinedApp.StopAsync();
     }
+
     public static string GetProgramRoot()
     {
         return _programRoot;
     }
+
     public static string GetProgramCache()
     {
         return _programCache;

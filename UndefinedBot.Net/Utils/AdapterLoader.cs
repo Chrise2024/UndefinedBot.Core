@@ -22,6 +22,7 @@ internal static class AdapterLoader
             Directory.CreateDirectory(AdapterRoot);
             throw new FileNotFoundException("Adapters Folder Not Fount, Restart.");
         }
+
         string[] adapterFolders = Directory.GetDirectories(AdapterRoot);
         foreach (string af in adapterFolders)
         {
@@ -33,6 +34,7 @@ internal static class AdapterLoader
                 AdapterInitializeLogger.Warn($"Adapter: <{af}> Not Have adapter.json");
                 continue;
             }
+
             JsonNode? originJson = FileIO.ReadAsJson(adapterPropertiesFile);
             AdapterConfigData? adapterConfigData = originJson?.Deserialize<AdapterConfigData>();
             if (originJson == null || adapterConfigData == null || !adapterConfigData.IsValid())
@@ -48,6 +50,7 @@ internal static class AdapterLoader
                 AdapterInitializeLogger.Warn($"Adapter: <{af}> Binary EntryFile: <{entryFile}> Not Found");
                 continue;
             }
+
             IAdapterInstance? inst = CreateAdapterInstance(entryFile, adapterConfigData);
             if (inst == null)
             {
@@ -59,34 +62,36 @@ internal static class AdapterLoader
             _adapterInstances[inst.Id] = inst;
             AdapterInitializeLogger.Info($"Success Load Adapter: {inst.Id}");
         }
+
         //Mount AdapterInstances on ActionManager to Handle Plugin's Action
         ActionInvokeManager.UpdateAdapterInstances(_adapterInstances);
         return _adapterInstances;
     }
 
-    private static IAdapterInstance? CreateAdapterInstance(string adapterLibPath,AdapterConfigData config)
+    private static IAdapterInstance? CreateAdapterInstance(string adapterLibPath, AdapterConfigData config)
     {
         try
         {
             //Get Adapter Class
             Type targetClass = Assembly
-                .LoadFrom(adapterLibPath)
-                .GetTypes()
-                .ToList()
-                .Find(type => type.BaseType?.FullName == "UndefinedBot.Core.Adapter.BaseAdapter") ?? throw new TypeLoadException(adapterLibPath);
+                                   .LoadFrom(adapterLibPath)
+                                   .GetTypes()
+                                   .ToList()
+                                   .Find(type => type.BaseType?.FullName == "UndefinedBot.Core.Adapter.BaseAdapter") ??
+                               throw new TypeLoadException(adapterLibPath);
             //Create Adapter Instance
             IAdapterInstance targetAdapterInstance =
-                Activator.CreateInstance(targetClass,[config]) as IAdapterInstance ??
+                Activator.CreateInstance(targetClass, [config]) as IAdapterInstance ??
                 throw new TypeInitializationException(targetClass.FullName, null);
             return targetAdapterInstance;
         }
         catch (TypeLoadException tle)
         {
-            AdapterInitializeLogger.Error(tle,"Unable to Find Specific Adapter Class");
+            AdapterInitializeLogger.Error(tle, "Unable to Find Specific Adapter Class");
         }
         catch (TypeInitializationException tie)
         {
-            AdapterInitializeLogger.Error(tie,"Unable to Create Adapter Instance");
+            AdapterInitializeLogger.Error(tie, "Unable to Create Adapter Instance");
         }
         catch (MethodAccessException)
         {
@@ -94,8 +99,9 @@ internal static class AdapterLoader
         }
         catch (Exception ex)
         {
-            AdapterInitializeLogger.Error(ex,$"Unable to Load Adapter From {adapterLibPath}");
+            AdapterInitializeLogger.Error(ex, $"Unable to Load Adapter From {adapterLibPath}");
         }
+
         return null;
     }
 

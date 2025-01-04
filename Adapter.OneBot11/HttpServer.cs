@@ -24,6 +24,7 @@ public sealed class HttpServiceOptions(string host, uint port, string? accessTok
         {
             throw new Exception("Server Properties Not Implemented");
         }
+
         return serverConfig.Deserialize<HttpServiceOptions>() ?? throw new Exception("Invalid Server Properties");
     }
 
@@ -37,14 +38,16 @@ public sealed class HttpServiceOptions(string host, uint port, string? accessTok
     public string? AccessToken { get; } = accessToken;
 }
 
-internal sealed class HttpServer(AdapterConfigData adapterConfig,Action<CommandInvokeProperties,BaseCommandSource,List<ParsedToken>> submitter)
+internal sealed class HttpServer(
+    AdapterConfigData adapterConfig,
+    Action<CommandInvokeProperties, BaseCommandSource, List<ParsedToken>> submitter)
 {
-
     private readonly HttpListener _httpListener = new();
     private readonly HttpServiceOptions _options = HttpServiceOptions.CreateFromConfig(adapterConfig);
     private readonly MsgHandler _handler = new(adapterConfig);
-    private ILogger Logger => new AdapterSubFeatureLogger("OneBot11Adapter","HttpServer");
+    private ILogger Logger => new AdapterSubFeatureLogger("OneBot11Adapter", "HttpServer");
     private Action<CommandInvokeProperties, BaseCommandSource, List<ParsedToken>> Submitter => submitter;
+
     public async Task ExecuteAsync(CancellationToken token)
     {
         string prefix = $"http://{_options.Host}:{_options.Port}/";
@@ -76,6 +79,7 @@ internal sealed class HttpServer(AdapterConfigData adapterConfig,Action<CommandI
                 return;
             }
         }
+
         Logger.Info("Http Server Stopped");
     }
 
@@ -86,7 +90,7 @@ internal sealed class HttpServer(AdapterConfigData adapterConfig,Action<CommandI
             try
             {
                 var context = await _httpListener.GetContextAsync().WaitAsync(token);
-                _ = HandleRequestAsync(context,token);
+                _ = HandleRequestAsync(context, token);
             }
             catch (OperationCanceledException) when (token.IsCancellationRequested)
             {
@@ -98,7 +102,8 @@ internal sealed class HttpServer(AdapterConfigData adapterConfig,Action<CommandI
             }
         }
     }
-    private async Task HandleRequestAsync(HttpListenerContext context,CancellationToken token = default)
+
+    private async Task HandleRequestAsync(HttpListenerContext context, CancellationToken token = default)
     {
         HttpListenerRequest request = context.Request;
         HttpListenerResponse response = context.Response;
@@ -153,11 +158,12 @@ internal sealed class HttpServer(AdapterConfigData adapterConfig,Action<CommandI
 
             StreamReader sr = new(context.Request.InputStream);
             string tempString = await sr.ReadToEndAsync(token);
-            string reqString = Regex.Unescape(tempString);//.Replace(@"\u0022", "\\\"").Replace(@"\0", "0");
+            string reqString = Regex.Unescape(tempString); //.Replace(@"\u0022", "\\\"").Replace(@"\0", "0");
             sr.Close();
             context.Response.StatusCode = 200;
             context.Response.Close();
-            (CommandInvokeProperties? cip,BaseCommandSource? ucs, List<ParsedToken>? tokens) = _handler.HandleMsg(JsonNode.Parse(reqString) ?? throw new Exception("Parse Failed"));
+            (CommandInvokeProperties? cip, BaseCommandSource? ucs, List<ParsedToken>? tokens) =
+                _handler.HandleMsg(JsonNode.Parse(reqString) ?? throw new Exception("Parse Failed"));
             if (cip != null && ucs != null && tokens != null)
             {
                 Submitter(cip, ucs, tokens);
@@ -169,6 +175,7 @@ internal sealed class HttpServer(AdapterConfigData adapterConfig,Action<CommandI
             PrintExceptionInfo(ex);
         }
     }
+
     private void PrintExceptionInfo(Exception ex)
     {
         Logger.Error(ex, "Error Occured, Error Information:");

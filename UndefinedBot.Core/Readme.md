@@ -24,7 +24,8 @@ In `plugin.json`
 
 Plugins are developing with `UndefinedBot.Core` on Nuget or as git submodule.
 
-Plugin's main class must not be abstract or static and must extend class `UndefinedBot.Core.Plugin.BasePlugin` and override it's abstract fields and have a constructor with single param `PluginConfigData`.
+Plugin's main class must not be abstract or static and must extend class `UndefinedBot.Core.Plugin.BasePlugin` and
+override it's abstract fields and have a constructor with single param `PluginConfigData`.
 
 Use `RegisterCommand` method extends form BasePlugin to register command
 
@@ -50,6 +51,7 @@ public class TestCommand(PluginConfigData pluginConfig) : BasePlugin(pluginConfi
     }
 }
 ```
+
 - `Id` The plugin's unique identification
 - `Name` The plugin's name
 - `TargetAdapterId` The adapter plugin will dock to
@@ -78,7 +80,8 @@ In `adapter.json`
 
 Adapter are developing with `UndefinedBot.Core` on Nuget or as git submodule.
 
-Adapter's main class must not be abstract or static and must extend class `UndefinedBot.Core.Adapter.BaseAdapter` and override it's abstract fields and have a constructor with single param `AdapterConfigData`.
+Adapter's main class must not be abstract or static and must extend class `UndefinedBot.Core.Adapter.BaseAdapter` and
+override it's abstract fields and have a constructor with single param `AdapterConfigData`.
 
 Example:
 
@@ -92,6 +95,7 @@ public class TestAdapter : BaseAdapter
     public TestAdapter(AdapterConfigData adapterConfig) : base(adapterConfig)
 }
 ```
+
 - `Id` The adapter's unique identification
 - `Name` The adapter's name
 - `Platform` The adapter' platform

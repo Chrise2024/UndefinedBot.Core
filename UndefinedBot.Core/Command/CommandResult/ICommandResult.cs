@@ -1,5 +1,4 @@
-﻿
-namespace UndefinedBot.Core.Command.CommandResult;
+﻿namespace UndefinedBot.Core.Command.CommandResult;
 
 public enum ExecuteStatus
 {
@@ -10,6 +9,7 @@ public enum ExecuteStatus
     NullArgument = 4,
     InvalidSyntax = 5,
 }
+
 public interface ICommandResult
 {
     //public string? ErrorToken { get; }

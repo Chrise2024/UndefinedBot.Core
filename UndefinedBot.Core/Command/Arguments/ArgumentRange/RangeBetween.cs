@@ -4,6 +4,7 @@ public sealed class RangeBetween<T> : IArgumentRange where T : IComparable
 {
     public T Maximum { get; }
     public T Minimum { get; }
+
     public RangeBetween(T range1, T range2)
     {
         if (range1.CompareTo(range2) > 0)
@@ -17,6 +18,7 @@ public sealed class RangeBetween<T> : IArgumentRange where T : IComparable
             Minimum = range1;
         }
     }
+
     public bool InRange(object current)
     {
         try
