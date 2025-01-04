@@ -40,12 +40,14 @@ public sealed class HttpServiceOptions(string host, uint port, string? accessTok
 
 internal sealed class HttpServer(
     AdapterConfigData adapterConfig,
-    Action<CommandInvokeProperties, BaseCommandSource, List<ParsedToken>> submitter)
+    Action<CommandInvokeProperties, BaseCommandSource, List<ParsedToken>> submitter,
+    ILogger parentLogger
+    )
 {
     private readonly HttpListener _httpListener = new();
     private readonly HttpServiceOptions _options = HttpServiceOptions.CreateFromConfig(adapterConfig);
-    private readonly MsgHandler _handler = new(adapterConfig);
-    private ILogger Logger => new AdapterSubFeatureLogger("OneBot11Adapter", "HttpServer");
+    private readonly MsgHandler _handler = new(adapterConfig,parentLogger);
+    private ITopLevelLogger Logger => parentLogger.GetSubLogger("HttpServer");
     private Action<CommandInvokeProperties, BaseCommandSource, List<ParsedToken>> Submitter => submitter;
 
     public async Task ExecuteAsync(CancellationToken token)

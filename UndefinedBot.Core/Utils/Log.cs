@@ -89,262 +89,385 @@ public interface ILogger
     void Info(Exception? ex, string message);
     void Debug(string message);
     void Debug(Exception? ex, string message);
+    ITopLevelLogger GetSubLogger(string subName);
+}
+public interface ITopLevelLogger
+{
+    void Error(string message);
+    void Error(Exception? ex, string message);
+    void Warn(string message);
+    void Warn(Exception? ex, string message);
+    void Info(string message);
+    void Info(Exception? ex, string message);
+    void Debug(string message);
+    void Debug(Exception? ex, string message);
 }
 
-public sealed class GeneralLogger(string nameSpace) : ILogger
+internal sealed class GeneralLogger : ILogger
 {
+    private readonly string _nameSpace;
+
+    internal GeneralLogger(string nameSpace)
+    {
+        _nameSpace = nameSpace;
+    }
+
     public void Error(string message)
     {
-        LogEventBus.SendLogMessage(nameSpace, UndefinedLogLevel.Error, message);
+        LogEventBus.SendLogMessage(_nameSpace, UndefinedLogLevel.Error, message);
     }
 
     public void Warn(string message)
     {
-        LogEventBus.SendLogMessage(nameSpace, UndefinedLogLevel.Warning, message);
+        LogEventBus.SendLogMessage(_nameSpace, UndefinedLogLevel.Warning, message);
     }
 
     public void Info(string message)
     {
-        LogEventBus.SendLogMessage(nameSpace, UndefinedLogLevel.Information, message);
+        LogEventBus.SendLogMessage(_nameSpace, UndefinedLogLevel.Information, message);
     }
 
     public void Debug(string message)
     {
-        LogEventBus.SendLogMessage(nameSpace, UndefinedLogLevel.Debug, message);
+        LogEventBus.SendLogMessage(_nameSpace, UndefinedLogLevel.Debug, message);
     }
 
     public void Error(Exception? ex, string message)
     {
-        LogEventBus.SendLogMessageWithException(nameSpace, UndefinedLogLevel.Error, ex, message);
+        LogEventBus.SendLogMessageWithException(_nameSpace, UndefinedLogLevel.Error, ex, message);
     }
 
     public void Warn(Exception? ex, string message)
     {
-        LogEventBus.SendLogMessageWithException(nameSpace, UndefinedLogLevel.Error, ex, message);
+        LogEventBus.SendLogMessageWithException(_nameSpace, UndefinedLogLevel.Error, ex, message);
     }
 
     public void Info(Exception? ex, string message)
     {
-        LogEventBus.SendLogMessageWithException(nameSpace, UndefinedLogLevel.Error, ex, message);
+        LogEventBus.SendLogMessageWithException(_nameSpace, UndefinedLogLevel.Error, ex, message);
     }
 
     public void Debug(Exception? ex, string message)
     {
-        LogEventBus.SendLogMessageWithException(nameSpace, UndefinedLogLevel.Error, ex, message);
+        LogEventBus.SendLogMessageWithException(_nameSpace, UndefinedLogLevel.Error, ex, message);
+    }
+    public ITopLevelLogger GetSubLogger(string subName)
+    {
+        throw new NotSupportedException("This Logger Not Support Sub Logger");
     }
 }
-
-public sealed class CommandLogger(string pluginName, string commandName) : ILogger
+internal sealed class GeneralTopLevelFeatureLogger : ITopLevelLogger
 {
+    private readonly string _nameSpace;
+    private readonly string _subSpace;
+
+    internal GeneralTopLevelFeatureLogger(string nameSpace,string subSpace)
+    {
+        _nameSpace = nameSpace;
+        _subSpace = subSpace;
+    }
+
     public void Error(string message)
     {
-        LogEventBus.SendLogMessage("Command", pluginName, commandName, UndefinedLogLevel.Error, message);
+        LogEventBus.SendLogMessage(_nameSpace, _subSpace, UndefinedLogLevel.Error, message);
     }
 
     public void Warn(string message)
     {
-        LogEventBus.SendLogMessage("Command", pluginName, commandName, UndefinedLogLevel.Warning, message);
+        LogEventBus.SendLogMessage(_nameSpace, _subSpace, UndefinedLogLevel.Warning, message);
     }
 
     public void Info(string message)
     {
-        LogEventBus.SendLogMessage("Command", pluginName, commandName, UndefinedLogLevel.Information, message);
+        LogEventBus.SendLogMessage(_nameSpace, _subSpace, UndefinedLogLevel.Information, message);
     }
 
     public void Debug(string message)
     {
-        LogEventBus.SendLogMessage("Command", pluginName, commandName, UndefinedLogLevel.Debug, message);
+        LogEventBus.SendLogMessage(_nameSpace, _subSpace, UndefinedLogLevel.Debug, message);
     }
 
     public void Error(Exception? ex, string message)
     {
-        LogEventBus.SendLogMessageWithException("Command", pluginName, UndefinedLogLevel.Error, ex, message);
+        LogEventBus.SendLogMessageWithException(_nameSpace, _subSpace, UndefinedLogLevel.Error, ex, message);
     }
 
     public void Warn(Exception? ex, string message)
     {
-        LogEventBus.SendLogMessageWithException("Command", pluginName, UndefinedLogLevel.Error, ex, message);
+        LogEventBus.SendLogMessageWithException(_nameSpace, _subSpace, UndefinedLogLevel.Error, ex, message);
     }
 
     public void Info(Exception? ex, string message)
     {
-        LogEventBus.SendLogMessageWithException("Command", pluginName, UndefinedLogLevel.Error, ex, message);
+        LogEventBus.SendLogMessageWithException(_nameSpace, _subSpace, UndefinedLogLevel.Error, ex, message);
     }
 
     public void Debug(Exception? ex, string message)
     {
-        LogEventBus.SendLogMessageWithException("Command", pluginName, UndefinedLogLevel.Error, ex, message);
+        LogEventBus.SendLogMessageWithException(_nameSpace, _subSpace, UndefinedLogLevel.Error, ex, message);
     }
 }
 
-public sealed class AdapterLogger(string adapterName) : ILogger
+internal sealed class CommandLogger : ITopLevelLogger
 {
+    private readonly string _pluginName;
+    private readonly string _commandName;
+
+    internal CommandLogger(string pluginName, string commandName)
+    {
+        _pluginName = pluginName;
+        _commandName = commandName;
+    }
+
     public void Error(string message)
     {
-        LogEventBus.SendLogMessage("Adapter", adapterName, UndefinedLogLevel.Error, message);
+        LogEventBus.SendLogMessage("Command", _pluginName, _commandName, UndefinedLogLevel.Error, message);
     }
 
     public void Warn(string message)
     {
-        LogEventBus.SendLogMessage("Adapter", adapterName, UndefinedLogLevel.Warning, message);
+        LogEventBus.SendLogMessage("Command", _pluginName, _commandName, UndefinedLogLevel.Warning, message);
     }
 
     public void Info(string message)
     {
-        LogEventBus.SendLogMessage("Adapter", adapterName, UndefinedLogLevel.Information, message);
+        LogEventBus.SendLogMessage("Command", _pluginName, _commandName, UndefinedLogLevel.Information, message);
     }
 
     public void Debug(string message)
     {
-        LogEventBus.SendLogMessage("Adapter", adapterName, UndefinedLogLevel.Debug, message);
+        LogEventBus.SendLogMessage("Command", _pluginName, _commandName, UndefinedLogLevel.Debug, message);
     }
 
     public void Error(Exception? ex, string message)
     {
-        LogEventBus.SendLogMessageWithException("Adapter", adapterName, UndefinedLogLevel.Error, ex, message);
+        LogEventBus.SendLogMessageWithException("Command", _pluginName, _commandName, UndefinedLogLevel.Error, ex, message);
     }
 
     public void Warn(Exception? ex, string message)
     {
-        LogEventBus.SendLogMessageWithException("Adapter", adapterName, UndefinedLogLevel.Error, ex, message);
+        LogEventBus.SendLogMessageWithException("Command", _pluginName, _commandName, UndefinedLogLevel.Error, ex, message);
     }
 
     public void Info(Exception? ex, string message)
     {
-        LogEventBus.SendLogMessageWithException("Adapter", adapterName, UndefinedLogLevel.Error, ex, message);
+        LogEventBus.SendLogMessageWithException("Command", _pluginName, _commandName, UndefinedLogLevel.Error, ex, message);
     }
 
     public void Debug(Exception? ex, string message)
     {
-        LogEventBus.SendLogMessageWithException("Adapter", adapterName, UndefinedLogLevel.Error, ex, message);
+        LogEventBus.SendLogMessageWithException("Command", _pluginName, _commandName, UndefinedLogLevel.Error, ex, message);
     }
 }
 
-public sealed class AdapterSubFeatureLogger(string adapterName, string subName) : ILogger
+internal sealed class AdapterLogger : ILogger
 {
+    private readonly string _adapterName;
+
+    internal AdapterLogger(string adapterName)
+    {
+        _adapterName = adapterName;
+    }
+
     public void Error(string message)
     {
-        LogEventBus.SendLogMessage("Adapter", adapterName, subName, UndefinedLogLevel.Error, message);
+        LogEventBus.SendLogMessage("Adapter", _adapterName, UndefinedLogLevel.Error, message);
     }
 
     public void Warn(string message)
     {
-        LogEventBus.SendLogMessage("Adapter", adapterName, subName, UndefinedLogLevel.Warning, message);
+        LogEventBus.SendLogMessage("Adapter", _adapterName, UndefinedLogLevel.Warning, message);
     }
 
     public void Info(string message)
     {
-        LogEventBus.SendLogMessage("Adapter", adapterName, subName, UndefinedLogLevel.Information, message);
+        LogEventBus.SendLogMessage("Adapter", _adapterName, UndefinedLogLevel.Information, message);
     }
 
     public void Debug(string message)
     {
-        LogEventBus.SendLogMessage("Adapter", adapterName, subName, UndefinedLogLevel.Debug, message);
+        LogEventBus.SendLogMessage("Adapter", _adapterName, UndefinedLogLevel.Debug, message);
     }
 
     public void Error(Exception? ex, string message)
     {
-        LogEventBus.SendLogMessageWithException("Adapter", adapterName, subName, UndefinedLogLevel.Error, ex, message);
+        LogEventBus.SendLogMessageWithException("Adapter", _adapterName, UndefinedLogLevel.Error, ex, message);
     }
 
     public void Warn(Exception? ex, string message)
     {
-        LogEventBus.SendLogMessageWithException("Adapter", adapterName, subName, UndefinedLogLevel.Error, ex, message);
+        LogEventBus.SendLogMessageWithException("Adapter", _adapterName, UndefinedLogLevel.Error, ex, message);
     }
 
     public void Info(Exception? ex, string message)
     {
-        LogEventBus.SendLogMessageWithException("Adapter", adapterName, subName, UndefinedLogLevel.Error, ex, message);
+        LogEventBus.SendLogMessageWithException("Adapter", _adapterName, UndefinedLogLevel.Error, ex, message);
     }
 
     public void Debug(Exception? ex, string message)
     {
-        LogEventBus.SendLogMessageWithException("Adapter", adapterName, subName, UndefinedLogLevel.Error, ex, message);
+        LogEventBus.SendLogMessageWithException("Adapter", _adapterName, UndefinedLogLevel.Error, ex, message);
+    }
+    public ITopLevelLogger GetSubLogger(string subName)
+    {
+        return new AdapterSubFeatureLogger(_adapterName, subName);
     }
 }
 
-public sealed class PluginLogger(string pluginName) : ILogger
+internal sealed class AdapterSubFeatureLogger : ITopLevelLogger
 {
+    private readonly string _adapterName;
+    private readonly string _subName;
+
+    internal AdapterSubFeatureLogger(string adapterName, string subName)
+    {
+        _adapterName = adapterName;
+        _subName = subName;
+    }
+
     public void Error(string message)
     {
-        LogEventBus.SendLogMessage("Plugin", pluginName, UndefinedLogLevel.Error, message);
+        LogEventBus.SendLogMessage("Adapter", _adapterName, _subName, UndefinedLogLevel.Error, message);
     }
 
     public void Warn(string message)
     {
-        LogEventBus.SendLogMessage("Plugin", pluginName, UndefinedLogLevel.Warning, message);
+        LogEventBus.SendLogMessage("Adapter", _adapterName, _subName, UndefinedLogLevel.Warning, message);
     }
 
     public void Info(string message)
     {
-        LogEventBus.SendLogMessage("Plugin", pluginName, UndefinedLogLevel.Information, message);
+        LogEventBus.SendLogMessage("Adapter", _adapterName, _subName, UndefinedLogLevel.Information, message);
     }
 
     public void Debug(string message)
     {
-        LogEventBus.SendLogMessage("Plugin", pluginName, UndefinedLogLevel.Debug, message);
+        LogEventBus.SendLogMessage("Adapter", _adapterName, _subName, UndefinedLogLevel.Debug, message);
     }
 
     public void Error(Exception? ex, string message)
     {
-        LogEventBus.SendLogMessageWithException("Plugin", pluginName, UndefinedLogLevel.Error, ex, message);
+        LogEventBus.SendLogMessageWithException("Adapter", _adapterName, _subName, UndefinedLogLevel.Error, ex, message);
     }
 
     public void Warn(Exception? ex, string message)
     {
-        LogEventBus.SendLogMessageWithException("Plugin", pluginName, UndefinedLogLevel.Error, ex, message);
+        LogEventBus.SendLogMessageWithException("Adapter", _adapterName, _subName, UndefinedLogLevel.Error, ex, message);
     }
 
     public void Info(Exception? ex, string message)
     {
-        LogEventBus.SendLogMessageWithException("Plugin", pluginName, UndefinedLogLevel.Error, ex, message);
+        LogEventBus.SendLogMessageWithException("Adapter", _adapterName, _subName, UndefinedLogLevel.Error, ex, message);
     }
 
     public void Debug(Exception? ex, string message)
     {
-        LogEventBus.SendLogMessageWithException("Plugin", pluginName, UndefinedLogLevel.Error, ex, message);
+        LogEventBus.SendLogMessageWithException("Adapter", _adapterName, _subName, UndefinedLogLevel.Error, ex, message);
     }
 }
 
-public sealed class PluginSubFeatureLogger(string pluginName, string subname) : ILogger
+internal sealed class PluginLogger : ILogger
 {
+    private readonly string _pluginName;
+
+    internal PluginLogger(string pluginName)
+    {
+        _pluginName = pluginName;
+    }
+
     public void Error(string message)
     {
-        LogEventBus.SendLogMessage("Plugin", pluginName, subname, UndefinedLogLevel.Error, message);
+        LogEventBus.SendLogMessage("Plugin", _pluginName, UndefinedLogLevel.Error, message);
     }
 
     public void Warn(string message)
     {
-        LogEventBus.SendLogMessage("Plugin", pluginName, subname, UndefinedLogLevel.Warning, message);
+        LogEventBus.SendLogMessage("Plugin", _pluginName, UndefinedLogLevel.Warning, message);
     }
 
     public void Info(string message)
     {
-        LogEventBus.SendLogMessage("Plugin", pluginName, subname, UndefinedLogLevel.Information, message);
+        LogEventBus.SendLogMessage("Plugin", _pluginName, UndefinedLogLevel.Information, message);
     }
 
     public void Debug(string message)
     {
-        LogEventBus.SendLogMessage("Plugin", pluginName, subname, UndefinedLogLevel.Debug, message);
+        LogEventBus.SendLogMessage("Plugin", _pluginName, UndefinedLogLevel.Debug, message);
     }
 
     public void Error(Exception? ex, string message)
     {
-        LogEventBus.SendLogMessageWithException("Plugin", pluginName, subname, UndefinedLogLevel.Error, ex, message);
+        LogEventBus.SendLogMessageWithException("Plugin", _pluginName, UndefinedLogLevel.Error, ex, message);
     }
 
     public void Warn(Exception? ex, string message)
     {
-        LogEventBus.SendLogMessageWithException("Plugin", pluginName, subname, UndefinedLogLevel.Error, ex, message);
+        LogEventBus.SendLogMessageWithException("Plugin", _pluginName, UndefinedLogLevel.Error, ex, message);
     }
 
     public void Info(Exception? ex, string message)
     {
-        LogEventBus.SendLogMessageWithException("Plugin", pluginName, subname, UndefinedLogLevel.Error, ex, message);
+        LogEventBus.SendLogMessageWithException("Plugin", _pluginName, UndefinedLogLevel.Error, ex, message);
     }
 
     public void Debug(Exception? ex, string message)
     {
-        LogEventBus.SendLogMessageWithException("Plugin", pluginName, subname, UndefinedLogLevel.Error, ex, message);
+        LogEventBus.SendLogMessageWithException("Plugin", _pluginName, UndefinedLogLevel.Error, ex, message);
+    }
+    public ITopLevelLogger GetSubLogger(string subName)
+    {
+        return new PluginSubFeatureLogger(_pluginName, subName);
+    }
+}
+
+internal sealed class PluginSubFeatureLogger : ITopLevelLogger
+{
+    private readonly string _pluginName;
+    private readonly string _subName;
+
+    internal PluginSubFeatureLogger(string pluginName, string subName)
+    {
+        _pluginName = pluginName;
+        _subName = subName;
+    }
+
+    public void Error(string message)
+    {
+        LogEventBus.SendLogMessage("Plugin", _pluginName, _subName, UndefinedLogLevel.Error, message);
+    }
+
+    public void Warn(string message)
+    {
+        LogEventBus.SendLogMessage("Plugin", _pluginName, _subName, UndefinedLogLevel.Warning, message);
+    }
+
+    public void Info(string message)
+    {
+        LogEventBus.SendLogMessage("Plugin", _pluginName, _subName, UndefinedLogLevel.Information, message);
+    }
+
+    public void Debug(string message)
+    {
+        LogEventBus.SendLogMessage("Plugin", _pluginName, _subName, UndefinedLogLevel.Debug, message);
+    }
+
+    public void Error(Exception? ex, string message)
+    {
+        LogEventBus.SendLogMessageWithException("Plugin", _pluginName, _subName, UndefinedLogLevel.Error, ex, message);
+    }
+
+    public void Warn(Exception? ex, string message)
+    {
+        LogEventBus.SendLogMessageWithException("Plugin", _pluginName, _subName, UndefinedLogLevel.Error, ex, message);
+    }
+
+    public void Info(Exception? ex, string message)
+    {
+        LogEventBus.SendLogMessageWithException("Plugin", _pluginName, _subName, UndefinedLogLevel.Error, ex, message);
+    }
+
+    public void Debug(Exception? ex, string message)
+    {
+        LogEventBus.SendLogMessageWithException("Plugin", _pluginName, _subName, UndefinedLogLevel.Error, ex, message);
     }
 }

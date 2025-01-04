@@ -9,11 +9,11 @@ public sealed class OneBot11Adapter : BaseAdapter
     public override string Platform => "QQ";
     public override string Protocol => "OneBot11";
     private Task MainLoopInstance { get; set; }
-    private HttpApi HApi => new(AdapterConfig);
+    private HttpApi HApi => new(AdapterConfig,Logger);
 
     public OneBot11Adapter(AdapterConfigData adapterConfig) : base(adapterConfig)
     {
-        HttpServer hs = new(adapterConfig, SubmitCommandEvent);
+        HttpServer hs = new(adapterConfig, SubmitCommandEvent,Logger);
         MainLoopInstance = hs.ExecuteAsync(new CancellationToken());
     }
 

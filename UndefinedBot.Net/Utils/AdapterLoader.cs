@@ -12,7 +12,6 @@ internal static class AdapterLoader
     private static string AdapterRoot => Path.Join(Environment.CurrentDirectory, "Adapters");
     private static string LibSuffix => GetLibSuffix();
     private static ILogger AdapterInitializeLogger => new GeneralLogger("Adapter Load");
-    private static AssemblyLoadContext AssemblyLoadContext => new("PluginAssemblyLoaderContext");
     public static List<IAdapterInstance> LoadAdapters()
     {
         List<IAdapterInstance> adapterInstances = [];
@@ -63,6 +62,8 @@ internal static class AdapterLoader
             AdapterInitializeLogger.Info($"Success Load Adapter: {inst.Id}");
         }
 
+        //AssemblyLoadContext.Unload();
+        GC.Collect();
         //Mount AdapterInstances on ActionManager to Handle Plugin's Action
         ActionInvokeManager.UpdateAdapterInstances(adapterInstances);
         return adapterInstances;

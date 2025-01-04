@@ -21,7 +21,7 @@ internal static class CommandInvokeManager
         CommandInstance? targetCommand = Array
             .Find(
                 refCollection,
-                t => t.Name == invokeProperties.Command || t.CommandAlias.Contains(invokeProperties.Command)
+                t => t.IsTargetCommand(invokeProperties.Command)
             );
         if (targetCommand == null)
         {

@@ -1,8 +1,8 @@
-﻿using System.Reflection;
-using System.Text.Json.Nodes;
+﻿using System.Text.Json.Nodes;
 using UndefinedBot.Core.Command;
 using UndefinedBot.Core.Command.Arguments;
 using UndefinedBot.Core.Command.CommandSource;
+using UndefinedBot.Core.Plugin;
 using UndefinedBot.Core.Utils;
 
 namespace UndefinedBot.Core.Adapter;
@@ -44,13 +44,26 @@ public abstract class BaseAdapter(AdapterConfigData adapterConfig) : IAdapterIns
     /// <param name="invokeProperties">Command's basic information</param>
     /// <param name="source">Command Source</param>
     /// <param name="tokens">Tokens, the body of the command</param>
-    protected void SubmitCommandEvent(
+    protected async void SubmitCommandEvent(
         CommandInvokeProperties invokeProperties,
         BaseCommandSource source,
         List<ParsedToken> tokens
     )
     {
-        CommandEventBus.InvokeCommandEvent(invokeProperties.Implement(Id, Platform, Protocol, tokens), source);
+        CommandInvokeResult result = await CommandInvokeManager.InvokeCommand(invokeProperties.Implement(Id, Platform, Protocol, tokens), source);
+        switch (result)
+        {
+            case CommandInvokeResult.SuccessInvoke:
+                Logger.Info("Successful Invoke Command");
+                break;
+            case CommandInvokeResult.NoSuchCommand:
+                Logger.Warn("No Such Command");
+                break;
+            case CommandInvokeResult.NoCommandRelateToAdapter:
+                Logger.Warn("No Command Bind to Adapter");
+                break;
+        }
+        //CommandEventBus.InvokeCommandEvent(invokeProperties.Implement(Id, Platform, Protocol, tokens), source);
     }
 
     /// <summary>
@@ -113,22 +126,4 @@ public sealed class AdapterProperties(BaseAdapter baseInstance, AdapterConfigDat
     public List<long> GroupIds => originData.GroupId;
     public string Description => originData.Description;
     public string CommandPrefix => originData.CommandPrefix;
-}
-
-[Obsolete("Don't Use It.Better Method Will Replace", true)]
-internal sealed class AdapterInstance(object instance, MethodInfo dah, MethodInfo cah)
-{
-    private object Instance => instance;
-    private MethodInfo DefaultActionHandler => dah;
-    private MethodInfo CustomActionHandler => cah;
-
-    public byte[]? InvokeAction(DefaultActionType action, byte[]? paras = null)
-    {
-        return DefaultActionHandler.Invoke(Instance, [action, paras]) as byte[];
-    }
-
-    public byte[]? InvokeAction(string action, byte[]? paras = null)
-    {
-        return CustomActionHandler.Invoke(Instance, [action, paras]) as byte[];
-    }
 }

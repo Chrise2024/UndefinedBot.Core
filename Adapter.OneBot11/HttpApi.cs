@@ -11,8 +11,9 @@ namespace Adapter.OneBot11;
 public sealed class HttpApi
 {
     private string HttpPostUrl { get; }
+    private ITopLevelLogger HttpApiLogger { get; }
 
-    public HttpApi(AdapterConfigData adapterConfig)
+    public HttpApi(AdapterConfigData adapterConfig,ILogger parentLogger)
     {
         HttpServiceOptions? postConfig = adapterConfig.OriginalConfig["Post"]?.Deserialize<HttpServiceOptions>();
         if (postConfig == null)
@@ -22,14 +23,14 @@ public sealed class HttpApi
 
         HttpClient.DefaultRequestHeaders.Add("Authorization", postConfig.AccessToken);
         HttpPostUrl = $"http://{postConfig.Host}:{postConfig.Port}";
+
+        HttpApiLogger  = parentLogger.GetSubLogger("Http Api");
     }
 
     private static HttpClient HttpClient => new()
     {
         Timeout = TimeSpan.FromSeconds(20)
     };
-
-    private readonly ILogger _httpApiLogger = new AdapterSubFeatureLogger("OneBot11Adapter", "HttpApi");
 
     /// <summary>
     /// Send Message to Group
@@ -137,7 +138,7 @@ public sealed class HttpApi
         }
         catch (TaskCanceledException)
         {
-            _httpApiLogger.Error("Task Canceled: ");
+            HttpApiLogger.Error("Task Canceled: ");
             return default;
         }
         catch (Exception ex)
@@ -163,7 +164,7 @@ public sealed class HttpApi
         }
         catch (TaskCanceledException)
         {
-            _httpApiLogger.Error("Task Canceled: ");
+            HttpApiLogger.Error("Task Canceled: ");
         }
         catch (Exception ex)
         {
@@ -173,7 +174,7 @@ public sealed class HttpApi
 
     private void PrintExceptionInfo(Exception ex)
     {
-        _httpApiLogger.Error(ex, "Error Occured, Error Information:");
+        HttpApiLogger.Error(ex, "Error Occured, Error Information:");
     }
 }
 
