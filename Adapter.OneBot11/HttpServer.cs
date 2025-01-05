@@ -47,7 +47,7 @@ internal sealed class HttpServer(
     private readonly HttpListener _httpListener = new();
     private readonly HttpServiceOptions _options = HttpServiceOptions.CreateFromConfig(adapterConfig);
     private readonly MsgHandler _handler = new(adapterConfig,parentLogger);
-    private ITopLevelLogger Logger => parentLogger.GetSubLogger("HttpServer");
+    private ILogger Logger => parentLogger.GetSubLogger("HttpServer");
     private Action<CommandInvokeProperties, BaseCommandSource, List<ParsedToken>> Submitter => submitter;
 
     public async Task ExecuteAsync(CancellationToken token)

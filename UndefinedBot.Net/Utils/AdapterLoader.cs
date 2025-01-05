@@ -11,7 +11,7 @@ internal static class AdapterLoader
 {
     private static string AdapterRoot => Path.Join(Environment.CurrentDirectory, "Adapters");
     private static string LibSuffix => GetLibSuffix();
-    private static ILogger AdapterInitializeLogger => new GeneralLogger("Adapter Load");
+    private static ILogger AdapterInitializeLogger => new BaseLogger(["Init","Load Adapter"]);
     public static List<IAdapterInstance> LoadAdapters()
     {
         List<IAdapterInstance> adapterInstances = [];

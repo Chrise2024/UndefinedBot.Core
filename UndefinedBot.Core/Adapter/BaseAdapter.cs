@@ -35,7 +35,7 @@ public abstract class BaseAdapter(AdapterConfigData adapterConfig) : IAdapterIns
     public abstract string Protocol { get; }
     public List<long> GroupId => adapterConfig.GroupId;
     public string CommandPrefix => adapterConfig.CommandPrefix;
-    protected ILogger Logger => new AdapterLogger(Name);
+    protected ILogger Logger => new BaseLogger(["Adapter",Name]);
     protected AdapterConfigData AdapterConfig => adapterConfig;
 
     /// <summary>

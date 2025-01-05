@@ -44,7 +44,7 @@ internal class Program
         undefinedAppBuilder.Configuration.AddEnvironmentVariables();
         UndefinedApp undefinedApp = new(undefinedAppBuilder.Build());
         undefinedApp.Start();
-        new GeneralLogger("1111").Info("6666666666");
+        
         await undefinedApp.StopAsync();
     }
 

@@ -11,7 +11,7 @@ namespace Adapter.OneBot11;
 public sealed class HttpApi
 {
     private string HttpPostUrl { get; }
-    private ITopLevelLogger HttpApiLogger { get; }
+    private ILogger HttpApiLogger { get; }
 
     public HttpApi(AdapterConfigData adapterConfig,ILogger parentLogger)
     {

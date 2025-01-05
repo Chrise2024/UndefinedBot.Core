@@ -72,20 +72,21 @@ public class UndefinedApp(IHost host) : IHost
 
         Logger.LogInformation("UndefinedBot.Net Implementation has started");
         //for test
-        // CommandEventBus.InvokeCommandEvent(
-        //     CommandInvokeProperties.Group(
-        //             "test",
-        //             0,
-        //             0,
-        //             0)
-        //         .Implement(
-        //             "OneBot11Adapter",
-        //             "",
-        //             "",
-        //             []
-        //         ),
-        //     UserCommandSource.Friend(0, "", 0)
-        // );
+        var r = await CommandInvokeManager.InvokeCommand(
+            CommandInvokeProperties.Group(
+                    "test",
+                    0,
+                    0,
+                    0)
+                .Implement(
+                    "OneBot11Adapter",
+                    "",
+                    "",
+                    []
+                ),
+            UserCommandSource.Friend(0, "", 0)
+        );
+        Console.WriteLine(r);
         //Console Loop
         while (true)
         {

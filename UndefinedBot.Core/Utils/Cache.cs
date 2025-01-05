@@ -7,12 +7,12 @@ public sealed class CacheManager
 {
     private readonly Dictionary<string, object> _storageCache = [];
     private readonly Dictionary<string, FileCacheProperty> _fileCache = [];
-    private readonly ITopLevelLogger _cacheLogger;
+    private readonly ILogger _cacheLogger;
     private readonly string _cacheRootPath;
 
     public CacheManager(string pluginName, string cacheRootPath, CommandFinishEvent finishEvent)
     {
-        _cacheLogger = new PluginSubFeatureLogger(pluginName, "Cache");
+        _cacheLogger = new BaseLogger(["Plugin", pluginName, "Cache"]);
         _cacheRootPath = cacheRootPath;
         finishEvent.OnCommandFinish += UpdateCache;
     }

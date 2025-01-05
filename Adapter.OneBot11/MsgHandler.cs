@@ -18,7 +18,7 @@ namespace Adapter.OneBot11;
 
 internal sealed partial class MsgHandler(AdapterConfigData adapterConfig,ILogger parentLogger)
 {
-    private ITopLevelLogger Logger =>parentLogger.GetSubLogger("MsgHandler");
+    private ILogger Logger =>parentLogger.GetSubLogger("MsgHandler");
     private AdapterConfigData AdapterConfig => adapterConfig;
 
     public (CommandInvokeProperties?, BaseCommandSource?, List<ParsedToken>?) HandleMsg(JsonNode msgJson)

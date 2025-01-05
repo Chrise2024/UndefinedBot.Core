@@ -11,7 +11,7 @@ internal static class PluginLoader
 {
     private static string PluginRoot => Path.Join(Program.GetProgramRoot(), "Plugins");
     private static string LibSuffix => GetLibSuffix();
-    private static ILogger PluginInitializeLogger => new GeneralLogger("Plugin Load");
+    private static ILogger PluginInitializeLogger => new BaseLogger(["Init","Load Plugin"]);
 
     internal static List<IPluginInstance> LoadPlugins()
     {

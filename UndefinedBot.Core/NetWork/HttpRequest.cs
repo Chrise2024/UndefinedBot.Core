@@ -12,7 +12,7 @@ public sealed class HttpRequest(string pluginName)
         Timeout = TimeSpan.FromSeconds(10)
     };
 
-    private readonly CommandLogger _httpRequestLogger = new(pluginName, "HttpRequest");
+    private ILogger HttpRequestLogger => new BaseLogger(["Network",pluginName, "HttpRequest"]);
 
     public async Task<string> Post([StringSyntax("Uri")] string url, object? content = null)
     {
@@ -29,7 +29,7 @@ public sealed class HttpRequest(string pluginName)
         }
         catch (TaskCanceledException)
         {
-            _httpRequestLogger.Error("Task Canceled: ");
+            HttpRequestLogger.Error("Task Canceled: ");
             return "";
         }
         catch (Exception ex)
@@ -48,7 +48,7 @@ public sealed class HttpRequest(string pluginName)
         }
         catch (TaskCanceledException)
         {
-            _httpRequestLogger.Error("Task Canceled: ");
+            HttpRequestLogger.Error("Task Canceled: ");
             return "";
         }
         catch (Exception ex)
@@ -67,7 +67,7 @@ public sealed class HttpRequest(string pluginName)
         }
         catch (TaskCanceledException)
         {
-            _httpRequestLogger.Error("Task Canceled: ");
+            HttpRequestLogger.Error("Task Canceled: ");
             return [];
         }
         catch (Exception ex)
@@ -79,6 +79,6 @@ public sealed class HttpRequest(string pluginName)
 
     private void PrintExceptionInfo(Exception ex)
     {
-        _httpRequestLogger.Error(ex, "Error Occured, Error Information:");
+        HttpRequestLogger.Error(ex, "Error Occured, Error Information:");
     }
 }
