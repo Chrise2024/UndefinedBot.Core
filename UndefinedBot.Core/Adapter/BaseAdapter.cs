@@ -65,15 +65,19 @@ public abstract class BaseAdapter(AdapterConfigData adapterConfig) : IAdapterIns
         }
         //CommandEventBus.InvokeCommandEvent(invokeProperties.Implement(Id, Platform, Protocol, tokens), source);
     }
-
     /// <summary>
-    /// Handle custom action invoked by command
+    /// Handle Custom Action Invoked by Command
     /// </summary>
+    /// <param name="action">Action Name</param>
+    /// <param name="paras">Parameters</param>
+    /// <returns></returns>
     public abstract byte[]? HandleCustomAction(string action, byte[]? paras);
-
     /// <summary>
-    /// Handle default action invoked by command
+    /// Handle Default Action Invoked by Command
     /// </summary>
+    /// <param name="action">Action Type</param>
+    /// <param name="paras">Parameters</param>
+    /// <returns></returns>
     public abstract byte[]? HandleDefaultAction(DefaultActionType action, byte[]? paras);
 }
 
