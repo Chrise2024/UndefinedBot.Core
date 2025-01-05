@@ -2,6 +2,7 @@
 using UndefinedBot.Core.Command.Arguments;
 using UndefinedBot.Core.Command.Arguments.ArgumentType;
 using UndefinedBot.Core.Command.CommandSource;
+using UndefinedBot.Core.Utils;
 
 namespace UndefinedBot.Core.Command.CommandNodes;
 
@@ -73,7 +74,9 @@ internal sealed class RootCommandNode(string name) : ICommandNode
             //无后续token或无子节点 且 定义了节点Action，执行自身
             try
             {
-                await Task.WhenAny(NodeAction(ctx, source), Task.Delay(TimeSpan.FromSeconds(20)));
+                //await Task.WhenAny(NodeAction(ctx, source), Task.Delay(TimeSpan.FromSeconds(20)));
+                await NodeAction(ctx, source).InterruptAfter(TimeSpan.FromSeconds(20),
+                    callbackTimeout: () => ctx.Logger.Error("Node execute timeout"));
                 return new CommandSuccess();
             }
             catch (Exception ex)
