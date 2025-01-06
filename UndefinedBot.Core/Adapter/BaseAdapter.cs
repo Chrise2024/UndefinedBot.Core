@@ -62,6 +62,9 @@ public abstract class BaseAdapter(AdapterConfigData adapterConfig) : IAdapterIns
             case CommandInvokeResult.NoCommandRelateToAdapter:
                 Logger.Warn("No Command Bind to Adapter");
                 break;
+            case CommandInvokeResult.CommandRateLimited:
+                Logger.Warn("Command Reach Rate Limit");
+                break;
         }
         //CommandEventBus.InvokeCommandEvent(invokeProperties.Implement(Id, Platform, Protocol, tokens), source);
     }

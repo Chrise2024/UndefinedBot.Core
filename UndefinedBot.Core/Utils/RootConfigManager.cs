@@ -3,11 +3,6 @@
 public static class RootConfigManager
 {
     private static RootConfigData _rootConfigData = new();
-
-    //private static Config InitConfig(Config initData) => initData;
-    // {
-    //     return FileIO.ReadAsJson<Config>(_configPath)!;
-    // }
     public static void InitConfig(RootConfigData initData)
     {
         _rootConfigData = initData;

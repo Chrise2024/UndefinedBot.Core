@@ -36,7 +36,7 @@ public sealed class CommandInvokeProperties
     public long SourceId { get; }
     public int MsgId { get; }
     public MessageSubType SubType { get; }
-    public long Time { get; }
+    public long TimeStamp { get; }
     public bool IsGroup() => SubType == MessageSubType.Group;
     public bool IsFriend() => SubType == MessageSubType.Friend;
     public bool IsGuild() => SubType == MessageSubType.Guild;
@@ -48,13 +48,13 @@ public sealed class CommandInvokeProperties
     public List<ParsedToken> Tokens { get; private set; } = [];
     public string GetEnvironmentInfo() => $"[{AdapterId}]{Platform}:{Protocol}";
 
-    private CommandInvokeProperties(string command, long sourceId, int msgId, MessageSubType subType, long time)
+    private CommandInvokeProperties(string command, long sourceId, int msgId, MessageSubType subType, long timeStamp)
     {
         Command = command;
         SourceId = sourceId;
         MsgId = msgId;
         SubType = subType;
-        Time = time;
+        TimeStamp = timeStamp;
     }
     /// <summary>
     /// Create Group Message Event's Meta Data

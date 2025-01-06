@@ -1,4 +1,5 @@
-﻿using System.Text.Json;
+﻿using System.Diagnostics.CodeAnalysis;
+using System.Text.Json;
 using UndefinedBot.Core.Command;
 using UndefinedBot.Core.Command.CommandNodes;
 using UndefinedBot.Core.Command.CommandResult;
@@ -9,7 +10,6 @@ namespace UndefinedBot.Core.Plugin;
 internal static class CommandInvokeManager
 {
     private static Dictionary<string, CommandInstance[]> CommandInstanceIndexByAdapter { get; set; } = [];
-
     public static async Task<CommandInvokeResult> InvokeCommand(CommandInvokeProperties invokeProperties,
         BaseCommandSource source)
     {
@@ -21,13 +21,17 @@ internal static class CommandInvokeManager
         CommandInstance? targetCommand = Array
             .Find(
                 refCollection,
-                t => t.IsTargetCommand(invokeProperties.Command)
+                t => t.IsTargetCommand(invokeProperties)
             );
         if (targetCommand == null)
         {
             return CommandInvokeResult.NoSuchCommand;
         }
 
+        if (targetCommand.IsReachRateLimit(invokeProperties))
+        {
+            return CommandInvokeResult.CommandRateLimited;
+        }
         CommandContext ctx = new(targetCommand.Name, targetCommand.PluginId, invokeProperties);
         ctx.Logger.Info("Command Triggered");
         try
@@ -66,8 +70,7 @@ internal static class CommandInvokeManager
         }
 
         return CommandInvokeResult.SuccessInvoke;
-    }
-
+    } 
     public static void UpdateCommandInstances(IEnumerable<CommandInstance> ci)
     {
         CommandInstanceIndexByAdapter.Clear();
@@ -89,4 +92,5 @@ public enum CommandInvokeResult
     SuccessInvoke = 0,
     NoCommandRelateToAdapter = 1,
     NoSuchCommand = 2,
+    CommandRateLimited = 3,
 }

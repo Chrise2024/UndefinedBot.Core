@@ -13,10 +13,12 @@ namespace UndefinedBot.Core.Command.CommandNodes;
 internal sealed class RootCommandNode(string name) : ICommandNode
 {
     public string NodeName => name;
+    public CommandAttribFlags CommandAttrib { get; private set; } = CommandInstance.DefaultCommandAttrib;
     public IArgumentType ArgumentType => new StringArgument();
     public ICommandNode? Parent { get; private set; }
     public List<ICommandNode> Child { get; private set; } = [];
     public Func<CommandContext, BaseCommandSource, Task>? NodeAction { get; private set; }
+    public Func<CommandInvokeProperties,BaseCommandSource,bool>? NodeRequire { get; private set; }
 
     /// <summary>
     /// <para>Set action of the node</para>
@@ -26,12 +28,14 @@ internal sealed class RootCommandNode(string name) : ICommandNode
     {
         NodeAction = action;
     }
-
     public void SetParent(ICommandNode parentNode)
     {
         Parent = parentNode;
     }
-
+    public void SetCommandAttrib(CommandAttribFlags attr)
+    {
+        CommandAttrib = attr;
+    }
     /// <summary>
     /// Add child node to this node
     /// </summary>
@@ -44,7 +48,14 @@ internal sealed class RootCommandNode(string name) : ICommandNode
     public ICommandNode Then(ICommandNode nextNode)
     {
         nextNode.SetParent(this);
+        nextNode.SetCommandAttrib(CommandAttrib);
         Child.Add(nextNode);
+        return this;
+    }
+
+    ICommandNode ICommandNode.Require(Func<CommandInvokeProperties, BaseCommandSource, bool> predicate)
+    {
+        NodeRequire = predicate;
         return this;
     }
 
@@ -94,7 +105,8 @@ internal sealed class RootCommandNode(string name) : ICommandNode
 
         //有子节点
         List<ICommandResult> result = [];
-        foreach (ICommandNode node in Child)
+        //Ignore Nodes that Not Hits NodeRequire
+        foreach (ICommandNode node in Child.Where(node => node.NodeRequire == null || !node.NodeRequire(ctx.InvokeProperties, source)))
         {
             ICommandResult res = await node.ExecuteSelf(ctx, source, tokens);
             if (res is CommandSuccess)

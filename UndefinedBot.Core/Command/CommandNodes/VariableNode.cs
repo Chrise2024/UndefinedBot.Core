@@ -9,11 +9,12 @@ namespace UndefinedBot.Core.Command.CommandNodes;
 public sealed class VariableNode(string name, IArgumentType argumentType) : ICommandNode
 {
     public string NodeName => name;
+    public CommandAttribFlags CommandAttrib { get; private set; } = CommandInstance.DefaultCommandAttrib;
     public IArgumentType ArgumentType => argumentType;
     public ICommandNode? Parent { get; private set; }
     public List<ICommandNode> Child { get; private set; } = [];
     public Func<CommandContext, BaseCommandSource, Task>? NodeAction { get; private set; }
-
+    public Func<CommandInvokeProperties,BaseCommandSource,bool>? NodeRequire { get; private set; }
     public void SetAction(Func<CommandContext, BaseCommandSource, Task> action)
     {
         NodeAction = action;
@@ -23,7 +24,10 @@ public sealed class VariableNode(string name, IArgumentType argumentType) : ICom
     {
         Parent = parentNode;
     }
-
+    public void SetCommandAttrib(CommandAttribFlags attr)
+    {
+        CommandAttrib = attr;
+    }
     /// <summary>
     /// Add child node to this node
     /// </summary>
@@ -36,10 +40,15 @@ public sealed class VariableNode(string name, IArgumentType argumentType) : ICom
     public ICommandNode Then(ICommandNode nextNode)
     {
         nextNode.SetParent(this);
+        nextNode.SetCommandAttrib(CommandAttrib);
         Child.Add(nextNode);
         return this;
     }
-
+    public ICommandNode Require(Func<CommandInvokeProperties, BaseCommandSource, bool> predicate)
+    {
+        NodeRequire = predicate;
+        return this;
+    }
     /// <summary>
     /// Set node's action
     /// </summary>
@@ -57,7 +66,6 @@ public sealed class VariableNode(string name, IArgumentType argumentType) : ICom
         NodeAction = action;
         return this;
     }
-
     public async Task<ICommandResult> ExecuteSelf(CommandContext ctx, BaseCommandSource source,
         List<ParsedToken> tokens)
     {
@@ -97,7 +105,8 @@ public sealed class VariableNode(string name, IArgumentType argumentType) : ICom
 
         //有子节点
         List<ICommandResult> result = [];
-        foreach (ICommandNode node in Child)
+        //Ignore Nodes that Not Hits NodeRequire
+        foreach (ICommandNode node in Child.Where(node => node.NodeRequire == null || !node.NodeRequire(ctx.InvokeProperties, source)))
         {
             ICommandResult res = await node.ExecuteSelf(ctx, source, tokens[1..]);
             if (res is CommandSuccess)

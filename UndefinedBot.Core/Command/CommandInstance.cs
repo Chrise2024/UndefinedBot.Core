@@ -8,15 +8,24 @@ namespace UndefinedBot.Core.Command;
 
 public sealed class CommandInstance
 {
-    [JsonPropertyName("target_adapter_id")]  internal string TargetAdapterId { get; set; }
-    [JsonPropertyName("plugin_id")] internal string PluginId { get; }
-    [JsonPropertyName("name")] internal string Name { get; set; }
-    [JsonPropertyName("alias")] private List<string> CommandAlias { get; set; } = [];
-    [JsonPropertyName("description")] private string? CommandDescription { get; set; }
-    [JsonPropertyName("short_description")]private string? CommandShortDescription { get; set; }
-    [JsonPropertyName("usage")] private string? CommandUsage { get; set; }
-    [JsonPropertyName("example")] private string? CommandExample { get; set; }
-    [JsonIgnore] private RootCommandNode RootNode { get; set; }
+    public static readonly CommandAttribFlags DefaultCommandAttrib = CommandAttribFlags.AllowAlias |
+                                                                     CommandAttribFlags.ActiveInFriend |
+                                                                     CommandAttribFlags.ActiveInGroup |
+                                                                     CommandAttribFlags.ActiveInGuild |
+                                                                     CommandAttribFlags.IgnoreAuthority;
+    internal string TargetAdapterId { get; set; }
+    internal string PluginId { get; }
+    internal string Name { get; set; }
+    private List<string> CommandAlias { get; set; } = [];
+    private string? CommandDescription { get; set; }
+    private string? CommandShortDescription { get; set; }
+    private string? CommandUsage { get; set; }
+    private string? CommandExample { get; set; }
+    private TimeSpan CommandRateLimit { get; set; } = TimeSpan.Zero;
+    private CommandAttribFlags CommandAttrib { get; set; } = DefaultCommandAttrib;
+
+    private long _lastExecute;
+    private RootCommandNode RootNode { get; set; }
 
     internal CommandInstance(string commandName, string pluginId, string targetAdapterId)
     {
@@ -24,30 +33,58 @@ public sealed class CommandInstance
         PluginId = pluginId;
         Name = commandName;
         RootNode = new RootCommandNode(commandName);
+        RootNode.SetCommandAttrib(CommandAttrib);
     }
 
-    internal bool IsTargetCommand(string commandName)
+    internal bool IsTargetCommand(CommandInvokeProperties cip)
     {
-        return Name == commandName || CommandAlias.Contains(commandName);
+        switch (cip.SubType)
+        {
+            case MessageSubType.Friend when (CommandAttrib & CommandAttribFlags.ActiveInFriend) == 0:
+            case MessageSubType.Group when (CommandAttrib & CommandAttribFlags.ActiveInGroup) == 0:
+            case MessageSubType.Guild when (CommandAttrib & CommandAttribFlags.ActiveInGuild) == 0:
+                return false;
+        }
+
+        StringComparison comparison = (CommandAttrib & CommandAttribFlags.IgnoreCase) == CommandAttribFlags.IgnoreCase
+            ? StringComparison.OrdinalIgnoreCase
+            : StringComparison.Ordinal;
+        bool allowAlias = (CommandAttrib & CommandAttribFlags.AllowAlias) == CommandAttribFlags.AllowAlias;
+        return (Name.Equals(cip.Command, comparison) || allowAlias) &&
+               CommandAlias.FindIndex(x => x.Equals(cip.Command, comparison)) != -1;
+    }
+
+    //Maybe Thread Unsafe
+    internal bool IsReachRateLimit(CommandInvokeProperties ip)
+    {
+        return (CommandAttrib & CommandAttribFlags.RateLimit) == CommandAttribFlags.RateLimit &&
+               CommandRateLimit != TimeSpan.Zero && ip.TimeStamp - _lastExecute < CommandRateLimit.TotalSeconds;
     }
 
     internal async Task<ICommandResult> Run(CommandContext ctx, BaseCommandSource source, List<ParsedToken> tokens)
     {
+        _lastExecute = ctx.InvokeProperties.TimeStamp;
+        source.SetCurrentCommandAttrib(CommandAttrib);
         return await RootNode.ExecuteSelf(ctx, source, tokens);
     }
-
+    /// <summary>
+    /// Add command alias
+    /// </summary>
+    /// <param name="attr">Command's attrib</param>
+    /// <returns>self</returns>
+    public CommandInstance Attrib(CommandAttribFlags attr)
+    {
+        CommandAttrib = attr;
+        return this;
+    }
     /// <summary>
     /// Add command alias
     /// </summary>
     /// <param name="alias">Array of aliases</param>
     /// <returns>self</returns>
-    public CommandInstance Alias(List<string> alias)
+    public CommandInstance Alias(IEnumerable<string> alias)
     {
-        foreach (string item in alias.Where(item => !CommandAlias.Contains(item)))
-        {
-            CommandAlias.Add(item);
-        }
-
+        CommandAlias.AddRange(alias.Where(item => !CommandAlias.Contains(item)));
         return this;
     }
 
@@ -94,6 +131,17 @@ public sealed class CommandInstance
     public CommandInstance Example(string example)
     {
         CommandExample = example;
+        return this;
+    }
+
+    /// <summary>
+    /// Add command example
+    /// </summary>
+    /// <param name="limit">Rate Limit</param>
+    /// <returns>self</returns>
+    public CommandInstance RateLimit(TimeSpan limit)
+    {
+        CommandRateLimit = limit;
         return this;
     }
 
@@ -161,4 +209,17 @@ public sealed class CommandProperties
     {
         return !string.IsNullOrEmpty(Name);
     }
+}
+
+[Flags]
+public enum CommandAttribFlags
+{
+    ActiveInFriend  = 0b_0000_0000_0000_0001,
+    ActiveInGroup   = 0b_0000_0000_0000_0010,
+    ActiveInGuild   = 0b_0000_0000_0000_0100,
+    IgnoreAuthority = 0b_0000_0000_0000_1000,
+    RateLimit       = 0b_0000_0000_0001_0000,
+    Hidden          = 0b_0000_0000_0010_0000,
+    IgnoreCase      = 0b_0000_0000_0100_0000,
+    AllowAlias      = 0b_0000_0000_1000_0000,
 }

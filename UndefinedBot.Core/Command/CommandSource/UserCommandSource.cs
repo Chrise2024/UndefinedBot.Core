@@ -2,15 +2,16 @@
 
 public sealed class UserCommandSource : BaseCommandSource
 {
-    public sealed override long UserId { get; protected set; }
-    public sealed override string UserName { get; protected set; }
-    public sealed override string UserCard { get; protected set; }
-    public sealed override long GroupId { get; protected set; }
-    public sealed override CommandSourceAuthority Authority { get; protected set; }
+    public override long UserId { get; protected set; }
+    public override string UserName { get; protected set; }
+    public override string UserCard { get; protected set; }
+    public override long GroupId { get; protected set; }
+    public override CommandSourceAuthority Authority { get; protected set; }
 
     public override bool HasAuthorityLevel(CommandSourceAuthority authorityLevel)
     {
-        return Authority >= authorityLevel;
+        return (CurrentCommandAttrib & CommandAttribFlags.IgnoreAuthority) == CommandAttribFlags.IgnoreAuthority ||
+               Authority >= authorityLevel;
     }
 
     public override bool IsFrom(CommandSourceType sourceType)

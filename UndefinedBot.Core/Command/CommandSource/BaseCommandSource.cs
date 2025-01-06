@@ -12,6 +12,11 @@ public abstract class BaseCommandSource
     public virtual CommandSourceAuthority Authority { get; protected set; } = CommandSourceAuthority.InvalidSource;
     public abstract bool HasAuthorityLevel(CommandSourceAuthority authorityLevel);
     public abstract bool IsFrom(CommandSourceType sourceType);
+    internal CommandAttribFlags CurrentCommandAttrib { get; private set; } = CommandInstance.DefaultCommandAttrib;
+    internal void SetCurrentCommandAttrib(CommandAttribFlags attr)
+    {
+        CurrentCommandAttrib = attr;
+    }
 }
 
 public enum CommandSourceType
