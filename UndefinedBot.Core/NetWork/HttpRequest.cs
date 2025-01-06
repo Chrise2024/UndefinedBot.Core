@@ -18,13 +18,15 @@ public sealed class HttpRequest(string pluginName)
     {
         try
         {
-            HttpResponseMessage response = await _httpClient.PostAsync(url, content == null
-                ? null
-                : new StringContent(
-                    JsonSerializer.Serialize(content),
-                    Encoding.UTF8,
-                    "application/json"
-                ));
+            HttpResponseMessage response = await _httpClient.PostAsync(url,
+                content is null
+                    ? null
+                    : new StringContent(
+                        JsonSerializer.Serialize(content),
+                        Encoding.UTF8,
+                        "application/json"
+                        )
+                );
             return response.IsSuccessStatusCode ? await response.Content.ReadAsStringAsync() : "";
         }
         catch (TaskCanceledException)

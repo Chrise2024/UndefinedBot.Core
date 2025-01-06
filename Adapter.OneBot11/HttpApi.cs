@@ -16,7 +16,7 @@ public sealed class HttpApi
     public HttpApi(AdapterConfigData adapterConfig,ILogger parentLogger)
     {
         HttpServiceOptions? postConfig = adapterConfig.OriginalConfig["Post"]?.Deserialize<HttpServiceOptions>();
-        if (postConfig == null)
+        if (postConfig is null)
         {
             throw new Exception("Server Properties Not Implemented");
         }
@@ -124,7 +124,7 @@ public sealed class HttpApi
         try
         {
             HttpResponseMessage response = await HttpClient.PostAsync(HttpPostUrl + subUrl,
-                content != null
+                content is not null
                     ? new StringContent(
                         JsonSerializer.Serialize(content),
                         Encoding.UTF8,
@@ -153,7 +153,7 @@ public sealed class HttpApi
         try
         {
             _ = await HttpClient.PostAsync(HttpPostUrl + subUrl,
-                content != null
+                content is not null
                     ? new StringContent(
                         JsonSerializer.Serialize(content),
                         Encoding.UTF8,

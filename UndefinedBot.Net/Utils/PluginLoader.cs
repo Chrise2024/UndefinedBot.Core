@@ -41,7 +41,7 @@ internal static class PluginLoader
 
             JsonNode? originJson = FileIO.ReadAsJson(pluginPropertiesFile);
             PluginConfigData? pluginConfigData = originJson.Deserialize<PluginConfigData>();
-            if (originJson == null || pluginConfigData == null || !pluginConfigData.IsValid())
+            if (originJson is null || pluginConfigData is null || !pluginConfigData.IsValid())
             {
                 PluginInitializeLogger.Warn($"Plugin: <{pf}> Invalid plugin.json");
                 continue;
@@ -56,7 +56,7 @@ internal static class PluginLoader
             }
 
             IPluginInstance? pluginInstance = LoadCommand(entryFile, pluginConfigData);
-            if (pluginInstance == null)
+            if (pluginInstance is null)
             {
                 continue;
             }

@@ -30,7 +30,7 @@ internal sealed partial class MsgHandler(AdapterConfigData adapterConfig,ILogger
 
         MsgBody? msgBody = msgJson.Deserialize<MsgBody>();
         (string? cmdName, List<ParsedToken> tokens) = Tokenize(msgBody?.RawMessage ?? "");
-        if (msgBody == null || cmdName == null)
+        if (msgBody is null || cmdName is null)
         {
             return (null, null, null);
         }

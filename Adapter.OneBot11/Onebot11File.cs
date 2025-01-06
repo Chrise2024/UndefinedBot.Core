@@ -112,7 +112,7 @@ namespace Ob11Adapter {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public bool HasFileUnique {
-      get { return fileUnique_ != null; }
+      get { return fileUnique_ is not null; }
     }
     /// <summary>Clears the value of the "file_unique" field</summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]

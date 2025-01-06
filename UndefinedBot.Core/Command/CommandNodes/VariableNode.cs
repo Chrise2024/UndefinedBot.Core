@@ -80,7 +80,7 @@ public sealed class VariableNode(string name, IArgumentType argumentType) : ICom
         }
 
         ctx.ArgumentReference[NodeName] = tokens[0];
-        if (NodeAction != null && (tokens.Count == 1 || Child.Count == 0))
+        if (NodeAction is not null && (tokens.Count == 1 || Child.Count == 0))
         {
             //无后续token或无子节点 且 定义了节点Action，执行自身
             try
@@ -106,7 +106,7 @@ public sealed class VariableNode(string name, IArgumentType argumentType) : ICom
         //有子节点
         List<ICommandResult> result = [];
         //Ignore Nodes that Not Hits NodeRequire
-        foreach (ICommandNode node in Child.Where(node => node.NodeRequire == null || !node.NodeRequire(ctx.InvokeProperties, source)))
+        foreach (ICommandNode node in Child.Where(node => node.NodeRequire is null || !node.NodeRequire(ctx.InvokeProperties, source)))
         {
             ICommandResult res = await node.ExecuteSelf(ctx, source, tokens[1..]);
             if (res is CommandSuccess)
@@ -136,7 +136,7 @@ public sealed class VariableNode(string name, IArgumentType argumentType) : ICom
 
     public string GetArgumentRequire()
     {
-        return ArgumentType.Range == null
+        return ArgumentType.Range is null
             ? $"[{ArgumentType.ArgumentTypeName}]"
             : $"[{ArgumentType.ArgumentTypeName} ({ArgumentType.Range.GetRangeDescription()})]";
     }

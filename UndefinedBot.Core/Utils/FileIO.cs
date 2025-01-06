@@ -9,7 +9,7 @@ internal static class FileIO
 
     public static bool EnsurePath(string? tPath)
     {
-        if (tPath == null)
+        if (tPath is null)
         {
             return false;
         }

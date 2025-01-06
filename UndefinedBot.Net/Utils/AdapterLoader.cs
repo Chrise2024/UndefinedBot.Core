@@ -36,7 +36,7 @@ internal static class AdapterLoader
 
             JsonNode? originJson = FileIO.ReadAsJson(adapterPropertiesFile);
             AdapterConfigData? adapterConfigData = originJson?.Deserialize<AdapterConfigData>();
-            if (originJson == null || adapterConfigData == null || !adapterConfigData.IsValid())
+            if (originJson is null || adapterConfigData is null || !adapterConfigData.IsValid())
             {
                 AdapterInitializeLogger.Warn($"Adapter: <{af}> Invalid adapter.json");
                 continue;
@@ -51,7 +51,7 @@ internal static class AdapterLoader
             }
 
             IAdapterInstance? inst = CreateAdapterInstance(entryFile, adapterConfigData);
-            if (inst == null)
+            if (inst is null)
             {
                 AdapterInitializeLogger.Warn($"Adapter: <{af}> Load Failed");
                 continue;

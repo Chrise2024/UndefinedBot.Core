@@ -80,7 +80,7 @@ internal sealed class RootCommandNode(string name) : ICommandNode
     public async Task<ICommandResult> ExecuteSelf(CommandContext ctx, BaseCommandSource source,
         List<ParsedToken> tokens)
     {
-        if (NodeAction != null && (tokens.Count == 0 || Child.Count == 0))
+        if (NodeAction is not null && (tokens.Count == 0 || Child.Count == 0))
         {
             //无后续token或无子节点 且 定义了节点Action，执行自身
             try
@@ -106,7 +106,7 @@ internal sealed class RootCommandNode(string name) : ICommandNode
         //有子节点
         List<ICommandResult> result = [];
         //Ignore Nodes that Not Hits NodeRequire
-        foreach (ICommandNode node in Child.Where(node => node.NodeRequire == null || !node.NodeRequire(ctx.InvokeProperties, source)))
+        foreach (ICommandNode node in Child.Where(node => node.NodeRequire is null || !node.NodeRequire(ctx.InvokeProperties, source)))
         {
             ICommandResult res = await node.ExecuteSelf(ctx, source, tokens);
             if (res is CommandSuccess)

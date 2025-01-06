@@ -23,7 +23,7 @@ internal static class CommandInvokeManager
                 refCollection,
                 t => t.IsTargetCommand(invokeProperties)
             );
-        if (targetCommand == null)
+        if (targetCommand is null)
         {
             return CommandInvokeResult.NoSuchCommand;
         }

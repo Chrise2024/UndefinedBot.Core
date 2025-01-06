@@ -20,7 +20,7 @@ public sealed class HttpServiceOptions(string host, uint port, string? accessTok
     public static HttpServiceOptions CreateFromConfig(AdapterConfigData adapterConfig)
     {
         JsonNode? serverConfig = adapterConfig.OriginalConfig["Server"];
-        if (serverConfig == null)
+        if (serverConfig is null)
         {
             throw new Exception("Server Properties Not Implemented");
         }
@@ -166,7 +166,7 @@ internal sealed class HttpServer(
             context.Response.Close();
             (CommandInvokeProperties? cip, BaseCommandSource? ucs, List<ParsedToken>? tokens) =
                 _handler.HandleMsg(JsonNode.Parse(reqString) ?? throw new Exception("Parse Failed"));
-            if (cip != null && ucs != null && tokens != null)
+            if (cip is not null && ucs is not null && tokens is not null)
             {
                 Submitter(cip, ucs, tokens);
                 Logger.Info("Handle Complete");
