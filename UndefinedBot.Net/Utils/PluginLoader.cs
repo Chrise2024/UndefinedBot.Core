@@ -1,5 +1,4 @@
 ﻿using System.Reflection;
-using System.Text.Json;
 using System.Text.Json.Nodes;
 using UndefinedBot.Core.Utils;
 using UndefinedBot.Core.Command;
@@ -37,25 +36,22 @@ internal static class PluginLoader
                 PluginInitializeLogger.Warn($"Plugin: <{pf}> Not Have plugin.json");
                 continue;
             }
-
-
+            
             JsonNode? originJson = FileIO.ReadAsJson(pluginPropertiesFile);
-            PluginConfigData? pluginConfigData = originJson.Deserialize<PluginConfigData>();
-            if (originJson is null || pluginConfigData is null || !pluginConfigData.IsValid())
+            string? ef = originJson?["EntryFile"]?.GetValue<string>();
+            if (originJson is null || ef is null)
             {
                 PluginInitializeLogger.Warn($"Plugin: <{pf}> Invalid plugin.json");
                 continue;
             }
-
-            pluginConfigData.Implement(originJson);
-            string entryFile = $"{Path.Join(pf, pluginConfigData.EntryFile)}.{LibSuffix}";
+            string entryFile = $"{Path.Join(pf, ef)}.{LibSuffix}";
             if (!File.Exists(entryFile))
             {
                 PluginInitializeLogger.Warn($"Plugin: <{pf}> Binary EntryFile: <{entryFile}> Not Found");
                 continue;
             }
 
-            IPluginInstance? pluginInstance = LoadCommand(entryFile, pluginConfigData);
+            IPluginInstance? pluginInstance = LoadCommand(entryFile);
             if (pluginInstance is null)
             {
                 continue;
@@ -83,7 +79,7 @@ internal static class PluginLoader
         return pluginInstanceList;
     }
 
-    private static IPluginInstance? LoadCommand(string pluginLibPath, PluginConfigData config)
+    private static IPluginInstance? LoadCommand(string pluginLibPath)
     {
         try
         {
@@ -96,10 +92,14 @@ internal static class PluginLoader
                                ?? throw new TypeAccessException("Plugin Class Not Fount");
             //Create Plugin Class Instance to Invoke Initialize Method
             IPluginInstance targetClassInstance =
-                Activator.CreateInstance(targetClass, [config]) as IPluginInstance ??
+                Activator.CreateInstance(targetClass) as IPluginInstance ??
                 throw new TypeInitializationException(targetClass.FullName, null);
             targetClassInstance.Initialize();
             return targetClassInstance;
+        }
+        catch (TargetInvocationException tie)
+        {
+            PluginInitializeLogger.Error(tie.InnerException, "Plugin's Constructor Occurs Exception");
         }
         catch (TypeLoadException tle)
         {

@@ -66,7 +66,7 @@ internal static class FileIO
         }
     }
 
-    public static string ReadFile(string tPath)
+    public static string? ReadFile(string tPath)
     {
         try
         {
@@ -80,7 +80,7 @@ internal static class FileIO
             // ignored
         }
 
-        return "";
+        return null;
     }
 
     public static void WriteFile(string tPath, string content)
@@ -100,7 +100,11 @@ internal static class FileIO
     {
         try
         {
-            string content = ReadFile(tPath);
+            string? content = ReadFile(tPath);
+            if (content is null)
+            {
+                return null;
+            }
             if (content.Length != 0)
             {
                 return JsonNode.Parse(content);
@@ -118,7 +122,11 @@ internal static class FileIO
     {
         try
         {
-            string content = ReadFile(tPath);
+            string? content = ReadFile(tPath);
+            if (content is null)
+            {
+                return default;
+            }
             if (content.Length != 0)
             {
                 return JsonSerializer.Deserialize<T>(content);

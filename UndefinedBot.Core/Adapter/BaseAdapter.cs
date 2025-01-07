@@ -1,4 +1,6 @@
-﻿using System.Text.Json.Nodes;
+﻿using System.Reflection;
+using System.Text.Json;
+using System.Text.Json.Nodes;
 using UndefinedBot.Core.Command;
 using UndefinedBot.Core.Command.Arguments;
 using UndefinedBot.Core.Command.CommandSource;
@@ -27,17 +29,36 @@ public interface IAdapterInstance
     byte[]? HandleDefaultAction(DefaultActionType action, byte[]? paras);
 }
 
-public abstract class BaseAdapter(AdapterConfigData adapterConfig) : IAdapterInstance
+public abstract class BaseAdapter : IAdapterInstance
 {
     public abstract string Id { get; }
     public abstract string Name { get; }
     public abstract string Platform { get; }
     public abstract string Protocol { get; }
-    public List<long> GroupId => adapterConfig.GroupId;
-    public string CommandPrefix => adapterConfig.CommandPrefix;
+    public List<long> GroupId { get; }
+    public string CommandPrefix { get; }
     protected ILogger Logger => new BaseLogger(["Adapter",Name]);
-    protected AdapterConfigData AdapterConfig => adapterConfig;
+    protected AdapterConfigData AdapterConfig { get; }
+    protected string AdapterPath => Path.GetDirectoryName(GetType().Assembly.Location) ?? "/";
 
+    protected BaseAdapter()
+    {
+        AdapterConfig = GetAdapterConfig();
+        GroupId = AdapterConfig.GroupId;
+        CommandPrefix = AdapterConfig.CommandPrefix;
+    }
+    private AdapterConfigData GetAdapterConfig()
+    {
+        JsonNode originJson = FileIO.ReadAsJson(Path.Join(AdapterPath, "adapter.json")) ??
+                              throw new AdapterLoadFailedException("Config File Not Exist");
+        AdapterConfigData? adapterConfigData = originJson.Deserialize<AdapterConfigData>();
+        if (adapterConfigData is null || !adapterConfigData.IsValid())
+        {
+            throw new AdapterLoadFailedException("Invalid Config File");
+        }
+        adapterConfigData.Implement(originJson);
+        return adapterConfigData;
+    }
     /// <summary>
     /// After processing message, use it to submit this event
     /// </summary>
@@ -134,3 +155,5 @@ public sealed class AdapterProperties(BaseAdapter baseInstance, AdapterConfigDat
     public string Description => originData.Description;
     public string CommandPrefix => originData.CommandPrefix;
 }
+
+internal class AdapterLoadFailedException(string? message) : Exception(message);

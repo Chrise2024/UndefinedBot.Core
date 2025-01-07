@@ -1,4 +1,6 @@
-﻿using System.Text.Json.Nodes;
+﻿using System.Reflection;
+using System.Text.Json;
+using System.Text.Json.Nodes;
 using UndefinedBot.Core.Command;
 using UndefinedBot.Core.Utils;
 
@@ -14,18 +16,38 @@ public interface IPluginInstance
     void Initialize();
 }
 
-public abstract class BasePlugin(PluginConfigData pluginConfig) : IPluginInstance
+public abstract class BasePlugin : IPluginInstance
 {
     public abstract string Id { get; }
     public abstract string Name { get; }
     public abstract string TargetAdapterId { get; }
-    public List<long> GroupId => pluginConfig.GroupId;
+    public List<long> GroupId { get; }
     public abstract void Initialize();
     protected ILogger Logger => new BaseLogger(["Plugin", Name]);
     protected UndefinedApi BaseApi => new(Name);
-    protected PluginConfigData PluginConfig => pluginConfig;
+    protected PluginConfigData PluginConfig { get; }
+    protected string PluginPath => Path.GetDirectoryName(GetType().Assembly.Location) ?? "/";
     private List<CommandInstance> CommandInstances { get; } = [];
     List<CommandInstance> IPluginInstance.GetCommandInstance() => CommandInstances;
+
+    protected BasePlugin()
+    {
+        PluginConfig = GetPluginConfig();
+        GroupId = PluginConfig.GroupId;
+    }
+
+    private PluginConfigData GetPluginConfig()
+    {
+        JsonNode originJson = FileIO.ReadAsJson(Path.Join(PluginPath, "plugin.json")) ??
+                              throw new PluginLoadFailedException("Config File Not Exist");
+        PluginConfigData? pluginConfigData = originJson.Deserialize<PluginConfigData>();
+        if (pluginConfigData is null || !pluginConfigData.IsValid())
+        {
+            throw new PluginLoadFailedException("Invalid Config File");
+        }
+        pluginConfigData.Implement(originJson);
+        return pluginConfigData;
+    }
 
     /// <summary>
     /// Register Command
@@ -79,3 +101,5 @@ public sealed class PluginProperties(BasePlugin baseInstance, PluginConfigData o
     public List<long> GroupId => originData.GroupId;
     public string Description => originData.Description;
 }
+
+internal class PluginLoadFailedException(string? message) : Exception(message);

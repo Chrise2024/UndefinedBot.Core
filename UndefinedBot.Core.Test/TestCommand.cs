@@ -1,18 +1,18 @@
-﻿using UndefinedBot.Core.Adapter;
+﻿using System.Reflection;
 using UndefinedBot.Core.Command.CommandNodes;
 using UndefinedBot.Core.Command.Arguments.ArgumentType;
 using UndefinedBot.Core.Plugin;
 
 namespace UndefinedBot.Core.Test;
 
-public sealed class TestCommand(PluginConfigData pluginConfig) : BasePlugin(pluginConfig)
+public sealed class TestCommand : BasePlugin
 {
     public override string Id => "Test";
     public override string Name => "Test Plugin";
     public override string TargetAdapterId => "OneBot11Adapter";
-
     public override void Initialize()
     {
+        Console.WriteLine(PluginPath);
         RegisterCommand("test")
             .Description("指令帮助文档")
             .ShortDescription("帮助")

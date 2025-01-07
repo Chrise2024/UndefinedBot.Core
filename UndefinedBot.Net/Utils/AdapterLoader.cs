@@ -35,22 +35,21 @@ internal static class AdapterLoader
             }
 
             JsonNode? originJson = FileIO.ReadAsJson(adapterPropertiesFile);
-            AdapterConfigData? adapterConfigData = originJson?.Deserialize<AdapterConfigData>();
-            if (originJson is null || adapterConfigData is null || !adapterConfigData.IsValid())
+            string? ef = originJson?["EntryFile"]?.GetValue<string>();
+            if (originJson is null || ef is null)
             {
                 AdapterInitializeLogger.Warn($"Adapter: <{af}> Invalid adapter.json");
                 continue;
             }
-
-            adapterConfigData.Implement(originJson);
-            string entryFile = $"{Path.Join(af, adapterConfigData.EntryFile)}.{LibSuffix}";
+            
+            string entryFile = $"{Path.Join(af, ef)}.{LibSuffix}";
             if (!File.Exists(entryFile))
             {
                 AdapterInitializeLogger.Warn($"Adapter: <{af}> Binary EntryFile: <{entryFile}> Not Found");
                 continue;
             }
 
-            IAdapterInstance? inst = CreateAdapterInstance(entryFile, adapterConfigData);
+            IAdapterInstance? inst = CreateAdapterInstance(entryFile);
             if (inst is null)
             {
                 AdapterInitializeLogger.Warn($"Adapter: <{af}> Load Failed");
@@ -69,7 +68,7 @@ internal static class AdapterLoader
         return adapterInstances;
     }
 
-    private static IAdapterInstance? CreateAdapterInstance(string adapterLibPath, AdapterConfigData config)
+    private static IAdapterInstance? CreateAdapterInstance(string adapterLibPath)
     {
         try
         {
@@ -82,9 +81,13 @@ internal static class AdapterLoader
                                throw new TypeLoadException(adapterLibPath);
             //Create Adapter Instance
             IAdapterInstance targetAdapterInstance =
-                Activator.CreateInstance(targetClass, [config]) as IAdapterInstance ??
+                Activator.CreateInstance(targetClass) as IAdapterInstance ??
                 throw new TypeInitializationException(targetClass.FullName, null);
             return targetAdapterInstance;
+        }
+        catch (TargetInvocationException tie)
+        {
+            AdapterInitializeLogger.Error(tie.InnerException, "Adapter's Constructor Occurs Exception");
         }
         catch (TypeLoadException tle)
         {
