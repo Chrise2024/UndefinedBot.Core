@@ -1,5 +1,4 @@
-﻿using System.Diagnostics.CodeAnalysis;
-using System.Text.Json;
+﻿using System.Text.Json;
 using UndefinedBot.Core.Command;
 using UndefinedBot.Core.Command.CommandNodes;
 using UndefinedBot.Core.Command.CommandResult;
@@ -10,6 +9,7 @@ namespace UndefinedBot.Core.Plugin;
 internal static class CommandInvokeManager
 {
     private static Dictionary<string, CommandInstance[]> CommandInstanceIndexByAdapter { get; set; } = [];
+
     public static async Task<CommandInvokeResult> InvokeCommand(CommandInvokeProperties invokeProperties,
         BaseCommandSource source)
     {
@@ -32,6 +32,7 @@ internal static class CommandInvokeManager
         {
             return CommandInvokeResult.CommandRateLimited;
         }
+
         CommandContext ctx = new(targetCommand.Name, targetCommand.PluginId, invokeProperties);
         ctx.Logger.Info("Command Triggered");
         try
@@ -70,7 +71,8 @@ internal static class CommandInvokeManager
         }
 
         return CommandInvokeResult.SuccessInvoke;
-    } 
+    }
+
     public static void UpdateCommandInstances(IEnumerable<CommandInstance> ci)
     {
         CommandInstanceIndexByAdapter.Clear();

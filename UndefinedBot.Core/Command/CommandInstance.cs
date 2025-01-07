@@ -1,4 +1,5 @@
-﻿using System.Text.Json.Serialization;
+﻿using System.Text.Json;
+using System.Text.Json.Serialization;
 using UndefinedBot.Core.Command.CommandResult;
 using UndefinedBot.Core.Command.CommandNodes;
 using UndefinedBot.Core.Command.Arguments;
@@ -45,13 +46,12 @@ public sealed class CommandInstance
             case MessageSubType.Guild when (CommandAttrib & CommandAttribFlags.ActiveInGuild) == 0:
                 return false;
         }
-
         StringComparison comparison = (CommandAttrib & CommandAttribFlags.IgnoreCase) == CommandAttribFlags.IgnoreCase
             ? StringComparison.OrdinalIgnoreCase
             : StringComparison.Ordinal;
         bool allowAlias = (CommandAttrib & CommandAttribFlags.AllowAlias) == CommandAttribFlags.AllowAlias;
-        return (Name.Equals(cip.Command, comparison) || allowAlias) &&
-               CommandAlias.FindIndex(x => x.Equals(cip.Command, comparison)) != -1;
+        return Name.Equals(cip.Command, comparison) ||
+               ( allowAlias && CommandAlias.FindIndex(x => x.Equals(cip.Command, comparison)) != -1);
     }
 
     //Maybe Thread Unsafe
