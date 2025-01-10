@@ -3,20 +3,22 @@
 public static class TaskExtensions
 {
     public static async Task<T?> InterruptAfter<T>(this Task<T> task, TimeSpan timeout, Action? callbackSuccess = null,
-        Action? callbackTimeout = null)
+        Action? callbackTimeout = null) where T : notnull
     {
-        CancellationTokenSource cts = new();
+        CancellationTokenSource cts = new(timeout);
         try
         {
-            T result = await Task.Run(async () => await task, cts.Token).WaitAsync(timeout, cts.Token);
+            T result = await task.WaitAsync(timeout, cts.Token);
             callbackSuccess?.Invoke();
+            cts.Dispose();
             return result;
         }
         catch (OperationCanceledException)
         {
             await cts.CancelAsync();
             callbackTimeout?.Invoke();
-            return default(T);
+            cts.Dispose();
+            return default;
         }
         finally
         {
@@ -30,7 +32,7 @@ public static class TaskExtensions
         CancellationTokenSource cts = new();
         try
         {
-            await Task.Run(async () => await task, cts.Token).WaitAsync(timeout, cts.Token);
+            await task.WaitAsync(timeout, cts.Token);
             callbackSuccess?.Invoke();
         }
         catch
