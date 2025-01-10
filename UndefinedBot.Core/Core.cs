@@ -11,7 +11,7 @@ namespace UndefinedBot.Core;
 
 public delegate void CommandFinishHandler();
 
-public delegate Task CommandActionHandler(CommandContext ctx);
+//public delegate Task CommandActionHandler(CommandContext ctx);
 
 public sealed class CommandFinishEvent
 {
@@ -22,7 +22,7 @@ public sealed class CommandFinishEvent
         OnCommandFinish?.Invoke();
     }
 }
-
+[Obsolete("This Api will be merge into BasePlugin",true)]
 public sealed class UndefinedApi(string pluginName)
 {
     public string RootPath => Environment.CurrentDirectory;
@@ -32,10 +32,13 @@ public sealed class UndefinedApi(string pluginName)
 
     public string CachePath => Path.Join(RootPath, "Cache", pluginName);
     public HttpRequest Request => new(pluginName);
-    public static RootConfigData MainRootConfigDataData => RootConfigManager.GetConfig();
+    //public static RootConfigData MainRootConfigDataData => RootConfigManager.GetConfig();
 }
 
-public readonly struct MainProgramEnvironmentIfo
+public sealed class ProgramEnvironmentIfo
 {
+    public static ProgramEnvironmentIfo Instance => new();
     public string ProgramRootPath => Environment.CurrentDirectory;
+    public PlatformID PlatForm => Environment.OSVersion.Platform;
+    public bool Is64Bit => Environment.Is64BitOperatingSystem;
 }
