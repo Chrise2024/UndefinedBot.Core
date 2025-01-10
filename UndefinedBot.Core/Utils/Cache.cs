@@ -1,29 +1,23 @@
-﻿using System.Data;
-using System.Text.Json;
-
+﻿
 namespace UndefinedBot.Core.Utils;
 
 public sealed class CacheManager
 {
-    private readonly Dictionary<string, object> _storageCache = [];
+    private readonly Dictionary<string, StorageCacheProperty> _storageCache = [];
     private readonly Dictionary<string, FileCacheProperty> _fileCache = [];
     private readonly ILogger _cacheLogger;
     private readonly string _cacheRootPath;
 
-    public CacheManager(string pluginName, string cacheRootPath, CommandFinishEvent finishEvent)
+    public CacheManager(string pluginName)
     {
         _cacheLogger = new BaseLogger(["Plugin", pluginName, "Cache"]);
-        _cacheRootPath = cacheRootPath;
-        finishEvent.OnCommandFinish += UpdateCache;
+        _cacheRootPath = Path.Join(Environment.CurrentDirectory, "Cache", pluginName);
     }
 
     public void UpdateCache()
     {
-        long curTime = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
-
-
-        foreach (var pair in _storageCache.Where(pair =>
-                     ((pair.Value as StorageCacheProperty<object>)?.ExpiredTime ?? 0) < curTime))
+        DateTime curTime = DateTime.Now;
+        foreach (var pair in _storageCache.Where(pair => pair.Value.ExpiredTime < curTime))
         {
             _storageCache.Remove(pair.Key);
         }
@@ -35,13 +29,15 @@ public sealed class CacheManager
         }
     }
 
-    public string AddFile(string cacheName, string cachePath, long cacheDuration)
+    public string AddFile(string cacheName, string cachePath, long cacheDuration) =>
+        AddFile(cacheName, cachePath, TimeSpan.FromSeconds(cacheDuration));
+    public string AddFile(string cacheName, string cachePath, TimeSpan cacheDuration)
     {
         try
         {
             string fullPath = Path.Join(_cacheRootPath, cachePath);
             _fileCache[cacheName] =
-                new FileCacheProperty(fullPath, DateTimeOffset.UtcNow.ToUnixTimeSeconds() + cacheDuration);
+                new FileCacheProperty(fullPath, DateTime.Now + cacheDuration);
             return fullPath;
         }
         catch (Exception ex)
@@ -50,15 +46,13 @@ public sealed class CacheManager
             return "";
         }
     }
-
-    public bool AddStorage<T>(string cacheName, T cacheContent, long cacheDuration)
+    public bool AddStorage(string cacheName, object cacheContent, long cacheDuration)=>
+        AddStorage(cacheName, cacheContent, TimeSpan.FromSeconds(cacheDuration));
+    public bool AddStorage(string cacheName, object cacheContent, TimeSpan cacheDuration)
     {
         try
         {
-            _storageCache[cacheName] =
-                JsonSerializer.SerializeToNode(new StorageCacheProperty<T>(
-                    cacheContent ?? throw new NoNullAllowedException(),
-                    cacheDuration))!;
+            _storageCache[cacheName] = new StorageCacheProperty(cacheContent, DateTime.Now + cacheDuration);
             return true;
         }
         catch (Exception ex)
@@ -68,14 +62,12 @@ public sealed class CacheManager
         }
     }
 
-    public T? ModifyStorage<T>(string cacheName, T newContent)
+    public T? ModifyStorage<T>(string cacheName, T newContent) where T : notnull
     {
         try
         {
-            StorageCacheProperty<T> sp = _storageCache[cacheName] as StorageCacheProperty<T> ??
-                                         throw new NullReferenceException();
+            StorageCacheProperty sp = _storageCache[cacheName];
             sp.Content = newContent;
-            //_storageCache[cacheName] = JToken.FromObject(new StorageCacheProperty<T>(cacheContent ?? throw new NoNullAllowedException(),cacheDuration));
             return newContent;
         }
         catch (Exception ex)
@@ -85,27 +77,27 @@ public sealed class CacheManager
         }
     }
 
-    public string GetFile(string cacheName)
+    public string? GetFile(string cacheName)
     {
-        return _fileCache.TryGetValue(cacheName, out FileCacheProperty? fp) ? fp.FilePath : "";
+        return _fileCache.TryGetValue(cacheName, out FileCacheProperty? fp) ? fp.FilePath : null;
     }
 
-    public T? GetStorage<T>(string cacheName)
+    public T? GetStorage<T>(string cacheName) where T : notnull
     {
-        return _storageCache[cacheName] is StorageCacheProperty<T> sp ? sp.Content : default;
+        return (T)_storageCache[cacheName].Content;
     }
 }
 
-public sealed class StorageCacheProperty<T>(T content, long expiredTime)
+public sealed class StorageCacheProperty(object content, DateTime expiredTime)
 {
-    public T Content = content;
-    public readonly long ExpiredTime = expiredTime;
+    public object Content = content;
+    public readonly DateTime ExpiredTime = expiredTime;
 }
 
-public sealed class FileCacheProperty(string path, long expiredTime)
+public sealed class FileCacheProperty(string path, DateTime expiredTime)
 {
     public readonly string FilePath = path;
-    public readonly long ExpiredTime = expiredTime;
+    public readonly DateTime ExpiredTime = expiredTime;
 }
 
 public enum CacheType

@@ -18,11 +18,7 @@ internal static class CommandInvokeManager
             return CommandInvokeResult.NoCommandRelateToAdapter;
         }
 
-        CommandInstance? targetCommand = Array
-            .Find(
-                refCollection,
-                t => t.IsTargetCommand(invokeProperties)
-            );
+        CommandInstance? targetCommand = Array.Find(refCollection, t => t.IsTargetCommand(invokeProperties));
         if (targetCommand is null)
         {
             return CommandInvokeResult.NoSuchCommand;
@@ -33,7 +29,7 @@ internal static class CommandInvokeManager
             return CommandInvokeResult.CommandRateLimited;
         }
 
-        CommandContext ctx = new(targetCommand.Name, targetCommand.PluginId, invokeProperties);
+        CommandContext ctx = new(targetCommand, invokeProperties);
         ctx.Logger.Info("Command Triggered");
         try
         {
@@ -69,14 +65,12 @@ internal static class CommandInvokeManager
         {
             ctx.Logger.Error(ex, "Command Failed");
         }
-
+        targetCommand.Cache.UpdateCache();
         return CommandInvokeResult.SuccessInvoke;
     }
-
     public static void UpdateCommandInstances(IEnumerable<CommandInstance> ci)
     {
         CommandInstanceIndexByAdapter.Clear();
-        GC.Collect();
         CommandInstanceIndexByAdapter = ci
             .GroupBy(
                 i => i.TargetAdapterId,
@@ -86,6 +80,7 @@ internal static class CommandInvokeManager
                 k => k.Key,
                 v => v.ToArray()
             );
+        GC.Collect();
     }
 }
 

@@ -1,9 +1,9 @@
-﻿using System.Text.Json;
-using System.Text.Json.Serialization;
+﻿using System.Text.Json.Serialization;
 using UndefinedBot.Core.Command.CommandResult;
 using UndefinedBot.Core.Command.CommandNodes;
 using UndefinedBot.Core.Command.Arguments;
 using UndefinedBot.Core.Command.CommandSource;
+using UndefinedBot.Core.Utils;
 
 namespace UndefinedBot.Core.Command;
 
@@ -27,7 +27,7 @@ public sealed class CommandInstance
 
     private long _lastExecute;
     private RootCommandNode RootNode { get; set; }
-
+    internal CacheManager Cache => new(PluginId);
     internal CommandInstance(string commandName, string pluginId, string targetAdapterId)
     {
         TargetAdapterId = targetAdapterId;
@@ -51,7 +51,7 @@ public sealed class CommandInstance
             : StringComparison.Ordinal;
         bool allowAlias = (CommandAttrib & CommandAttribFlags.AllowAlias) == CommandAttribFlags.AllowAlias;
         return Name.Equals(cip.Command, comparison) ||
-               ( allowAlias && CommandAlias.FindIndex(x => x.Equals(cip.Command, comparison)) != -1);
+               (allowAlias && CommandAlias.FindIndex(x => x.Equals(cip.Command, comparison)) != -1);
     }
 
     //Maybe Thread Unsafe
@@ -60,7 +60,7 @@ public sealed class CommandInstance
         return (CommandAttrib & CommandAttribFlags.RateLimit) == CommandAttribFlags.RateLimit &&
                CommandRateLimit != TimeSpan.Zero && ip.TimeStamp - _lastExecute < CommandRateLimit.TotalSeconds;
     }
-
+    //For internal invoke command
     internal async Task<ICommandResult> Run(CommandContext ctx, BaseCommandSource source, List<ParsedToken> tokens)
     {
         _lastExecute = ctx.InvokeProperties.TimeStamp;
@@ -68,7 +68,7 @@ public sealed class CommandInstance
         return await RootNode.ExecuteSelf(ctx, source, tokens);
     }
     /// <summary>
-    /// Add command alias
+    /// Add command attrib
     /// </summary>
     /// <param name="attr">Command's attrib</param>
     /// <returns>self</returns>
@@ -195,16 +195,12 @@ public sealed class CommandInstance
 [Serializable]
 public sealed class CommandProperties
 {
-    [JsonPropertyName("name")] public string Name { get; init; } = "";
-    [JsonPropertyName("alias")] public List<string> CommandAlias { get; init; } = [];
-    [JsonPropertyName("description")] public string? CommandDescription { get; init; }
-
-    [JsonPropertyName("short_description")]
+    public string Name { get; init; } = "";
+    public List<string> CommandAlias { get; init; } = [];
+    public string? CommandDescription { get; init; }
     public string? CommandShortDescription { get; init; }
-
-    [JsonPropertyName("usage")] public string? CommandUsage { get; init; }
-    [JsonPropertyName("example")] public string? CommandExample { get; init; }
-
+    public string? CommandUsage { get; init; }
+    public string? CommandExample { get; init; }
     public bool IsValid()
     {
         return !string.IsNullOrEmpty(Name);
