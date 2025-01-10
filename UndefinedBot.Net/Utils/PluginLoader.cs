@@ -10,7 +10,7 @@ internal static class PluginLoader
 {
     private static string PluginRoot => Path.Join(Program.GetProgramRoot(), "Plugins");
     private static string LibSuffix => GetLibSuffix();
-    private static ILogger PluginInitializeLogger => new BaseLogger(["Init","Load Plugin"]);
+    private static ILogger PluginInitializeLogger => new BaseLogger(["Init", "Load Plugin"]);
 
     internal static List<IPluginInstance> LoadPlugins()
     {
@@ -20,7 +20,8 @@ internal static class PluginLoader
         if (!Directory.Exists(PluginRoot))
         {
             Directory.CreateDirectory(PluginRoot);
-            throw new FileNotFoundException("Plugins Folder Not Fount, Restart Please.");
+            PluginInitializeLogger.Warn("Plugins Folder Not Fount, Creating Adapters Folder.");
+            return [];
         }
 
         string[] pluginFolders = Directory.GetDirectories(PluginRoot);
@@ -36,7 +37,7 @@ internal static class PluginLoader
                 PluginInitializeLogger.Warn($"Plugin: <{pf}> Not Have plugin.json");
                 continue;
             }
-            
+
             JsonNode? originJson = FileIO.ReadAsJson(pluginPropertiesFile);
             string? ef = originJson?["EntryFile"]?.GetValue<string>();
             if (originJson is null || ef is null)
@@ -44,6 +45,7 @@ internal static class PluginLoader
                 PluginInitializeLogger.Warn($"Plugin: <{pf}> Invalid plugin.json");
                 continue;
             }
+
             string entryFile = $"{Path.Join(pf, ef)}.{LibSuffix}";
             if (!File.Exists(entryFile))
             {
@@ -51,12 +53,12 @@ internal static class PluginLoader
                 continue;
             }
 
-            IPluginInstance? pluginInstance = LoadCommand(entryFile);
+            IPluginInstance? pluginInstance = CreatePluginInstance(entryFile);
             if (pluginInstance is null)
             {
                 continue;
             }
-            
+
             commandInstanceList.AddRange(pluginInstance.GetCommandInstance());
 
             string pluginCachePath = Path.Join(Program.GetProgramCache(), pluginInstance.Id);
@@ -75,11 +77,12 @@ internal static class PluginLoader
                 pluginInstance.GetCommandInstance().Select(ci => ci.ExportToCommandProperties()));
             pluginInstanceList.Add(pluginInstance);
         }
+
         CommandInvokeManager.UpdateCommandInstances(commandInstanceList);
         return pluginInstanceList;
     }
 
-    private static IPluginInstance? LoadCommand(string pluginLibPath)
+    private static IPluginInstance? CreatePluginInstance(string pluginLibPath)
     {
         try
         {
@@ -146,20 +149,22 @@ internal static class PluginLoader
     public static Dictionary<string, CommandProperties> GetCommandReference()
     {
         PluginInitializeLogger.Info("Extracting Command References");
-        if (!FileIO.EnsurePath(Path.Join(Program.GetProgramRoot(), "CommandReference")))
+        if (FileIO.EnsurePath(Path.Join(Program.GetProgramRoot(), "CommandReference")))
         {
-            throw new TargetException("CommandReference Folder Not Exist");
+            return Directory
+                .GetFiles(Path.Join(Program.GetProgramRoot(), "CommandReference"))
+                .Select(cfp =>
+                    (FileIO.ReadAsJson<List<CommandProperties>>(cfp) ?? [])
+                    .ToDictionary(k =>
+                            $"{Path.GetFileName(cfp).Split(".")[0]}:{k.Name}", v => v
+                    )
+                )
+                .SelectMany(item => item)
+                .Where(item => item.Value.IsValid())
+                .ToDictionary(k => k.Key, v => v.Value);
         }
 
-        return Directory
-            .GetFiles(Path.Join(Program.GetProgramRoot(), "CommandReference"))
-            .Select(cfp =>
-                (FileIO.ReadAsJson<List<CommandProperties>>(cfp) ?? [])
-                .ToDictionary(k =>
-                    $"{Path.GetFileName(cfp).Split(".")[0]}:{k.Name}", v => v)
-            )
-            .SelectMany(item => item)
-            .Where(item => item.Value.IsValid())
-            .ToDictionary(k => k.Key, v => v.Value);
+        PluginInitializeLogger.Warn("CommandReference Folder Not Exist");
+        return [];
     }
 }

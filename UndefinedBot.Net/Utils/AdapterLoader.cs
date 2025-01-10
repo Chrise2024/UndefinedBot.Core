@@ -1,6 +1,4 @@
 ﻿using System.Reflection;
-using System.Runtime.Loader;
-using System.Text.Json;
 using System.Text.Json.Nodes;
 using UndefinedBot.Core.Adapter;
 using UndefinedBot.Core.Utils;
@@ -19,7 +17,8 @@ internal static class AdapterLoader
         if (!Directory.Exists(AdapterRoot))
         {
             Directory.CreateDirectory(AdapterRoot);
-            throw new FileNotFoundException("Adapters Folder Not Fount, Restart.");
+            AdapterInitializeLogger.Warn("Adapters Folder Not Fount, Creating Adapters Folder.");
+            return [];
         }
 
         string[] adapterFolders = Directory.GetDirectories(AdapterRoot);
