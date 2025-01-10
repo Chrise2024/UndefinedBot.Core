@@ -3,30 +3,6 @@ using UndefinedBot.Core.Command.CommandSource;
 
 namespace UndefinedBot.Core.Command;
 
-internal delegate Task UniversalCommandEventHandler(CommandInvokeProperties invokeProperties, BaseCommandSource source);
-
-/// <summary>
-/// Plan to assign standalone bus for each adapter
-/// </summary>
-[Obsolete("Use CommandInvokeManager Instead",true)]
-internal static class CommandEventBus
-{
-    private static event UniversalCommandEventHandler? UniversalCommandEvent;
-
-    public static void InvokeCommandEvent(
-        CommandInvokeProperties invokeProperties,
-        BaseCommandSource source
-    )
-    {
-        UniversalCommandEvent?.Invoke(invokeProperties, source);
-    }
-
-    public static void RegisterCommandEventHandler(UniversalCommandEventHandler handler)
-    {
-        UniversalCommandEvent += handler;
-    }
-}
-
 /// <summary>
 /// Contains the meta data of the command
 /// </summary>

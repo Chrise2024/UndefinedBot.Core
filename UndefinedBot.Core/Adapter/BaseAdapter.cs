@@ -1,5 +1,4 @@
-﻿using System.Reflection;
-using System.Text.Json;
+﻿using System.Text.Json;
 using System.Text.Json.Nodes;
 using UndefinedBot.Core.Command;
 using UndefinedBot.Core.Command.Arguments;
@@ -40,7 +39,6 @@ public abstract class BaseAdapter : IAdapterInstance
     protected ILogger Logger => new BaseLogger(["Adapter",Name]);
     protected AdapterConfigData AdapterConfig { get; }
     protected string AdapterPath => Path.GetDirectoryName(GetType().Assembly.Location) ?? "/";
-
     protected BaseAdapter()
     {
         AdapterConfig = GetAdapterConfig();

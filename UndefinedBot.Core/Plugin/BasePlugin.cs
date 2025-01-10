@@ -2,6 +2,7 @@
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using UndefinedBot.Core.Command;
+using UndefinedBot.Core.NetWork;
 using UndefinedBot.Core.Utils;
 
 namespace UndefinedBot.Core.Plugin;
@@ -24,12 +25,11 @@ public abstract class BasePlugin : IPluginInstance
     public List<long> GroupId { get; }
     public abstract void Initialize();
     protected ILogger Logger => new BaseLogger(["Plugin", Name]);
-    protected UndefinedApi BaseApi => new(Name);
+    protected HttpRequest Request => new(Name);
     protected PluginConfigData PluginConfig { get; }
     protected string PluginPath => Path.GetDirectoryName(GetType().Assembly.Location) ?? "/";
     private List<CommandInstance> CommandInstances { get; } = [];
     List<CommandInstance> IPluginInstance.GetCommandInstance() => CommandInstances;
-
     protected BasePlugin()
     {
         PluginConfig = GetPluginConfig();

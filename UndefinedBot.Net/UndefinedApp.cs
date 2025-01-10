@@ -58,13 +58,6 @@ public class UndefinedApp(IHost host) : IHost
                 [time, ..tags, undefinedLogLevel.ToString(), message]
             );
         });
-        //Load Root Config
-        RootConfigManager.InitConfig(new RootConfigData
-        {
-            GroupId = Configuration.GetSection("GroupId").GetChildren().Select(child => long.Parse(child.Value!))
-                .ToList(),
-            CommandPrefix = Configuration["CommandPrefix"]!
-        });
         //Load Adapter and Plugin
         Init();
 
@@ -77,7 +70,7 @@ public class UndefinedApp(IHost host) : IHost
                     "test",
                     0,
                     0,
-                    0)
+                    114514191)
                 .Implement(
                     "OneBot11Adapter",
                     "",
@@ -86,7 +79,7 @@ public class UndefinedApp(IHost host) : IHost
                 ),
             UserCommandSource.Friend(0, "", 0)
         );
-        Console.WriteLine(r);
+        //Console.WriteLine(r);
         //Console Loop
         while (true)
         {
