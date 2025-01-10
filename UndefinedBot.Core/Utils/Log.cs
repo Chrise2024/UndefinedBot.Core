@@ -1,4 +1,6 @@
-﻿namespace UndefinedBot.Core.Utils;
+﻿using System.Runtime.InteropServices;
+
+namespace UndefinedBot.Core.Utils;
 
 public enum UndefinedLogLevel
 {
@@ -55,6 +57,8 @@ public interface ILogger
 {
     string Template { get; }
     string[] Tags { get; }
+    internal void Critical(string message);
+    internal void Critical(Exception? ex, string message);
     void Error(string message);
     void Error(Exception? ex, string message);
     void Warn(string message);
@@ -63,6 +67,8 @@ public interface ILogger
     void Info(Exception? ex, string message);
     void Debug(string message);
     void Debug(Exception? ex, string message);
+    void Trace(string message);
+    void Trace(Exception? ex, string message);
     ILogger GetSubLogger(string subSpace);
     ILogger GetSubLogger(IEnumerable<string> subSpace);
 }
@@ -96,6 +102,11 @@ internal sealed class BaseLogger : ILogger
     {
     }
 
+    public void Critical(string message)
+    {
+        LogEventBus.SendLogMessage(UndefinedLogLevel.Critical, message, Template, Tags);
+    }
+    
     public void Error(string message)
     {
         LogEventBus.SendLogMessage(UndefinedLogLevel.Error, message, Template, Tags);
@@ -115,7 +126,17 @@ internal sealed class BaseLogger : ILogger
     {
         LogEventBus.SendLogMessage(UndefinedLogLevel.Debug, message, Template, Tags);
     }
+    
+    public void Trace(string message)
+    {
+        LogEventBus.SendLogMessage(UndefinedLogLevel.Trace, message, Template, Tags);
+    }
 
+    public void Critical(Exception? ex, string message)
+    {
+        LogEventBus.SendLogMessageWithException(UndefinedLogLevel.Critical, ex, message, Template, Tags);
+    }
+    
     public void Error(Exception? ex, string message)
     {
         LogEventBus.SendLogMessageWithException(UndefinedLogLevel.Error, ex, message, Template, Tags);
@@ -134,6 +155,11 @@ internal sealed class BaseLogger : ILogger
     public void Debug(Exception? ex, string message)
     {
         LogEventBus.SendLogMessageWithException(UndefinedLogLevel.Error, ex, message, Template, Tags);
+    }
+    
+    public void Trace(Exception? ex, string message)
+    {
+        LogEventBus.SendLogMessageWithException(UndefinedLogLevel.Trace, ex, message, Template, Tags);
     }
 
     public ILogger GetSubLogger(string subSpace)
