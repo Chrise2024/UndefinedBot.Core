@@ -21,6 +21,7 @@ public sealed class CommandInvokeProperties
     public string AdapterId { get; private set; } = "";
     public string Platform { get; private set; } = "";
     public string Protocol { get; private set; } = "";
+    public string CommandPrefix { get; private set; } = "";
     public List<ParsedToken> Tokens { get; private set; } = [];
     public string GetEnvironmentInfo() => $"[{AdapterId}]{Platform}:{Protocol}";
 
@@ -69,12 +70,13 @@ public sealed class CommandInvokeProperties
         return new CommandInvokeProperties(command, sourceId, msgId, MessageSubType.Guild, time);
     }
     internal CommandInvokeProperties Implement(string adapterId, string platform, string protocol,
-        List<ParsedToken> tokens)
+        List<ParsedToken> tokens, string prefix)
     {
         AdapterId = adapterId;
         Platform = platform;
         Protocol = protocol;
         Tokens = tokens;
+        CommandPrefix = prefix;
         return this;
     }
 }

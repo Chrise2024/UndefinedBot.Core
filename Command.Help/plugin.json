@@ -1,6 +1,0 @@
-{
-  "name": "Help",
-  "description": "帮助",
-  "entry_file": "Command.Help",
-  "entry_point": "HelpCommand"
-}

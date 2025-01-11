@@ -25,7 +25,7 @@ public interface IAdapterInstance
     /// <summary>
     /// Handle default action invoked by command
     /// </summary>
-    byte[]? HandleDefaultAction(DefaultActionType action, byte[]? paras);
+    byte[]? HandleDefaultAction(DefaultActionType action, object? paras);
 }
 
 public abstract class BaseAdapter : IAdapterInstance
@@ -69,7 +69,7 @@ public abstract class BaseAdapter : IAdapterInstance
         List<ParsedToken> tokens
     )
     {
-        CommandInvokeResult result = await CommandInvokeManager.InvokeCommand(invokeProperties.Implement(Id, Platform, Protocol, tokens), source);
+        CommandInvokeResult result = await CommandInvokeManager.InvokeCommand(invokeProperties.Implement(Id, Platform, Protocol, tokens,CommandPrefix), source);
         switch (result)
         {
             case CommandInvokeResult.SuccessInvoke:
@@ -100,7 +100,7 @@ public abstract class BaseAdapter : IAdapterInstance
     /// <param name="action">Action Type</param>
     /// <param name="paras">Parameters</param>
     /// <returns></returns>
-    public abstract byte[]? HandleDefaultAction(DefaultActionType action, byte[]? paras);
+    public abstract byte[]? HandleDefaultAction(DefaultActionType action, object? paras);
 }
 
 public enum DefaultActionType

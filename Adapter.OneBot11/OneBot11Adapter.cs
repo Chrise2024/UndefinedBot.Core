@@ -1,4 +1,5 @@
-﻿using UndefinedBot.Core.Adapter;
+﻿using System.Text.Json;
+using UndefinedBot.Core.Adapter;
 
 namespace Adapter.OneBot11;
 
@@ -23,8 +24,9 @@ public sealed class OneBot11Adapter : BaseAdapter
         return null;
     }
 
-    public override byte[]? HandleDefaultAction(DefaultActionType action, byte[]? paras)
+    public override byte[]? HandleDefaultAction(DefaultActionType action, object? paras)
     {
+        Console.WriteLine(JsonSerializer.Serialize(paras));
         //None
         return null;
     }

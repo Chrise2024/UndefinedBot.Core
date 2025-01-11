@@ -69,7 +69,7 @@ public class UndefinedApp(IHost host) : IHost
         //for test
         var r = await CommandInvokeManager.InvokeCommand(
             CommandInvokeProperties.Group(
-                    "test",
+                    "help",
                     0,
                     0,
                     114514191)
@@ -78,9 +78,10 @@ public class UndefinedApp(IHost host) : IHost
                     "",
                     "",
                     [
-                        new ParsedToken(ParsedTokenTypes.Normal, Encoding.UTF8.GetBytes("666")),
-                        new ParsedToken(ParsedTokenTypes.Normal, Encoding.UTF8.GetBytes("233"))
-                    ]
+                        //new ParsedToken(ParsedTokenTypes.Normal, Encoding.UTF8.GetBytes("test")),
+                        //new ParsedToken(ParsedTokenTypes.Normal, Encoding.UTF8.GetBytes("233"))
+                    ],
+                    "$$"
                 ),
             UserCommandSource.Friend(0, "", 0)
         );
@@ -120,17 +121,18 @@ public class UndefinedApp(IHost host) : IHost
         List<IAdapterInstance> adapterList = AdapterLoader.LoadAdapters();
         //Load Plugins
         List<IPluginInstance> pluginList = PluginLoader.LoadPlugins();
-        //Get Command References for Help command
-        Dictionary<string, CommandProperties> commandReference = PluginLoader.GetCommandReference();
         string pluginListText = JsonSerializer.Serialize(pluginList, _serializerOptions);
         string adapterListText = JsonSerializer.Serialize(adapterList, _serializerOptions);
-        string commandReferenceText = JsonSerializer.Serialize(commandReference, _serializerOptions);
+        string commandReferenceText = JsonSerializer.Serialize(
+            CommandInvokeManager.CommandInstanceIndexByAdapter.ToDictionary(
+                k => k.Key,
+                v => v.Value.Select(x =>
+                    x.ExportToCommandProperties(ActionInvokeManager.AdapterInstanceReference)).ToArray()),
+            _serializerOptions);
 
         FileIO.WriteFile(Path.Join(_programRoot, "loaded_adapters.json"), adapterListText);
 
         FileIO.WriteFile(Path.Join(_programRoot, "loaded_plugins.json"), pluginListText);
-
-        FileIO.WriteFile(Path.Join(_programRoot, "command_reference.json"), commandReferenceText);
 
         Logger.LogInformation("Loaded Adapters:{AdapterList}", adapterListText);
 

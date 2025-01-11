@@ -1,4 +1,5 @@
-﻿using UndefinedBot.Core.Command.CommandResult;
+﻿using UndefinedBot.Core.Adapter;
+using UndefinedBot.Core.Command.CommandResult;
 using UndefinedBot.Core.Command.CommandNodes;
 using UndefinedBot.Core.Command.Arguments;
 using UndefinedBot.Core.Command.CommandSource;
@@ -177,7 +178,7 @@ public sealed class CommandInstance
         return RootNode.Then(nextNode);
     }
 
-    internal CommandProperties ExportToCommandProperties()
+    internal CommandProperties ExportToCommandProperties(Dictionary<string, IAdapterInstance> adapterList)
     {
         return new CommandProperties
         {
@@ -186,6 +187,7 @@ public sealed class CommandInstance
             CommandDescription = CommandDescription,
             CommandShortDescription = CommandShortDescription,
             CommandAlias = CommandAlias,
+            CommandPrefix = adapterList.TryGetValue(TargetAdapterId,out IAdapterInstance? v) ? v.CommandPrefix : "",
             CommandExample = CommandExample,
             CommandUsage = CommandUsage
         };
@@ -198,6 +200,7 @@ public sealed class CommandProperties
     public string Name { get; init; } = "";
     public bool IsHidden { get; init; }
     public List<string> CommandAlias { get; init; } = [];
+    public string CommandPrefix { get; init; } = "";
     public string? CommandDescription { get; init; }
     public string? CommandShortDescription { get; init; }
     public string? CommandUsage { get; init; }
@@ -231,7 +234,7 @@ public enum CommandAttribFlags
     /// </summary>
     IgnoreAuthority = 0b_0000_0000_0000_1000,
     /// <summary>
-    /// The command's trigger rate will be limited
+    /// The command's trigger rate will be limited.If command not have this attrib,rate limit set in <see cref="CommandInstance"/> will be ignored
     /// </summary>
     RateLimit       = 0b_0000_0000_0001_0000,
     /// <summary>

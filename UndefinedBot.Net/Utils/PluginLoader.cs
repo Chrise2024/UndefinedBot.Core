@@ -1,5 +1,6 @@
 ﻿using System.Reflection;
 using System.Text.Json.Nodes;
+using UndefinedBot.Core.Adapter;
 using UndefinedBot.Core.Utils;
 using UndefinedBot.Core.Command;
 using UndefinedBot.Core.Plugin;
@@ -69,12 +70,13 @@ internal static class PluginLoader
                 FileIO.SafeDeleteFile(cf);
             }
 
-            string commandRefPath = Path.Join(
-                Environment.CurrentDirectory, "CommandReference",
-                $"{pluginInstance.Id}.reference.json"
-            );
-            FileIO.WriteAsJson(commandRefPath,
-                pluginInstance.GetCommandInstance().Select(ci => ci.ExportToCommandProperties()));
+            // string commandRefPath = Path.Join(
+            //     Environment.CurrentDirectory, "CommandReference",
+            //     $"{pluginInstance.Id}.reference.json"
+            // );
+            // FileIO.WriteAsJson(commandRefPath,
+            //     pluginInstance.GetCommandInstance()
+            //         .Select(ci => ci.ExportToCommandProperties(ActionInvokeManager.AdapterInstanceReference)));
             pluginInstanceList.Add(pluginInstance);
         }
 
@@ -146,6 +148,7 @@ internal static class PluginLoader
         }
     }*/
     //for Help command
+    [Obsolete("Help command is build-in now",true)]
     public static Dictionary<string, CommandProperties> GetCommandReference()
     {
         PluginInitializeLogger.Info("Extracting Command References");
