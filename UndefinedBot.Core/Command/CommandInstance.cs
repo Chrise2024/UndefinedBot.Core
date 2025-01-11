@@ -8,15 +8,15 @@ namespace UndefinedBot.Core.Command;
 
 public sealed class CommandInstance
 {
-    public static readonly CommandAttribFlags DefaultCommandAttrib = CommandAttribFlags.AllowAlias |
-                                                                     CommandAttribFlags.ActiveInFriend |
-                                                                     CommandAttribFlags.ActiveInGroup |
-                                                                     CommandAttribFlags.ActiveInGuild |
-                                                                     CommandAttribFlags.IgnoreAuthority;
-    internal string TargetAdapterId { get; set; }
+    public const CommandAttribFlags DefaultCommandAttrib = CommandAttribFlags.AllowAlias |
+                                                           CommandAttribFlags.ActiveInFriend |
+                                                           CommandAttribFlags.ActiveInGroup |
+                                                           CommandAttribFlags.ActiveInGuild |
+                                                           CommandAttribFlags.IgnoreAuthority;
+    internal string TargetAdapterId { get; }
     internal string PluginId { get; }
-    internal string Name { get; set; }
-    private List<string> CommandAlias { get; set; } = [];
+    internal string Name { get; }
+    private List<string> CommandAlias { get; } = [];
     private string? CommandDescription { get; set; }
     private string? CommandShortDescription { get; set; }
     private string? CommandUsage { get; set; }
@@ -25,7 +25,7 @@ public sealed class CommandInstance
     private CommandAttribFlags CommandAttrib { get; set; } = DefaultCommandAttrib;
 
     private long _lastExecute;
-    private RootCommandNode RootNode { get; set; }
+    private RootCommandNode RootNode { get; }
     internal CacheManager Cache => new(PluginId);
     internal CommandInstance(string commandName, string pluginId, string targetAdapterId)
     {
