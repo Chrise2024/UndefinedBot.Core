@@ -182,6 +182,7 @@ public sealed class CommandInstance
         return new CommandProperties
         {
             Name = Name,
+            IsHidden = (CommandAttrib & CommandAttribFlags.Hidden) == CommandAttribFlags.Hidden,
             CommandDescription = CommandDescription,
             CommandShortDescription = CommandShortDescription,
             CommandAlias = CommandAlias,
@@ -195,6 +196,7 @@ public sealed class CommandInstance
 public sealed class CommandProperties
 {
     public string Name { get; init; } = "";
+    public bool IsHidden { get; init; }
     public List<string> CommandAlias { get; init; } = [];
     public string? CommandDescription { get; init; }
     public string? CommandShortDescription { get; init; }
@@ -206,15 +208,42 @@ public sealed class CommandProperties
     }
 }
 
+/// <summary>
+/// Attrib of command,default is <see cref="CommandAttribFlags.AllowAlias"/> | <see cref="CommandAttribFlags.ActiveInFriend"/> | <see cref="CommandAttribFlags.ActiveInGroup"/> | <see cref="CommandAttribFlags.ActiveInGuild"/> | <see cref="CommandAttribFlags.IgnoreAuthority"/>
+/// </summary>
 [Flags]
 public enum CommandAttribFlags
 {
+    /// <summary>
+    /// The command can be triggered in friend chat
+    /// </summary>
     ActiveInFriend  = 0b_0000_0000_0000_0001,
+    /// <summary>
+    /// The command can be triggered in group chat
+    /// </summary>
     ActiveInGroup   = 0b_0000_0000_0000_0010,
+    /// <summary>
+    /// The command can be triggered in guild chat
+    /// </summary>
     ActiveInGuild   = 0b_0000_0000_0000_0100,
+    /// <summary>
+    /// The command can be triggered without authority check
+    /// </summary>
     IgnoreAuthority = 0b_0000_0000_0000_1000,
+    /// <summary>
+    /// The command's trigger rate will be limited
+    /// </summary>
     RateLimit       = 0b_0000_0000_0001_0000,
+    /// <summary>
+    /// The command will be hidden in help command
+    /// </summary>
     Hidden          = 0b_0000_0000_0010_0000,
+    /// <summary>
+    /// The command can be triggered with ignoring case
+    /// </summary>
     IgnoreCase      = 0b_0000_0000_0100_0000,
+    /// <summary>
+    /// Allow using alias to trigger the command
+    /// </summary>
     AllowAlias      = 0b_0000_0000_1000_0000,
 }
