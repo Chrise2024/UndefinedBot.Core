@@ -108,7 +108,7 @@ public sealed class SubCommandNode(string name) : ICommandNode
         //有子节点
         List<ICommandResult> result = [];
         //Ignore Nodes that Not Hits NodeRequire
-        foreach (ICommandNode node in Child.Where(node => node.NodeRequire is null || !node.NodeRequire(ctx.InvokeProperties, source)))
+        foreach (ICommandNode node in Child.Where(node => node.NodeRequire is null || node.NodeRequire(ctx.InvokeProperties, source)))
         {
             ICommandResult res = await node.ExecuteSelf(ctx, source, tokens[1..]);
             if (res is CommandSuccess)

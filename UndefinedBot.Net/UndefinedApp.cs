@@ -1,4 +1,5 @@
-﻿using System.Text.Json;
+﻿using System.Text;
+using System.Text.Json;
 using UndefinedBot.Core.Utils;
 using UndefinedBot.Core.Command;
 using UndefinedBot.Net.Utils;
@@ -7,6 +8,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using UndefinedBot.Core.Adapter;
+using UndefinedBot.Core.Command.Arguments;
 using UndefinedBot.Core.Command.CommandSource;
 using UndefinedBot.Core.Plugin;
 
@@ -75,7 +77,10 @@ public class UndefinedApp(IHost host) : IHost
                     "OneBot11Adapter",
                     "",
                     "",
-                    []
+                    [
+                        new ParsedToken(ParsedTokenTypes.Normal, Encoding.UTF8.GetBytes("666")),
+                        new ParsedToken(ParsedTokenTypes.Normal, Encoding.UTF8.GetBytes("233"))
+                    ]
                 ),
             UserCommandSource.Friend(0, "", 0)
         );

@@ -23,17 +23,18 @@ public sealed class TestCommand : BasePlugin
                 .Then(new VariableNode("var2", new StringArgument())
                     .Execute(async (ctx, source) =>
                     {
-                        //long v1 = IntegerArgument.GetInteger("var1", ctx);
-                        //double v2 = NumberArgument.GetNumber("var2", ctx);
-                        //Console.WriteLine(v1 * v2);
+                        long v1 = IntegerArgument.GetInteger("var1", ctx);
+                        double v2 = NumberArgument.GetNumber("var2", ctx);
+                        Console.WriteLine(v1 * v2);
                     })))
-            .Then(new VariableNode("var3", new StringArgument())
-                .Then(new VariableNode("var4", new ImageArgument())
+            .Then(new VariableNode("var3", new NumberArgument())
+                //.Require((ip,s) => false)
+                .Then(new VariableNode("var4", new IntegerArgument())
                     .Execute(async (ctx, source) =>
                     {
-                        //long v3 = IntegerArgument.GetInteger("var3", ctx);
-                        //long v4 = IntegerArgument.GetInteger("var4", ctx);
-                        //Console.WriteLine(v3 + v4);
+                        double v3 = NumberArgument.GetNumber("var3", ctx);
+                        long v4 = IntegerArgument.GetInteger("var4", ctx);
+                        Console.WriteLine(v3 + v4);
                     })));
     }
 }
