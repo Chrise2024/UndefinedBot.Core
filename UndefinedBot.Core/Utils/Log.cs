@@ -1,6 +1,4 @@
-﻿using System.Runtime.InteropServices;
-
-namespace UndefinedBot.Core.Utils;
+﻿namespace UndefinedBot.Core.Utils;
 
 public enum UndefinedLogLevel
 {
@@ -53,7 +51,7 @@ internal static class LogEventBus
     }
 }
 
-public interface ILogger
+public interface ILogger : IDisposable
 {
     string Template { get; }
     string[] Tags { get; }
@@ -73,12 +71,12 @@ public interface ILogger
     ILogger GetSubLogger(IEnumerable<string> subSpace);
 }
 
-internal sealed class BaseLogger : ILogger
+public sealed class ExtendableLogger : ILogger
 {
     public string Template { get; }
     public string[] Tags { get; }
 
-    internal BaseLogger(IEnumerable<string> nameSpace)
+    internal ExtendableLogger(IEnumerable<string> nameSpace)
     {
         Tags = nameSpace.ToArray();
         string extendTemplate = "";
@@ -90,15 +88,15 @@ internal sealed class BaseLogger : ILogger
         Template = "[{Time}] " + extendTemplate + "[{LogLevel}] {Message}";
     }
 
-    internal BaseLogger(string nameSpace) : this([nameSpace])
+    internal ExtendableLogger(string nameSpace) : this([nameSpace])
     {
     }
 
-    private BaseLogger(ILogger cInst, string subSpace) : this(cInst, [subSpace])
+    private ExtendableLogger(ILogger cInst, string subSpace) : this(cInst, [subSpace])
     {
     }
 
-    private BaseLogger(ILogger cInst, IEnumerable<string> subSpace) : this([..cInst.Tags, ..subSpace])
+    private ExtendableLogger(ILogger cInst, IEnumerable<string> subSpace) : this([..cInst.Tags, ..subSpace])
     {
     }
 
@@ -164,11 +162,108 @@ internal sealed class BaseLogger : ILogger
 
     public ILogger GetSubLogger(string subSpace)
     {
-        return new BaseLogger(this, subSpace);
+        return new ExtendableLogger(this, subSpace);
     }
 
     public ILogger GetSubLogger(IEnumerable<string> subSpace)
     {
-        return new BaseLogger(this, subSpace);
+        return new ExtendableLogger(this, subSpace);
+    }
+    public void Dispose()
+    {
+        Array.Clear(Tags);
+    }
+}
+
+public sealed class FixedLogger : ILogger
+{
+    public string Template { get; }
+    public string[] Tags { get; }
+
+    internal FixedLogger(IEnumerable<string> nameSpace)
+    {
+        int i = 0;
+        Tags = [..nameSpace];
+        string extendTemplate = Tags.Aggregate("", (current, _) => current + $"[{{Tag{i++}}}] ");
+
+        Template = "[{Time}] " + extendTemplate + "[{LogLevel}] {Message}";
+    }
+
+    internal FixedLogger(string nameSpace) : this([nameSpace])
+    {
+    }
+
+    public void Critical(string message)
+    {
+        LogEventBus.SendLogMessage(UndefinedLogLevel.Critical, message, Template, Tags);
+    }
+    
+    public void Error(string message)
+    {
+        LogEventBus.SendLogMessage(UndefinedLogLevel.Error, message, Template, Tags);
+    }
+
+    public void Warn(string message)
+    {
+        LogEventBus.SendLogMessage(UndefinedLogLevel.Warning, message, Template, Tags);
+    }
+
+    public void Info(string message)
+    {
+        LogEventBus.SendLogMessage(UndefinedLogLevel.Information, message, Template, Tags);
+    }
+
+    public void Debug(string message)
+    {
+        LogEventBus.SendLogMessage(UndefinedLogLevel.Debug, message, Template, Tags);
+    }
+    
+    public void Trace(string message)
+    {
+        LogEventBus.SendLogMessage(UndefinedLogLevel.Trace, message, Template, Tags);
+    }
+
+    public void Critical(Exception? ex, string message)
+    {
+        LogEventBus.SendLogMessageWithException(UndefinedLogLevel.Critical, ex, message, Template, Tags);
+    }
+    
+    public void Error(Exception? ex, string message)
+    {
+        LogEventBus.SendLogMessageWithException(UndefinedLogLevel.Error, ex, message, Template, Tags);
+    }
+
+    public void Warn(Exception? ex, string message)
+    {
+        LogEventBus.SendLogMessageWithException(UndefinedLogLevel.Error, ex, message, Template, Tags);
+    }
+
+    public void Info(Exception? ex, string message)
+    {
+        LogEventBus.SendLogMessageWithException(UndefinedLogLevel.Error, ex, message, Template, Tags);
+    }
+
+    public void Debug(Exception? ex, string message)
+    {
+        LogEventBus.SendLogMessageWithException(UndefinedLogLevel.Error, ex, message, Template, Tags);
+    }
+    
+    public void Trace(Exception? ex, string message)
+    {
+        LogEventBus.SendLogMessageWithException(UndefinedLogLevel.Trace, ex, message, Template, Tags);
+    }
+
+    ILogger ILogger.GetSubLogger(string subSpace)
+    {
+        throw new NotSupportedException("This Logger cannot be extended");
+    }
+
+    ILogger ILogger.GetSubLogger(IEnumerable<string> subSpace)
+    {
+        throw new NotSupportedException("This Logger cannot be extended");
+    }
+    public void Dispose()
+    {
+        Array.Clear(Tags);
     }
 }

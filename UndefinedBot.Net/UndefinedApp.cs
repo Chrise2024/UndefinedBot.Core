@@ -1,16 +1,16 @@
 ﻿using System.Text;
 using System.Text.Json;
-using UndefinedBot.Core.Utils;
-using UndefinedBot.Core.Command;
-using UndefinedBot.Net.Utils;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using UndefinedBot.Core.Utils;
+using UndefinedBot.Core.Command;
 using UndefinedBot.Core.Adapter;
 using UndefinedBot.Core.Command.Arguments;
 using UndefinedBot.Core.Command.CommandSource;
 using UndefinedBot.Core.Plugin;
+using UndefinedBot.Net.Utils;
 
 namespace UndefinedBot.Net;
 
@@ -60,6 +60,7 @@ public class UndefinedApp(IHost host) : IHost
                 [time, ..tags, undefinedLogLevel.ToString(), message]
             );
         });
+        Logger.LogTrace("LogEventBus Registered");
         //Load Adapter and Plugin
         Init();
 
@@ -67,7 +68,7 @@ public class UndefinedApp(IHost host) : IHost
 
         Logger.LogInformation("UndefinedBot.Net Implementation has started");
         //for test
-        var r = await CommandInvokeManager.InvokeCommand(
+        _ = await CommandInvokeManager.InvokeCommand(
             CommandInvokeProperties.Group(
                     "help",
                     0,
@@ -78,7 +79,7 @@ public class UndefinedApp(IHost host) : IHost
                     "",
                     "",
                     [
-                        //new ParsedToken(ParsedTokenTypes.Normal, Encoding.UTF8.GetBytes("test")),
+                        new ParsedToken(ParsedTokenTypes.Normal, Encoding.UTF8.GetBytes("test")),
                         //new ParsedToken(ParsedTokenTypes.Normal, Encoding.UTF8.GetBytes("233"))
                     ],
                     "$$"

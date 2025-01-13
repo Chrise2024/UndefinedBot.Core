@@ -15,7 +15,7 @@ public sealed class CommandContext
     public string RootPath { get; } = Environment.CurrentDirectory;
     public string CachePath { get; }
     public CommandInvokeProperties InvokeProperties { get; }
-    public ILogger Logger { get; }
+    public ExtendableLogger Logger { get; }
     public CacheManager Cache { get; }
     public HttpRequest Request { get; }
     public ActionInvokeManager ActionInvoke { get; }
@@ -27,7 +27,7 @@ public sealed class CommandContext
         CommandName = commandInstance.Name;
         CachePath = Path.Join(RootPath, "Cache", commandInstance.PluginId);
         InvokeProperties = ip;
-        Logger = new BaseLogger(["Command",commandInstance.PluginId, commandInstance.Name]);
+        Logger = new (["Command",commandInstance.PluginId, commandInstance.Name]);
         Cache = commandInstance.Cache;
         Request = new HttpRequest(commandInstance.PluginId);
         ActionInvoke = new(ip, Logger);
@@ -39,6 +39,6 @@ public sealed class CommandContext
 /// </summary>
 internal class HelpCommandContext(CommandInvokeProperties ip)
 {
-    public ILogger Logger => new BaseLogger("Help");
+    public ExtendableLogger Logger => new ("Help");
     public ActionInvokeManager ActionInvoke => new(ip, Logger);
 }

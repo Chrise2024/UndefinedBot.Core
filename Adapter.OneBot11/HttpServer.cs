@@ -1,7 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
-// The .NET Foundation licenses this file to you under the MIT license.
-
-using System.Collections.Specialized;
+﻿using System.Collections.Specialized;
 using System.Net;
 using System.Net.Http.Headers;
 using System.Text.Json;
@@ -41,7 +38,7 @@ public sealed class HttpServiceOptions(string host, uint port, string? accessTok
 internal sealed class HttpServer(
     AdapterConfigData adapterConfig,
     Action<CommandInvokeProperties, BaseCommandSource, List<ParsedToken>> submitter,
-    ILogger parentLogger
+    ExtendableLogger parentLogger
     )
 {
     private readonly HttpListener _httpListener = new();
@@ -87,7 +84,7 @@ internal sealed class HttpServer(
 
     private async Task ReceiveLoop(CancellationToken token)
     {
-        while (_httpListener.IsListening)
+        while (_httpListener.IsListening && !token.IsCancellationRequested)
         {
             try
             {

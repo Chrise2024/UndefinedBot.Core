@@ -5,12 +5,12 @@ public sealed class CacheManager
 {
     private readonly Dictionary<string, StorageCacheProperty> _storageCache = [];
     private readonly Dictionary<string, FileCacheProperty> _fileCache = [];
-    private readonly ILogger _cacheLogger;
+    private readonly FixedLogger _cacheLogger;
     private readonly string _cacheRootPath;
 
     public CacheManager(string pluginName)
     {
-        _cacheLogger = new BaseLogger(["Plugin", pluginName, "Cache"]);
+        _cacheLogger = new (["Plugin", pluginName, "Cache"]);
         _cacheRootPath = Path.Join(Environment.CurrentDirectory, "Cache", pluginName);
     }
 
