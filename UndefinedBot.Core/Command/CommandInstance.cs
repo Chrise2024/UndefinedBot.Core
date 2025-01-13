@@ -41,15 +41,15 @@ public sealed class CommandInstance : IDisposable
     {
         switch (cip.SubType)
         {
-            case MessageSubType.Friend when (CommandAttrib & CommandAttribFlags.ActiveInFriend) == 0:
-            case MessageSubType.Group when (CommandAttrib & CommandAttribFlags.ActiveInGroup) == 0:
-            case MessageSubType.Guild when (CommandAttrib & CommandAttribFlags.ActiveInGuild) == 0:
+            case MessageSubType.Friend when !CommandAttrib.HasFlag(CommandAttribFlags.ActiveInFriend):
+            case MessageSubType.Group when !CommandAttrib.HasFlag(CommandAttribFlags.ActiveInGroup):
+            case MessageSubType.Guild when !CommandAttrib.HasFlag(CommandAttribFlags.ActiveInGuild):
                 return false;
         }
-        StringComparison comparison = (CommandAttrib & CommandAttribFlags.IgnoreCase) == CommandAttribFlags.IgnoreCase
+        StringComparison comparison = CommandAttrib.HasFlag(CommandAttribFlags.IgnoreCase)
             ? StringComparison.OrdinalIgnoreCase
             : StringComparison.Ordinal;
-        bool allowAlias = (CommandAttrib & CommandAttribFlags.AllowAlias) == CommandAttribFlags.AllowAlias;
+        bool allowAlias = CommandAttrib.HasFlag(CommandAttribFlags.AllowAlias);
         return Name.Equals(cip.Command, comparison) ||
                (allowAlias && CommandAlias.FindIndex(x => x.Equals(cip.Command, comparison)) != -1);
     }
@@ -57,7 +57,7 @@ public sealed class CommandInstance : IDisposable
     //Maybe Thread Unsafe
     internal bool IsReachRateLimit(CommandInvokeProperties ip)
     {
-        return (CommandAttrib & CommandAttribFlags.RateLimit) == CommandAttribFlags.RateLimit &&
+        return !CommandAttrib.HasFlag(CommandAttribFlags.RateLimit) &&
                CommandRateLimit != TimeSpan.Zero && ip.TimeStamp - _lastExecute < CommandRateLimit.TotalSeconds;
     }
     //For internal invoke command
@@ -183,7 +183,7 @@ public sealed class CommandInstance : IDisposable
         return new CommandProperties
         {
             Name = Name,
-            IsHidden = (CommandAttrib & CommandAttribFlags.Hidden) == CommandAttribFlags.Hidden,
+            IsHidden = CommandAttrib.HasFlag(CommandAttribFlags.Hidden),
             CommandDescription = CommandDescription,
             CommandShortDescription = CommandShortDescription,
             CommandAlias = CommandAlias,

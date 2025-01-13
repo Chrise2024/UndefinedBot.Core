@@ -10,7 +10,7 @@ public sealed class UserCommandSource : BaseCommandSource
 
     public override bool HasAuthorityLevel(CommandSourceAuthority authorityLevel)
     {
-        return (CurrentCommandAttrib & CommandAttribFlags.IgnoreAuthority) == CommandAttribFlags.IgnoreAuthority ||
+        return CurrentCommandAttrib.HasFlag(CommandAttribFlags.IgnoreAuthority) ||
                Authority >= authorityLevel;
     }
 
