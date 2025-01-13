@@ -1,7 +1,7 @@
 ﻿
 namespace UndefinedBot.Core.Utils;
 
-public sealed class CacheManager
+public sealed class CacheManager : IDisposable
 {
     private readonly Dictionary<string, StorageCacheProperty> _storageCache = [];
     private readonly Dictionary<string, FileCacheProperty> _fileCache = [];
@@ -85,6 +85,13 @@ public sealed class CacheManager
     public T? GetStorage<T>(string cacheName) where T : notnull
     {
         return (T)_storageCache[cacheName].Content;
+    }
+
+    public void Dispose()
+    {
+        _fileCache.Clear();
+        _storageCache.Clear();
+        _cacheLogger.Dispose();
     }
 }
 

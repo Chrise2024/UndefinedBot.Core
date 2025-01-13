@@ -7,7 +7,7 @@ using UndefinedBot.Core.Utils;
 
 namespace UndefinedBot.Core.Command;
 
-public sealed class CommandInstance
+public sealed class CommandInstance : IDisposable
 {
     public const CommandAttribFlags DefaultCommandAttrib = CommandAttribFlags.AllowAlias |
                                                            CommandAttribFlags.ActiveInFriend |
@@ -192,10 +192,14 @@ public sealed class CommandInstance
             CommandUsage = CommandUsage
         };
     }
+    public void Dispose()
+    {
+        CommandAlias.Clear();
+        Cache.Dispose();
+        RootNode.Dispose();
+    }
 }
-
-[Serializable]
-public sealed class CommandProperties
+public readonly struct CommandProperties()
 {
     public string Name { get; init; } = "";
     public bool IsHidden { get; init; }

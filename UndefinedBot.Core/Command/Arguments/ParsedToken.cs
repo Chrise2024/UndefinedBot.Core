@@ -3,8 +3,7 @@
 /// <summary>
 /// Prepare to use 'ProtoBuf' or string byte array to transmit communication content
 /// </summary>
-[Serializable]
-public sealed class ParsedToken(ParsedTokenTypes tokenType, byte[] content)
+public readonly struct ParsedToken(ParsedTokenTypes tokenType, byte[] content)
 {
     public ParsedTokenTypes TokenType => tokenType;
     public byte[] SerializedContent => content;

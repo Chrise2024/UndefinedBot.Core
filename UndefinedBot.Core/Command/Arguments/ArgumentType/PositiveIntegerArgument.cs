@@ -19,7 +19,7 @@ public sealed class PositiveIntegerArgument(IArgumentRange? range = null) : IArg
 
     public static ulong GetPositiveInteger(string key, CommandContext ctx)
     {
-        if (ctx.ArgumentReference.TryGetValue(key, out ParsedToken? token))
+        if (ctx.ArgumentReference.TryGetValue(key, out ParsedToken token))
         {
             return GetExactTypeValue(token);
         }

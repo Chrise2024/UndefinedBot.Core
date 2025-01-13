@@ -140,4 +140,15 @@ public sealed class VariableNode(string name, IArgumentType argumentType) : ICom
             ? $"[{ArgumentType.ArgumentTypeName}]"
             : $"[{ArgumentType.ArgumentTypeName} ({ArgumentType.Range.GetRangeDescription()})]";
     }
+    
+    public void Dispose()
+    {
+        foreach (var child in Child)
+        {
+            child.Dispose();
+        }
+        Child.Clear();
+        NodeAction = null;
+        NodeRequire = null;
+    }
 }

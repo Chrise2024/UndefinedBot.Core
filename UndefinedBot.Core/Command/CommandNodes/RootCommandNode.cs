@@ -138,4 +138,15 @@ internal sealed class RootCommandNode(string name) : ICommandNode
     {
         return $"<{NodeName}>";
     }
+    public void Dispose()
+    {
+        foreach (var child in Child)
+        {
+            child.Dispose();
+        }
+        Child.Clear();
+        Parent = null;
+        NodeAction = null;
+        NodeRequire = null;
+    }
 }

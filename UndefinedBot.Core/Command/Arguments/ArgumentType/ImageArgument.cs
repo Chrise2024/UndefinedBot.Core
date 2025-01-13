@@ -19,7 +19,7 @@ public sealed class ImageArgument : IArgumentType
 
     public static ImageContent GetImage(string key, CommandContext ctx)
     {
-        if (ctx.ArgumentReference.TryGetValue(key, out ParsedToken? token))
+        if (ctx.ArgumentReference.TryGetValue(key, out ParsedToken token))
         {
             return GetExactTypeValue(token);
         }

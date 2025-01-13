@@ -8,13 +8,13 @@ using UndefinedBot.Core.Utils;
 
 namespace UndefinedBot.Core.Adapter;
 
-public interface IAdapterInstance
+public interface IAdapterInstance : IDisposable
 {
     string Id { get; }
     string Name { get; }
     string Platform { get; }
     string Protocol { get; }
-    public List<long> GroupId { get; }
+    public long[] GroupId { get; }
     public string CommandPrefix { get; }
 
     /// <summary>
@@ -34,9 +34,9 @@ public abstract class BaseAdapter : IAdapterInstance
     public abstract string Name { get; }
     public abstract string Platform { get; }
     public abstract string Protocol { get; }
-    public List<long> GroupId { get; }
+    public long[] GroupId { get; }
     public string CommandPrefix { get; }
-    protected ILogger Logger => new BaseLogger(["Adapter",Name]);
+    protected ExtendableLogger Logger => new (["Adapter",Name]);
     protected AdapterConfigData AdapterConfig { get; }
     protected string AdapterPath => Path.GetDirectoryName(GetType().Assembly.Location) ?? "/";
     protected BaseAdapter()
@@ -101,6 +101,13 @@ public abstract class BaseAdapter : IAdapterInstance
     /// <param name="paras">Parameters</param>
     /// <returns></returns>
     public abstract byte[]? HandleDefaultAction(DefaultActionType action, object? paras);
+
+    public virtual void Dispose()
+    {
+        Array.Clear(GroupId);
+        Logger.Dispose();
+        GC.SuppressFinalize(this);
+    }
 }
 
 public enum DefaultActionType
@@ -124,7 +131,7 @@ public sealed class AdapterConfigData
     public string EntryFile { get; init; } = "";
     public string Description { get; init; } = "";
     public string CommandPrefix { get; init; } = "!";
-    public List<long> GroupId { get; init; } = [];
+    public long[] GroupId { get; init; } = [];
     public JsonNode OriginalConfig { get; private set; } = JsonNode.Parse("{}")!;
 
     internal void Implement(JsonNode oc)
@@ -136,22 +143,6 @@ public sealed class AdapterConfigData
     {
         return !(string.IsNullOrEmpty(EntryFile) || string.IsNullOrEmpty(CommandPrefix));
     }
-}
-
-/// <summary>
-/// This class is for program record adapter's properties,include information defined in assembly
-/// </summary>
-[Obsolete("These Properties Is Already Included in IAdapterInstance", true)]
-[Serializable]
-public sealed class AdapterProperties(BaseAdapter baseInstance, AdapterConfigData originData)
-{
-    public string Id => baseInstance.Id;
-    public string Name => baseInstance.Name;
-    public string Platform => baseInstance.Platform;
-    public string Protocol => baseInstance.Protocol;
-    public List<long> GroupIds => originData.GroupId;
-    public string Description => originData.Description;
-    public string CommandPrefix => originData.CommandPrefix;
 }
 
 internal class AdapterLoadFailedException(string? message) : Exception(message);

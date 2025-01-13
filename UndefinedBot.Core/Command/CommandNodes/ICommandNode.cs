@@ -9,7 +9,7 @@ namespace UndefinedBot.Core.Command.CommandNodes;
 public delegate Task CommandNodeAction(CommandContext ctx);
 
 //public delegate ICommandNode RegisterNodeAction(ICommandNode parentNode);
-public interface ICommandNode
+public interface ICommandNode : IDisposable
 {
     public string NodeName { get; }
     public CommandAttribFlags CommandAttrib { get; }

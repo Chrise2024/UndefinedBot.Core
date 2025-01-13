@@ -1,12 +1,9 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
-// The .NET Foundation licenses this file to you under the MIT license.
-
-using UndefinedBot.Core.Command;
+﻿using UndefinedBot.Core.Command;
 using UndefinedBot.Core.Utils;
 
 namespace UndefinedBot.Core.Adapter;
 
-public sealed class ActionInvokeManager(CommandInvokeProperties cip, ExtendableLogger logger)
+public sealed class ActionInvokeManager(CommandInvokeProperties cip, ExtendableLogger logger) : IDisposable
 {
     internal static Dictionary<string, IAdapterInstance> AdapterInstanceReference { get; set; } = [];
     private CommandInvokeProperties InvokeProperties => cip;
@@ -48,5 +45,9 @@ public sealed class ActionInvokeManager(CommandInvokeProperties cip, ExtendableL
         AdapterInstanceReference.Clear();
         AdapterInstanceReference = ir.ToDictionary(k => k.Id,v => v);
         GC.Collect();
+    }
+    public void Dispose()
+    {
+        Logger.Dispose();
     }
 }

@@ -141,4 +141,15 @@ public sealed class SubCommandNode(string name) : ICommandNode
     {
         return $"<{NodeName}>";
     }
+    
+    public void Dispose()
+    {
+        foreach (var child in Child)
+        {
+            child.Dispose();
+        }
+        Child.Clear();
+        NodeAction = null;
+        NodeRequire = null;
+    }
 }

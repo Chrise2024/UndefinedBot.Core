@@ -5,14 +5,14 @@ using UndefinedBot.Core.Utils;
 
 namespace UndefinedBot.Core.NetWork;
 
-public sealed class HttpRequest(string pluginName)
+public sealed class HttpRequest(string pluginName) : IDisposable
 {
     private readonly HttpClient _httpClient = new()
     {
         Timeout = TimeSpan.FromSeconds(10)
     };
 
-    private ILogger HttpRequestLogger => new BaseLogger(["Network",pluginName, "HttpRequest"]);
+    private FixedLogger HttpRequestLogger => new (["Network",pluginName, "HttpRequest"]);
 
     public async Task<string> Post([StringSyntax("Uri")] string url, object? content = null)
     {
@@ -82,5 +82,9 @@ public sealed class HttpRequest(string pluginName)
     private void PrintExceptionInfo(Exception ex)
     {
         HttpRequestLogger.Error(ex, "Error Occured, Error Information:");
+    }
+    public void Dispose()
+    {
+        _httpClient.Dispose();
     }
 }

@@ -74,7 +74,7 @@ internal static class CommandInvokeManager
         {
             ctx.Logger.Error(ex, "Command Failed");
         }
-
+        ctx.Dispose();
         targetCommand.Cache.UpdateCache();
         return CommandInvokeResult.SuccessInvoke;
     }

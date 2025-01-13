@@ -8,7 +8,7 @@ namespace UndefinedBot.Core.Command;
 /// <summary>
 /// Context of command,containing apis, calling info and arguments
 /// </summary>
-public sealed class CommandContext
+public sealed class CommandContext : IDisposable
 {
     public string PluginName { get; }
     public string CommandName { get; }
@@ -31,6 +31,13 @@ public sealed class CommandContext
         Cache = commandInstance.Cache;
         Request = new HttpRequest(commandInstance.PluginId);
         ActionInvoke = new(ip, Logger);
+    }
+    public void Dispose()
+    {
+        Logger.Dispose();
+        Request.Dispose();
+        ActionInvoke.Dispose();
+        ArgumentReference.Clear();
     }
 }
 

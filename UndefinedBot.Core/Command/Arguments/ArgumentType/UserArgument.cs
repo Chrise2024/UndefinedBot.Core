@@ -19,7 +19,7 @@ public sealed class UserArgument(IArgumentRange? range = null) : IArgumentType
 
     public static string GetUser(string key, CommandContext ctx)
     {
-        if (ctx.ArgumentReference.TryGetValue(key, out ParsedToken? token))
+        if (ctx.ArgumentReference.TryGetValue(key, out ParsedToken token))
         {
             return GetExactTypeValue(token);
         }
