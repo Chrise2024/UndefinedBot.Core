@@ -21,7 +21,7 @@ internal sealed partial class MsgHandler(AdapterConfigData adapterConfig,ILogger
     private ILogger Logger =>parentLogger.GetSubLogger("MsgHandler");
     private AdapterConfigData AdapterConfig => adapterConfig;
 
-    public (CommandInvokeProperties?, BaseCommandSource?, List<ParsedToken>?) HandleMsg(JsonNode msgJson)
+    public (CommandInvokeProperties?, BaseCommandSource?, ParsedToken[]?) HandleMsg(JsonNode msgJson)
     {
         if (!IsGroupMessageToHandle(msgJson))
         {
@@ -38,7 +38,7 @@ internal sealed partial class MsgHandler(AdapterConfigData adapterConfig,ILogger
         CommandInvokeProperties cip =
             CommandInvokeProperties.Group(cmdName, msgBody.UserId, msgBody.MessageId, msgBody.Time);
         UserCommandSource ucs = UserCommandSource.Group(msgBody.UserId, msgBody.GroupId, msgBody.Sender.Nickname, 0);
-        return (cip, ucs, tokens);
+        return (cip, ucs, tokens.ToArray());
     }
 
     private bool IsGroupMessageToHandle(JsonNode msgJson)

@@ -5,9 +5,6 @@ using UndefinedBot.Core.Command.CommandSource;
 
 namespace UndefinedBot.Core.Command.CommandNodes;
 
-[Obsolete("wasted", true)]
-public delegate Task CommandNodeAction(CommandContext ctx);
-
 //public delegate ICommandNode RegisterNodeAction(ICommandNode parentNode);
 public interface ICommandNode : IDisposable
 {
@@ -24,7 +21,7 @@ public interface ICommandNode : IDisposable
     public ICommandNode Then(ICommandNode nextNode);
     public ICommandNode Require(Func<CommandInvokeProperties,BaseCommandSource,bool> predicate);
     public ICommandNode Execute(Func<CommandContext, BaseCommandSource, Task> action);
-    internal Task<ICommandResult> ExecuteSelf(CommandContext ctx, BaseCommandSource source, List<ParsedToken> tokens);
+    internal Task<ICommandResult> ExecuteSelf(CommandContext ctx, BaseCommandSource source, ParsedToken[] tokens);
     public string GetArgumentRequire();
 }
 

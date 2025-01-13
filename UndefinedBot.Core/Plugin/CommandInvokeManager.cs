@@ -11,7 +11,7 @@ namespace UndefinedBot.Core.Plugin;
 
 internal static class CommandInvokeManager
 {
-    internal static Dictionary<string, CommandInstance[]> CommandInstanceIndexByAdapter { get; set; } = [];
+    internal static Dictionary<string, CommandInstance[]> CommandInstanceIndexByAdapter { get; private set; } = [];
 
     public static async Task<CommandInvokeResult> InvokeCommand(CommandInvokeProperties invokeProperties,
         BaseCommandSource source)
@@ -74,6 +74,7 @@ internal static class CommandInvokeManager
         {
             ctx.Logger.Error(ex, "Command Failed");
         }
+
         ctx.Dispose();
         targetCommand.Cache.UpdateCache();
         return CommandInvokeResult.SuccessInvoke;
@@ -133,7 +134,7 @@ internal static class HelpCommandHandler
                            $"使用#help+具体指令查看使用方法\ne.g. {invokeProperties.CommandPrefix}help help";
         }
 
-        if (invokeProperties.Tokens.Count == 0 || invokeProperties.Tokens[0].TokenType != ParsedTokenTypes.Normal)
+        if (invokeProperties.Tokens.Length == 0 || invokeProperties.Tokens[0].TokenType != ParsedTokenTypes.Normal)
         {
             ctx.ActionInvoke.InvokeDefaultAction(DefaultActionType.SendGroupMsg, new { Text = BaseHelpText });
             return;

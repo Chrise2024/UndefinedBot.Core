@@ -30,21 +30,48 @@ public interface IAdapterInstance : IDisposable
 
 public abstract class BaseAdapter : IAdapterInstance
 {
+    /// <summary>
+    /// The identifier of the adapter, must be unique
+    /// </summary>
     public abstract string Id { get; }
+
     public abstract string Name { get; }
+
+    /// <summary>
+    /// The platform adapter will be used
+    /// </summary>
     public abstract string Platform { get; }
+
+    /// <summary>
+    /// The protocol adapter will used
+    /// </summary>
     public abstract string Protocol { get; }
+
+    /// <summary>
+    /// Groups adapter will work on
+    /// </summary>
     public long[] GroupId { get; }
+
+    /// <summary>
+    /// Message prefix to be seen as command
+    /// </summary>
     public string CommandPrefix { get; }
-    protected ExtendableLogger Logger => new (["Adapter",Name]);
+
+    protected ExtendableLogger Logger => new(["Adapter", Name]);
     protected AdapterConfigData AdapterConfig { get; }
+
+    /// <summary>
+    /// The location of the adapter folder
+    /// </summary>
     protected string AdapterPath => Path.GetDirectoryName(GetType().Assembly.Location) ?? "/";
+
     protected BaseAdapter()
     {
         AdapterConfig = GetAdapterConfig();
         GroupId = AdapterConfig.GroupId;
         CommandPrefix = AdapterConfig.CommandPrefix;
     }
+
     private AdapterConfigData GetAdapterConfig()
     {
         JsonNode originJson = FileIO.ReadAsJson(Path.Join(AdapterPath, "adapter.json")) ??
@@ -54,9 +81,11 @@ public abstract class BaseAdapter : IAdapterInstance
         {
             throw new AdapterLoadFailedException("Invalid Config File");
         }
+
         adapterConfigData.Implement(originJson);
         return adapterConfigData;
     }
+
     /// <summary>
     /// After processing message, use it to submit this event
     /// </summary>
@@ -66,10 +95,13 @@ public abstract class BaseAdapter : IAdapterInstance
     protected async void SubmitCommandEvent(
         CommandInvokeProperties invokeProperties,
         BaseCommandSource source,
-        List<ParsedToken> tokens
+        ParsedToken[] tokens
     )
     {
-        CommandInvokeResult result = await CommandInvokeManager.InvokeCommand(invokeProperties.Implement(Id, Platform, Protocol, tokens,CommandPrefix), source);
+        CommandInvokeResult result =
+            await CommandInvokeManager.InvokeCommand(
+                invokeProperties.Implement(Id, Platform, Protocol, tokens, CommandPrefix),
+                source);
         switch (result)
         {
             case CommandInvokeResult.SuccessInvoke:
@@ -85,8 +117,8 @@ public abstract class BaseAdapter : IAdapterInstance
                 Logger.Warn("Command Reach Rate Limit");
                 break;
         }
-        //CommandEventBus.InvokeCommandEvent(invokeProperties.Implement(Id, Platform, Protocol, tokens), source);
     }
+
     /// <summary>
     /// Handle Custom Action Invoked by Command
     /// </summary>
@@ -94,6 +126,7 @@ public abstract class BaseAdapter : IAdapterInstance
     /// <param name="paras">Parameters</param>
     /// <returns></returns>
     public abstract byte[]? HandleCustomAction(string action, byte[]? paras);
+
     /// <summary>
     /// Handle Default Action Invoked by Command
     /// </summary>

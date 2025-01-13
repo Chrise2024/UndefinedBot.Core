@@ -54,14 +54,13 @@ public sealed class CommandInstance : IDisposable
                (allowAlias && CommandAlias.FindIndex(x => x.Equals(cip.Command, comparison)) != -1);
     }
 
-    //Maybe Thread Unsafe
     internal bool IsReachRateLimit(CommandInvokeProperties ip)
     {
         return !CommandAttrib.HasFlag(CommandAttribFlags.RateLimit) &&
                CommandRateLimit != TimeSpan.Zero && ip.TimeStamp - _lastExecute < CommandRateLimit.TotalSeconds;
     }
     //For internal invoke command
-    internal async Task<ICommandResult> Run(CommandContext ctx, BaseCommandSource source, List<ParsedToken> tokens)
+    internal async Task<ICommandResult> Run(CommandContext ctx, BaseCommandSource source, ParsedToken[] tokens)
     {
         _lastExecute = ctx.InvokeProperties.TimeStamp;
         source.SetCurrentCommandAttrib(CommandAttrib);
@@ -148,10 +147,10 @@ public sealed class CommandInstance : IDisposable
     /// <summary>
     /// Add command action
     /// </summary>
-    /// <param name="action"><see cref="UndefinedBot.Core.Command.CommandNodes.CommandNodeAction"/></param>
+    /// <param name="action"><see cref="System.Func{CommandContext, BaseCommandSource, Task}"/></param>
     /// <example>
     /// <code>
-    ///     this.Execute(async (ctx) => {
+    ///     this.Execute(async (ctx,source) => {
     ///         ...
     ///     });
     /// </code>

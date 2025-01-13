@@ -18,8 +18,14 @@ public interface IPluginInstance : IDisposable
 
 public abstract class BasePlugin : IPluginInstance
 {
+    /// <summary>
+    /// Plugin's identifier,must be unique
+    /// </summary>
     public abstract string Id { get; }
     public abstract string Name { get; }
+    /// <summary>
+    /// Adapter's identifier that plugin will docker on
+    /// </summary>
     public abstract string TargetAdapterId { get; }
     public long[] GroupId { get; }
     public abstract void Initialize();
@@ -55,7 +61,7 @@ public abstract class BasePlugin : IPluginInstance
     /// Command Name to be Called
     /// </param>
     /// <returns>
-    /// CommandInstance
+    /// <see cref="CommandInstance"/>
     /// </returns>
     protected CommandInstance RegisterCommand(string commandName)
     {

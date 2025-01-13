@@ -52,10 +52,10 @@ public sealed class VariableNode(string name, IArgumentType argumentType) : ICom
     /// <summary>
     /// Set node's action
     /// </summary>
-    /// <param name="action"><see cref="UndefinedBot.Core.Command.CommandNodes.CommandNodeAction"/></param>
+    /// <param name="action"><see cref="System.Func{CommandContext, BaseCommandSource, Task}"/></param>
     /// <example>
     /// <code>
-    ///     Node.Execute(async (ctx) => {
+    ///     Node.Execute(async (ctx,source) => {
     ///         ...
     ///     });
     /// </code>
@@ -67,9 +67,9 @@ public sealed class VariableNode(string name, IArgumentType argumentType) : ICom
         return this;
     }
     public async Task<ICommandResult> ExecuteSelf(CommandContext ctx, BaseCommandSource source,
-        List<ParsedToken> tokens)
+        ParsedToken[] tokens)
     {
-        if (tokens.Count == 0)
+        if (tokens.Length == 0)
         {
             return new TooLessArgument([$"[{GetArgumentRequire()}]"]);
         }
@@ -80,7 +80,7 @@ public sealed class VariableNode(string name, IArgumentType argumentType) : ICom
         }
 
         ctx.ArgumentReference[NodeName] = tokens[0];
-        if (NodeAction is not null && (tokens.Count == 1 || Child.Count == 0))
+        if (NodeAction is not null && (tokens.Length == 1 || Child.Count == 0))
         {
             //无后续token或无子节点 且 定义了节点Action，执行自身
             try
@@ -119,7 +119,7 @@ public sealed class VariableNode(string name, IArgumentType argumentType) : ICom
         }
 
         //无可执行子节点，对应token异常
-        if (tokens.Count == 1)
+        if (tokens.Length == 1)
         {
             return new TooLessArgument(
                 result.OfType<TooLessArgument>().SelectMany(item => item.RequiredType).ToList()
