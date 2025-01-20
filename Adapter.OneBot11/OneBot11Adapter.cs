@@ -1,5 +1,6 @@
 ﻿using System.Text.Json;
 using UndefinedBot.Core.Adapter;
+using UndefinedBot.Core.Adapter.ActionParam;
 
 namespace Adapter.OneBot11;
 
@@ -18,13 +19,13 @@ public sealed class OneBot11Adapter : BaseAdapter
         MainLoopInstance = hs.ExecuteAsync(Cts.Token);
     }
 
-    public override byte[]? HandleCustomAction(string action, byte[]? paras)
+    public override byte[]? HandleCustomAction(string action, ActionContentWrapper<CustomActionParam>? paras)
     {
         //None
         return null;
     }
 
-    public override byte[]? HandleDefaultAction(DefaultActionType action, object? paras)
+    public override byte[]? HandleDefaultAction<T>(DefaultActionType action, ActionContentWrapper<T>? paras)
     {
         Console.WriteLine(JsonSerializer.Serialize(paras));
         //None

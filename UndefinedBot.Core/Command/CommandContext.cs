@@ -21,6 +21,11 @@ public sealed class CommandContext : IDisposable
     public ActionInvokeManager ActionInvoke { get; }
     internal Dictionary<string, ParsedToken> ArgumentReference { get; set; } = [];
 
+    public void SendFeedback(string message)
+    {
+        //ActionInvoke.InvokeDefaultAction();
+    }
+
     internal CommandContext(CommandInstance commandInstance, CommandInvokeProperties ip)
     {
         PluginName = commandInstance.PluginId;

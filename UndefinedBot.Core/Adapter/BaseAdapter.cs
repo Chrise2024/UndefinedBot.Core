@@ -1,5 +1,6 @@
 ﻿using System.Text.Json;
 using System.Text.Json.Nodes;
+using UndefinedBot.Core.Adapter.ActionParam;
 using UndefinedBot.Core.Command;
 using UndefinedBot.Core.Command.Arguments;
 using UndefinedBot.Core.Command.CommandSource;
@@ -20,12 +21,12 @@ public interface IAdapterInstance : IDisposable
     /// <summary>
     /// Handle custom action invoked by command
     /// </summary>
-    byte[]? HandleCustomAction(string action, byte[]? paras);
+    byte[]? HandleCustomAction(string action, ActionContentWrapper<CustomActionParam>? paras);
 
     /// <summary>
     /// Handle default action invoked by command
     /// </summary>
-    byte[]? HandleDefaultAction(DefaultActionType action, object? paras);
+    byte[]? HandleDefaultAction<T>(DefaultActionType action, ActionContentWrapper<T>? paras) where T : IActionParam;
 }
 
 public abstract class BaseAdapter : IAdapterInstance
@@ -125,7 +126,7 @@ public abstract class BaseAdapter : IAdapterInstance
     /// <param name="action">Action Name</param>
     /// <param name="paras">Parameters</param>
     /// <returns></returns>
-    public abstract byte[]? HandleCustomAction(string action, byte[]? paras);
+    public abstract byte[]? HandleCustomAction(string action, ActionContentWrapper<CustomActionParam>? paras);
 
     /// <summary>
     /// Handle Default Action Invoked by Command
@@ -133,7 +134,7 @@ public abstract class BaseAdapter : IAdapterInstance
     /// <param name="action">Action Type</param>
     /// <param name="paras">Parameters</param>
     /// <returns></returns>
-    public abstract byte[]? HandleDefaultAction(DefaultActionType action, object? paras);
+    public abstract byte[]? HandleDefaultAction<T>(DefaultActionType action, ActionContentWrapper<T>? paras) where T : IActionParam;
 
     public virtual void Dispose()
     {
@@ -141,18 +142,6 @@ public abstract class BaseAdapter : IAdapterInstance
         Logger.Dispose();
         GC.SuppressFinalize(this);
     }
-}
-
-public enum DefaultActionType
-{
-    SendPrivateMsg = 0,
-    SendGroupMsg = 1,
-    RecallMessage = 2,
-    GetMessage = 3,
-    GetGroupMemberInfo = 4,
-    GetGroupMemberList = 5,
-    GroupMute = 6,
-    GroupKick = 7,
 }
 
 /// <summary>

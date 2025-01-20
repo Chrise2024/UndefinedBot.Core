@@ -1,6 +1,7 @@
 ﻿using System.Text;
 using System.Text.Json;
 using UndefinedBot.Core.Adapter;
+using UndefinedBot.Core.Adapter.ActionParam;
 using UndefinedBot.Core.Command;
 using UndefinedBot.Core.Command.Arguments;
 using UndefinedBot.Core.Command.CommandNodes;
@@ -136,7 +137,13 @@ internal static class HelpCommandHandler
 
         if (invokeProperties.Tokens.Length == 0 || invokeProperties.Tokens[0].TokenType != ParsedTokenTypes.Normal)
         {
-            ctx.ActionInvoke.InvokeDefaultAction(DefaultActionType.SendGroupMsg, new { Text = BaseHelpText });
+            ctx.ActionInvoke.InvokeDefaultAction(DefaultActionType.SendGroupMsg,
+                ActionContentWrapper<SendGroupMgsParam>.Common(invokeProperties.SourceId.ToString(),
+                    new SendGroupMgsParam
+                    {
+                        Message = BaseHelpText
+                    })
+                );
             return;
         }
 
@@ -156,11 +163,24 @@ internal static class HelpCommandHandler
                     JsonSerializer.Serialize(cp.CommandAlias)
                 ]
             );
-            ctx.ActionInvoke.InvokeDefaultAction(DefaultActionType.SendGroupMsg, new { Text = txt });
+            ctx.ActionInvoke.InvokeDefaultAction(DefaultActionType.SendGroupMsg,
+                ActionContentWrapper<SendGroupMgsParam>.Common(invokeProperties.SourceId.ToString(),
+                    new SendGroupMgsParam
+                    {
+                        Message = txt
+                    })
+            );
         }
         else
         {
-            ctx.ActionInvoke.InvokeDefaultAction(DefaultActionType.SendGroupMsg, new { Text = "咦，没有这个指令" });
+            
+            ctx.ActionInvoke.InvokeDefaultAction(DefaultActionType.SendGroupMsg,
+                ActionContentWrapper<SendGroupMgsParam>.Common(invokeProperties.SourceId.ToString(),
+                    new SendGroupMgsParam
+                    {
+                        Message = "咦，没有这个指令"
+                    })
+            );
             ctx.Logger.Warn($"Command Not Found: <{cmd}>");
         }
     }
