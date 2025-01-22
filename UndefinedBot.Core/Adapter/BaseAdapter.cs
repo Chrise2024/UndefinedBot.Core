@@ -1,6 +1,5 @@
 ﻿using System.Text.Json;
 using System.Text.Json.Nodes;
-using UndefinedBot.Core.Adapter.ActionParam;
 using UndefinedBot.Core.Command;
 using UndefinedBot.Core.Command.Arguments;
 using UndefinedBot.Core.Command.CommandSource;
@@ -21,12 +20,12 @@ public interface IAdapterInstance : IDisposable
     /// <summary>
     /// Handle custom action invoked by command
     /// </summary>
-    byte[]? HandleCustomAction(string action, ActionContentWrapper<CustomActionParam>? paras);
+    byte[]? HandleCustomAction(string action, CustomActionParameterWrapper? paras);
 
     /// <summary>
     /// Handle default action invoked by command
     /// </summary>
-    byte[]? HandleDefaultAction<T>(DefaultActionType action, ActionContentWrapper<T>? paras) where T : IActionParam;
+    byte[]? HandleDefaultAction(DefaultActionType action, DefaultActionParameterWrapper? paras);
 }
 
 public abstract class BaseAdapter : IAdapterInstance
@@ -126,7 +125,7 @@ public abstract class BaseAdapter : IAdapterInstance
     /// <param name="action">Action Name</param>
     /// <param name="paras">Parameters</param>
     /// <returns></returns>
-    public abstract byte[]? HandleCustomAction(string action, ActionContentWrapper<CustomActionParam>? paras);
+    public abstract byte[]? HandleCustomAction(string action, CustomActionParameterWrapper? paras);
 
     /// <summary>
     /// Handle Default Action Invoked by Command
@@ -134,7 +133,7 @@ public abstract class BaseAdapter : IAdapterInstance
     /// <param name="action">Action Type</param>
     /// <param name="paras">Parameters</param>
     /// <returns></returns>
-    public abstract byte[]? HandleDefaultAction<T>(DefaultActionType action, ActionContentWrapper<T>? paras) where T : IActionParam;
+    public abstract byte[]? HandleDefaultAction(DefaultActionType action, DefaultActionParameterWrapper? paras);
 
     public virtual void Dispose()
     {

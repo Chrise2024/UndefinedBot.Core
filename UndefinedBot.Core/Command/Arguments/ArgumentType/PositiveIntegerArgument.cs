@@ -1,4 +1,5 @@
 ﻿using UndefinedBot.Core.Command.Arguments.ArgumentRange;
+using UndefinedBot.Core.Command.Arguments.TokenContentType;
 
 namespace UndefinedBot.Core.Command.Arguments.ArgumentType;
 
@@ -10,8 +11,8 @@ public sealed class PositiveIntegerArgument(IArgumentRange? range = null) : IArg
 
     public bool IsValid(ParsedToken token)
     {
-        return token.TokenType == ParsedTokenTypes.Normal &&
-               ulong.TryParse(token.SerializedContent, out ulong val) &&
+        return token is { TokenType: ParsedTokenTypes.Text, Content: TextContent content } &&
+               ulong.TryParse(content.Text, out ulong val) &&
                (Range?.InRange(val) ?? true);
     }
 
@@ -29,7 +30,8 @@ public sealed class PositiveIntegerArgument(IArgumentRange? range = null) : IArg
 
     private static ulong GetExactTypeValue(ParsedToken token)
     {
-        return token.TokenType == ParsedTokenTypes.Normal && ulong.TryParse(token.SerializedContent, out ulong val)
+        return token is { TokenType: ParsedTokenTypes.Text, Content: TextContent content } &&
+               ulong.TryParse(content.Text, out ulong val)
             ? val
             : throw new ArgumentInvalidException("Token Is Not Valid Positive Integer");
     }

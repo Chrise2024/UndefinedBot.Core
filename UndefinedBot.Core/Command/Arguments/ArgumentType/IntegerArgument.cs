@@ -1,4 +1,5 @@
 ﻿using UndefinedBot.Core.Command.Arguments.ArgumentRange;
+using UndefinedBot.Core.Command.Arguments.TokenContentType;
 
 namespace UndefinedBot.Core.Command.Arguments.ArgumentType;
 
@@ -10,8 +11,8 @@ public sealed class IntegerArgument(IArgumentRange? range = null) : IArgumentTyp
 
     public bool IsValid(ParsedToken token)
     {
-        return token.TokenType == ParsedTokenTypes.Normal &&
-               long.TryParse(token.SerializedContent, out long val) &&
+        return token is { TokenType: ParsedTokenTypes.Text, Content: TextContent content } &&
+               long.TryParse(content.Text, out long val) &&
                (Range?.InRange(val) ?? true);
     }
 
@@ -29,7 +30,8 @@ public sealed class IntegerArgument(IArgumentRange? range = null) : IArgumentTyp
 
     private static long GetExactTypeValue(ParsedToken token)
     {
-        return token.TokenType == ParsedTokenTypes.Normal && long.TryParse(token.SerializedContent, out long val)
+        return token is { TokenType: ParsedTokenTypes.Text, Content: TextContent content } &&
+               long.TryParse(content.Text, out long val)
             ? val
             : throw new ArgumentInvalidException("Token Is Not Integer");
     }

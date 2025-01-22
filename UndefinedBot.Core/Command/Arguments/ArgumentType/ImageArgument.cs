@@ -1,6 +1,7 @@
 ﻿using System.Text.Json;
 using System.Text.RegularExpressions;
 using UndefinedBot.Core.Command.Arguments.ArgumentRange;
+using UndefinedBot.Core.Command.Arguments.TokenContentType;
 
 namespace UndefinedBot.Core.Command.Arguments.ArgumentType;
 
@@ -29,16 +30,8 @@ public sealed class ImageArgument : IArgumentType
 
     private static ImageContent GetExactTypeValue(ParsedToken token)
     {
-        return token.TokenType == ParsedTokenTypes.Image
-            ? JsonSerializer.Deserialize<ImageContent>(token.SerializedContent)!
+        return token is { TokenType: ParsedTokenTypes.Image, Content: ImageContent img }
+            ? img
             : throw new ArgumentInvalidException("Token Is Not Image");
     }
-}
-
-public sealed class ImageContent(string imageUrl, string imageUnique, int? width = null, int? height = null)
-{
-    public string ImageUrl => imageUrl;
-    public string ImageUnique => imageUnique;
-    public int? Width => width;
-    public int? Height => height;
 }

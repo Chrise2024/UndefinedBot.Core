@@ -1,6 +1,5 @@
-﻿using System.Text;
-using System.Text.RegularExpressions;
-using UndefinedBot.Core.Command.Arguments.ArgumentRange;
+﻿using UndefinedBot.Core.Command.Arguments.ArgumentRange;
+using UndefinedBot.Core.Command.Arguments.TokenContentType;
 
 namespace UndefinedBot.Core.Command.Arguments.ArgumentType;
 
@@ -17,7 +16,7 @@ public sealed class UserArgument(IArgumentRange? range = null) : IArgumentType
 
     public object GetValue(ParsedToken token) => GetExactTypeValue(token);
 
-    public static string GetUser(string key, CommandContext ctx)
+    public static UserContent GetUser(string key, CommandContext ctx)
     {
         if (ctx.ArgumentReference.TryGetValue(key, out ParsedToken token))
         {
@@ -30,10 +29,10 @@ public sealed class UserArgument(IArgumentRange? range = null) : IArgumentType
     /// <summary>
     /// 'User' may be a string of number(id) ?
     /// </summary>
-    private static string GetExactTypeValue(ParsedToken token)
+    private static UserContent GetExactTypeValue(ParsedToken token)
     {
-        return token.TokenType == ParsedTokenTypes.User
-            ? Encoding.UTF8.GetString(token.SerializedContent)
+        return token is { TokenType: ParsedTokenTypes.User, Content: UserContent user }
+            ? user
             : throw new ArgumentInvalidException("Token Is Not User");
     }
 }

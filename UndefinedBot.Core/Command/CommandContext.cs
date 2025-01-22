@@ -1,4 +1,5 @@
 ﻿using UndefinedBot.Core.Adapter;
+using UndefinedBot.Core.Adapter.ActionParam;
 using UndefinedBot.Core.NetWork;
 using UndefinedBot.Core.Utils;
 using UndefinedBot.Core.Command.Arguments;
@@ -20,10 +21,19 @@ public sealed class CommandContext : IDisposable
     public HttpRequest Request { get; }
     public ActionInvokeManager ActionInvoke { get; }
     internal Dictionary<string, ParsedToken> ArgumentReference { get; set; } = [];
-
     public void SendFeedback(string message)
     {
         //ActionInvoke.InvokeDefaultAction();
+        ActionInvoke.InvokeDefaultAction(
+            InvokeProperties.SubType == MessageSubType.Group
+                ? DefaultActionType.SendGroupMsg
+                : DefaultActionType.SendPrivateMsg,
+            DefaultActionParameterWrapper.Common(InvokeProperties.SourceId.ToString(),
+                new SendGroupMgsParam
+                {
+                    Message = message
+                })
+            );
     }
 
     internal CommandContext(CommandInstance commandInstance, CommandInvokeProperties ip)
@@ -32,11 +42,12 @@ public sealed class CommandContext : IDisposable
         CommandName = commandInstance.Name;
         CachePath = Path.Join(RootPath, "Cache", commandInstance.PluginId);
         InvokeProperties = ip;
-        Logger = new (["Command",commandInstance.PluginId, commandInstance.Name]);
+        Logger = new(["Command", commandInstance.PluginId, commandInstance.Name]);
         Cache = commandInstance.Cache;
         Request = new HttpRequest(commandInstance.PluginId);
         ActionInvoke = new(ip, Logger);
     }
+
     public void Dispose()
     {
         Logger.Dispose();
@@ -51,6 +62,6 @@ public sealed class CommandContext : IDisposable
 /// </summary>
 internal class HelpCommandContext(CommandInvokeProperties ip)
 {
-    public ExtendableLogger Logger => new ("Help");
+    public ExtendableLogger Logger => new("Help");
     public ActionInvokeManager ActionInvoke => new(ip, Logger);
 }

@@ -1,5 +1,5 @@
-﻿using System.Text.Json;
-using UndefinedBot.Core.Command.Arguments.ArgumentRange;
+﻿using UndefinedBot.Core.Command.Arguments.ArgumentRange;
+using UndefinedBot.Core.Command.Arguments.TokenContentType;
 
 namespace UndefinedBot.Core.Command.Arguments.ArgumentType;
 
@@ -13,10 +13,9 @@ public sealed class FileArgument : IArgumentType
     {
         return token.TokenType == ParsedTokenTypes.File;
     }
-
     public object GetValue(ParsedToken token) => GetExactTypeValue(token);
 
-    public static FileContent GetImage(string key, CommandContext ctx)
+    public static FileContent GetFile(string key, CommandContext ctx)
     {
         if (ctx.ArgumentReference.TryGetValue(key, out ParsedToken token))
         {
@@ -25,18 +24,10 @@ public sealed class FileArgument : IArgumentType
 
         throw new ArgumentInvalidException($"Undefined Argument: {key}");
     }
-
     private static FileContent GetExactTypeValue(ParsedToken token)
     {
-        return token.TokenType == ParsedTokenTypes.File
-            ? JsonSerializer.Deserialize<FileContent>(token.SerializedContent)!
+        return token is { TokenType: ParsedTokenTypes.File, Content: FileContent file }
+            ? file
             : throw new ArgumentInvalidException("Token Is Not File");
     }
-}
-
-public sealed class FileContent(string fileUrl, string fileUnique, int size)
-{
-    public string FileUrl => fileUrl;
-    public string FileUnique => fileUnique;
-    public int Size => size;
 }

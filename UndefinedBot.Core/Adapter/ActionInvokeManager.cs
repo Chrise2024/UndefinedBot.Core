@@ -1,5 +1,4 @@
-﻿using System.Diagnostics.CodeAnalysis;
-using UndefinedBot.Core.Adapter.ActionParam;
+﻿using UndefinedBot.Core.Adapter.ActionParam;
 using UndefinedBot.Core.Command;
 using UndefinedBot.Core.Utils;
 
@@ -10,7 +9,7 @@ public sealed class ActionInvokeManager(CommandInvokeProperties cip, ExtendableL
     internal static Dictionary<string, IAdapterInstance> AdapterInstanceReference { get; set; } = [];
     private CommandInvokeProperties InvokeProperties => cip;
     private ExtendableLogger Logger => logger;
-    public byte[]? InvokeDefaultAction<T>(DefaultActionType action, ActionContentWrapper<T>? paras = null) where T : IActionParam
+    public byte[]? InvokeDefaultAction(DefaultActionType action, DefaultActionParameterWrapper? paras = null)
     {
         try
         {
@@ -25,8 +24,7 @@ public sealed class ActionInvokeManager(CommandInvokeProperties cip, ExtendableL
 
         return null;
     }
-
-    public byte[]? InvokeCustomAction(string action, ActionContentWrapper<CustomActionParam>? paras = null)
+    public byte[]? InvokeCustomAction(string action, CustomActionParameterWrapper? paras = null)
     {
         try
         {
@@ -66,25 +64,47 @@ public enum DefaultActionType
     GroupKick = 7,
 }
 
-public class ActionContentWrapper<T> where T : IActionParam
+public class DefaultActionParameterWrapper
 {
     public string Target { get; init; }
-    public T? Content { get; init; }
-    private ActionContentWrapper(string target, T? content = default)
+    public IActionParam? Parameter { get; init; }
+    private DefaultActionParameterWrapper(string target, IActionParam? parameter = default)
     {
         Target = target;
-        Content = content;
+        Parameter = parameter;
     }
-    public static ActionContentWrapper<T> Direct(T content)
+    public static DefaultActionParameterWrapper Direct(IActionParam content)
     {
-        return new ActionContentWrapper<T>("", content);
+        return new DefaultActionParameterWrapper("", content);
     }
-    public static ActionContentWrapper<T> TargetOnly(string target)
+    public static DefaultActionParameterWrapper TargetOnly(string target)
     {
-        return new ActionContentWrapper<T>(target);
+        return new DefaultActionParameterWrapper(target);
     }
-    public static ActionContentWrapper<T> Common(string target, T content)
+    public static DefaultActionParameterWrapper Common(string target, IActionParam content)
     {
-        return new ActionContentWrapper<T>(target, content);
+        return new DefaultActionParameterWrapper(target, content);
+    }
+}
+public class CustomActionParameterWrapper
+{
+    public string Target { get; init; }
+    public byte[]? Parameter { get; init; }
+    private CustomActionParameterWrapper(string target, byte[]? parameter = null)
+    {
+        Target = target;
+        Parameter = parameter;
+    }
+    public static CustomActionParameterWrapper Direct(byte[] content)
+    {
+        return new CustomActionParameterWrapper("", content);
+    }
+    public static CustomActionParameterWrapper TargetOnly(string target)
+    {
+        return new CustomActionParameterWrapper(target);
+    }
+    public static CustomActionParameterWrapper Common(string target, byte[] content)
+    {
+        return new CustomActionParameterWrapper(target, content);
     }
 }

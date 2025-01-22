@@ -8,6 +8,7 @@ using UndefinedBot.Core.Utils;
 using UndefinedBot.Core.Command;
 using UndefinedBot.Core.Adapter;
 using UndefinedBot.Core.Command.Arguments;
+using UndefinedBot.Core.Command.Arguments.TokenContentType;
 using UndefinedBot.Core.Command.CommandSource;
 using UndefinedBot.Core.Plugin;
 using UndefinedBot.Net.Utils;
@@ -79,7 +80,7 @@ public class UndefinedApp(IHost host) : IHost
                     "",
                     "",
                     [
-                        new ParsedToken(ParsedTokenTypes.Normal, Encoding.UTF8.GetBytes("test")),
+                        new ParsedToken(ParsedTokenTypes.Text, new TextContent{Text = "666"}),
                         //new ParsedToken(ParsedTokenTypes.Normal, Encoding.UTF8.GetBytes("233"))
                     ],
                     "$$"

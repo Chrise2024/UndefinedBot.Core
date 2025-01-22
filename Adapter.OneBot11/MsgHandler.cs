@@ -13,12 +13,13 @@ using UndefinedBot.Core.Command.CommandSource;
 using UndefinedBot.Core.Utils;
 using Google.Protobuf;
 using Ob11Adapter;
+using UndefinedBot.Core.Command.Arguments.TokenContentType;
 
 namespace Adapter.OneBot11;
 
-internal sealed partial class MsgHandler(AdapterConfigData adapterConfig,ILogger parentLogger)
+internal sealed partial class MsgHandler(AdapterConfigData adapterConfig, ILogger parentLogger)
 {
-    private ILogger Logger =>parentLogger.GetSubLogger("MsgHandler");
+    private ILogger Logger => parentLogger.GetSubLogger("MsgHandler");
     private AdapterConfigData AdapterConfig => adapterConfig;
 
     public (CommandInvokeProperties?, BaseCommandSource?, ParsedToken[]?) HandleMsg(JsonNode msgJson)
@@ -59,8 +60,8 @@ internal sealed partial class MsgHandler(AdapterConfigData adapterConfig,ILogger
         Logger.Info($"Processing: {msgString}");
         List<ParsedToken> unsortedTokens = SplitRawCqMessage(msgString);
         int commandTokenIndex = unsortedTokens.FindIndex(item =>
-            item.TokenType == ParsedTokenTypes.Normal && Encoding.UTF8.GetString(item.SerializedContent)
-                .StartsWith(AdapterConfig.CommandPrefix)
+            item is { TokenType: ParsedTokenTypes.Text, Content: TextContent text } &&
+            text.Text.StartsWith(AdapterConfig.CommandPrefix)
         );
         if (commandTokenIndex is -1 or > 1)
         {
@@ -68,9 +69,8 @@ internal sealed partial class MsgHandler(AdapterConfigData adapterConfig,ILogger
         }
 
         unsortedTokens.RemoveAt(commandTokenIndex);
-        return (
-            Encoding.UTF8.GetString(unsortedTokens[commandTokenIndex].SerializedContent)[
-                AdapterConfig.CommandPrefix.Length..], unsortedTokens);
+        return (((TextContent)unsortedTokens[commandTokenIndex].Content).Text[AdapterConfig.CommandPrefix.Length..],
+            unsortedTokens);
     }
 
     private List<ParsedToken> SplitRawCqMessage(string cqString)
@@ -87,7 +87,7 @@ internal sealed partial class MsgHandler(AdapterConfigData adapterConfig,ILogger
                 string tmp = m.Value.Trim('"');
                 return tmp.StartsWith("\r0CQ[")
                     ? DecodeCqEntity(tmp[4..])
-                    : new ParsedToken(ParsedTokenTypes.Normal, Encoding.UTF8.GetBytes(tmp));
+                    : new ParsedToken(ParsedTokenTypes.Text, new TextContent{Text = tmp});
             })
             .OfType<ParsedToken>()
             .ToList();
@@ -109,21 +109,10 @@ internal sealed partial class MsgHandler(AdapterConfigData adapterConfig,ILogger
             .ToDictionary(item => item[0], item => item[1]);
         return cqType switch
         {
-            "at" => new ParsedToken(ParsedTokenTypes.User, Encoding.UTF8.GetBytes(cqContent["qq"])),
-            "reply" => new ParsedToken(ParsedTokenTypes.Reply, Encoding.UTF8.GetBytes(cqContent["id"])),
-            "image" => new ParsedToken(ParsedTokenTypes.Image,
-                new OneBot11ReceiveImage
-                {
-                    FileUnique = cqContent["file_unique"],
-                    Url = cqContent.TryGetValue("url", out string? u) ? u : cqContent["file"]
-                }.ToByteArray()),
-            "file" => new ParsedToken(ParsedTokenTypes.File,
-                new OneBot11ReceiveImage
-                {
-                    Url = cqContent["url"],
-                    FileUnique = cqContent["file_unique"],
-                    FileSize = uint.Parse(cqContent["file_size"])
-                }.ToByteArray()),
+            "at" => new ParsedToken(ParsedTokenTypes.User, new UserContent{UserId = cqContent["qq"]}),
+            "reply" => new ParsedToken(ParsedTokenTypes.Reply, new ReplyContent{ReplyToId = cqContent["id"]}),
+            "image" => new ParsedToken(ParsedTokenTypes.Image, new ImageContent{ImageUrl = cqContent.TryGetValue("url", out string? u) ? u : cqContent["file"]}),
+            "file" => new ParsedToken(ParsedTokenTypes.File,new FileContent{FileUrl = cqContent["url"],FileUnique = cqContent["file_unique"],Size = uint.Parse(cqContent["file_size"])}),
             _ => null
         };
     }

@@ -1,7 +1,7 @@
-﻿using System.Text;
-using UndefinedBot.Core.Command.CommandResult;
+﻿using UndefinedBot.Core.Command.CommandResult;
 using UndefinedBot.Core.Command.Arguments;
 using UndefinedBot.Core.Command.Arguments.ArgumentType;
+using UndefinedBot.Core.Command.Arguments.TokenContentType;
 using UndefinedBot.Core.Command.CommandSource;
 using UndefinedBot.Core.Utils;
 
@@ -15,19 +15,23 @@ public sealed class SubCommandNode(string name) : ICommandNode
     public ICommandNode? Parent { get; private set; }
     public List<ICommandNode> Child { get; private set; } = [];
     public Func<CommandContext, BaseCommandSource, Task>? NodeAction { get; private set; }
-    public Func<CommandInvokeProperties,BaseCommandSource,bool>? NodeRequire { get; private set; }
+    public Func<CommandInvokeProperties, BaseCommandSource, bool>? NodeRequire { get; private set; }
+
     public void SetAction(Func<CommandContext, BaseCommandSource, Task> action)
     {
         NodeAction = action;
     }
+
     public void SetParent(ICommandNode parentNode)
     {
         Parent = parentNode;
     }
+
     public void SetCommandAttrib(CommandAttribFlags attr)
     {
         CommandAttrib = attr;
     }
+
     /// <summary>
     /// Add child node to this node
     /// </summary>
@@ -45,11 +49,13 @@ public sealed class SubCommandNode(string name) : ICommandNode
         Child.Add(nextNode);
         return this;
     }
+
     public ICommandNode Require(Func<CommandInvokeProperties, BaseCommandSource, bool> predicate)
     {
         NodeRequire = predicate;
         return this;
     }
+
     /// <summary>
     /// Set node's action
     /// </summary>
@@ -76,8 +82,9 @@ public sealed class SubCommandNode(string name) : ICommandNode
             return new TooLessArgument([GetArgumentRequire()]);
         }
 
-        if (tokens[0].TokenType != ParsedTokenTypes.Normal ||
-            Encoding.UTF8.GetString(tokens[0].SerializedContent) != NodeName)
+        // if (tokens[0].TokenType != ParsedTokenTypes.Normal || (tokens[0].Content is TextContent text &&
+        //                                                        text.Text != NodeName))
+        if (tokens[0] is not {TokenType:ParsedTokenTypes.Text, Content:TextContent text} || text.Text != NodeName)
         {
             return new InvalidArgument(tokens[0].TokenType.ToString(), [GetArgumentRequire()]);
         }
@@ -108,7 +115,8 @@ public sealed class SubCommandNode(string name) : ICommandNode
         //有子节点
         List<ICommandResult> result = [];
         //Ignore Nodes that Not Hits NodeRequire
-        foreach (ICommandNode node in Child.Where(node => node.NodeRequire is null || node.NodeRequire(ctx.InvokeProperties, source)))
+        foreach (ICommandNode node in Child.Where(node =>
+                     node.NodeRequire is null || node.NodeRequire(ctx.InvokeProperties, source)))
         {
             ICommandResult res = await node.ExecuteSelf(ctx, source, tokens[1..]);
             if (res is CommandSuccess)
@@ -141,13 +149,14 @@ public sealed class SubCommandNode(string name) : ICommandNode
     {
         return $"<{NodeName}>";
     }
-    
+
     public void Dispose()
     {
         foreach (var child in Child)
         {
             child.Dispose();
         }
+
         Child.Clear();
         NodeAction = null;
         NodeRequire = null;

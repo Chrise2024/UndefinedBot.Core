@@ -1,9 +1,9 @@
-﻿using System.Text;
-using System.Text.Json;
+﻿using System.Text.Json;
 using UndefinedBot.Core.Adapter;
 using UndefinedBot.Core.Adapter.ActionParam;
 using UndefinedBot.Core.Command;
 using UndefinedBot.Core.Command.Arguments;
+using UndefinedBot.Core.Command.Arguments.TokenContentType;
 using UndefinedBot.Core.Command.CommandNodes;
 using UndefinedBot.Core.Command.CommandResult;
 using UndefinedBot.Core.Command.CommandSource;
@@ -135,19 +135,20 @@ internal static class HelpCommandHandler
                            $"使用#help+具体指令查看使用方法\ne.g. {invokeProperties.CommandPrefix}help help";
         }
 
-        if (invokeProperties.Tokens.Length == 0 || invokeProperties.Tokens[0].TokenType != ParsedTokenTypes.Normal)
+        if (invokeProperties.Tokens.Length == 0 || invokeProperties.Tokens[0] is not
+                { TokenType: ParsedTokenTypes.Text, Content: TextContent cmd })
         {
             ctx.ActionInvoke.InvokeDefaultAction(DefaultActionType.SendGroupMsg,
-                ActionContentWrapper<SendGroupMgsParam>.Common(invokeProperties.SourceId.ToString(),
+                DefaultActionParameterWrapper.Common(invokeProperties.SourceId.ToString(),
                     new SendGroupMgsParam
                     {
                         Message = BaseHelpText
                     })
-                );
+            );
             return;
         }
 
-        string cmd = Encoding.UTF8.GetString(invokeProperties.Tokens[0].SerializedContent);
+        //string cmd = Encoding.UTF8.GetString(invokeProperties.Tokens[0].Content);
         if (_commandReference.TryGetValue(invokeProperties.AdapterId, out var cps) && cps.Length > 0)
         {
             CommandProperties cp = cps[0];
@@ -164,7 +165,7 @@ internal static class HelpCommandHandler
                 ]
             );
             ctx.ActionInvoke.InvokeDefaultAction(DefaultActionType.SendGroupMsg,
-                ActionContentWrapper<SendGroupMgsParam>.Common(invokeProperties.SourceId.ToString(),
+                DefaultActionParameterWrapper.Common(invokeProperties.SourceId.ToString(),
                     new SendGroupMgsParam
                     {
                         Message = txt
@@ -173,9 +174,8 @@ internal static class HelpCommandHandler
         }
         else
         {
-            
             ctx.ActionInvoke.InvokeDefaultAction(DefaultActionType.SendGroupMsg,
-                ActionContentWrapper<SendGroupMgsParam>.Common(invokeProperties.SourceId.ToString(),
+                DefaultActionParameterWrapper.Common(invokeProperties.SourceId.ToString(),
                     new SendGroupMgsParam
                     {
                         Message = "咦，没有这个指令"
