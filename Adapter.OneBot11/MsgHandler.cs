@@ -1,8 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
-// The .NET Foundation licenses this file to you under the MIT license.
-
-using System.Text;
-using System.Text.Json;
+﻿using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
 using System.Text.RegularExpressions;
@@ -11,8 +7,6 @@ using UndefinedBot.Core.Command;
 using UndefinedBot.Core.Command.Arguments;
 using UndefinedBot.Core.Command.CommandSource;
 using UndefinedBot.Core.Utils;
-using Google.Protobuf;
-using Ob11Adapter;
 using UndefinedBot.Core.Command.Arguments.TokenContentType;
 
 namespace Adapter.OneBot11;

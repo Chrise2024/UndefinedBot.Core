@@ -68,7 +68,7 @@ internal sealed class HttpServer(
         {
             try
             {
-                //_httpListener.Stop();
+                _httpListener.Stop();
                 _httpListener.Close();
             }
             catch (Exception ex)
@@ -78,12 +78,12 @@ internal sealed class HttpServer(
                 return;
             }
         }
-
         Logger.Info("Http Server Stopped");
     }
 
     private async Task ReceiveLoop(CancellationToken token)
     {
+        Logger.Info("Http Server Receive Loop Started");
         while (_httpListener.IsListening && !token.IsCancellationRequested)
         {
             try
@@ -100,6 +100,7 @@ internal sealed class HttpServer(
                 PrintExceptionInfo(ex);
             }
         }
+        Logger.Info("Http Server Receive Loop Ended");
     }
 
     private async Task HandleRequestAsync(HttpListenerContext context, CancellationToken token = default)

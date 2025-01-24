@@ -11,7 +11,7 @@ namespace UndefinedBot.Core.Command;
 /// <remarks>
 /// Don't create instance directly.
 /// </remarks>
-public sealed class CommandInvokeProperties
+public sealed class CommandInvokeProperties : IDisposable
 {
     /// <summary>
     /// Command name
@@ -134,6 +134,10 @@ public sealed class CommandInvokeProperties
         Tokens = tokens;
         CommandPrefix = prefix;
         return this;
+    }
+    public void Dispose()
+    {
+        Tokens = [];
     }
 }
 

@@ -106,6 +106,8 @@ public class UndefinedApp(IHost host) : IHost
 
     public async Task StopAsync(CancellationToken cancellationToken = new())
     {
+        CommandInvokeManager.DisposeCommandInstance();
+        ActionInvokeManager.DisposeAdapterInstance();
         await HostApp.StopAsync(cancellationToken);
 
         Logger.LogInformation("UndefinedBot.Net Implementation has stopped");

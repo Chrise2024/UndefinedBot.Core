@@ -6,7 +6,7 @@ namespace UndefinedBot.Core.Adapter;
 
 public sealed class ActionInvokeManager(CommandInvokeProperties cip, ExtendableLogger logger) : IDisposable
 {
-    internal static Dictionary<string, IAdapterInstance> AdapterInstanceReference { get; set; } = [];
+    internal static Dictionary<string, IAdapterInstance> AdapterInstanceReference { get; private set; } = [];
     private CommandInvokeProperties InvokeProperties => cip;
     private ExtendableLogger Logger => logger;
     public byte[]? InvokeDefaultAction(DefaultActionType action, DefaultActionParameterWrapper? paras = null)
@@ -48,7 +48,17 @@ public sealed class ActionInvokeManager(CommandInvokeProperties cip, ExtendableL
     }
     public void Dispose()
     {
+        AdapterInstanceReference.Clear();
         Logger.Dispose();
+        InvokeProperties.Dispose();
+    }
+
+    internal static void DisposeAdapterInstance()
+    {
+        foreach (var pair in AdapterInstanceReference)
+        {
+            pair.Value.Dispose();
+        }
     }
 }
 

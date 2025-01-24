@@ -96,6 +96,14 @@ internal static class CommandInvokeManager
             );
         GC.Collect();
     }
+
+    public static void DisposeCommandInstance()
+    {
+        foreach (CommandInstance ci in CommandInstanceIndexByAdapter.SelectMany(pair => pair.Value))
+        {
+            ci.Dispose();
+        }
+    }
 }
 
 internal static class HelpCommandHandler
