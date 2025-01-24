@@ -60,7 +60,7 @@ internal sealed partial class MsgHandler(AdapterConfigData adapterConfig, ILogge
         Logger.Info($"Processing: {msgString}");
         List<ParsedToken> unsortedTokens = SplitRawCqMessage(msgString);
         int commandTokenIndex = unsortedTokens.FindIndex(item =>
-            item is { TokenType: ParsedTokenTypes.Text, Content: TextContent text } &&
+            item is { TokenType: ParsedTokenTypes.Text, Content: TextTokenContent text } &&
             text.Text.StartsWith(AdapterConfig.CommandPrefix)
         );
         if (commandTokenIndex is -1 or > 1)
@@ -69,7 +69,7 @@ internal sealed partial class MsgHandler(AdapterConfigData adapterConfig, ILogge
         }
 
         unsortedTokens.RemoveAt(commandTokenIndex);
-        return (((TextContent)unsortedTokens[commandTokenIndex].Content).Text[AdapterConfig.CommandPrefix.Length..],
+        return (((TextTokenContent)unsortedTokens[commandTokenIndex].Content).Text[AdapterConfig.CommandPrefix.Length..],
             unsortedTokens);
     }
 
@@ -87,7 +87,7 @@ internal sealed partial class MsgHandler(AdapterConfigData adapterConfig, ILogge
                 string tmp = m.Value.Trim('"');
                 return tmp.StartsWith("\r0CQ[")
                     ? DecodeCqEntity(tmp[4..])
-                    : new ParsedToken(ParsedTokenTypes.Text, new TextContent{Text = tmp});
+                    : new ParsedToken(ParsedTokenTypes.Text, new TextTokenContent{Text = tmp});
             })
             .OfType<ParsedToken>()
             .ToList();
@@ -109,10 +109,10 @@ internal sealed partial class MsgHandler(AdapterConfigData adapterConfig, ILogge
             .ToDictionary(item => item[0], item => item[1]);
         return cqType switch
         {
-            "at" => new ParsedToken(ParsedTokenTypes.User, new UserContent{UserId = cqContent["qq"]}),
-            "reply" => new ParsedToken(ParsedTokenTypes.Reply, new ReplyContent{ReplyToId = cqContent["id"]}),
-            "image" => new ParsedToken(ParsedTokenTypes.Image, new ImageContent{ImageUrl = cqContent.TryGetValue("url", out string? u) ? u : cqContent["file"]}),
-            "file" => new ParsedToken(ParsedTokenTypes.File,new FileContent{FileUrl = cqContent["url"],FileUnique = cqContent["file_unique"],Size = uint.Parse(cqContent["file_size"])}),
+            "at" => new ParsedToken(ParsedTokenTypes.User, new UserTokenContent{UserId = cqContent["qq"]}),
+            "reply" => new ParsedToken(ParsedTokenTypes.Reply, new ReplyTokenContent{ReplyToId = cqContent["id"]}),
+            "image" => new ParsedToken(ParsedTokenTypes.Image, new ImageTokenContent{ImageUrl = cqContent.TryGetValue("url", out string? u) ? u : cqContent["file"]}),
+            "file" => new ParsedToken(ParsedTokenTypes.File,new FileTokenContent{FileUrl = cqContent["url"],FileUnique = cqContent["file_unique"],Size = uint.Parse(cqContent["file_size"])}),
             _ => null
         };
     }

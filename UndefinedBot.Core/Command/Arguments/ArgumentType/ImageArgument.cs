@@ -18,7 +18,7 @@ public sealed class ImageArgument : IArgumentType
 
     public object GetValue(ParsedToken token) => GetExactTypeValue(token);
 
-    public static ImageContent GetImage(string key, CommandContext ctx)
+    public static ImageTokenContent GetImage(string key, CommandContext ctx)
     {
         if (ctx.ArgumentReference.TryGetValue(key, out ParsedToken token))
         {
@@ -28,9 +28,9 @@ public sealed class ImageArgument : IArgumentType
         throw new ArgumentInvalidException($"Undefined Argument: {key}");
     }
 
-    private static ImageContent GetExactTypeValue(ParsedToken token)
+    private static ImageTokenContent GetExactTypeValue(ParsedToken token)
     {
-        return token is { TokenType: ParsedTokenTypes.Image, Content: ImageContent img }
+        return token is { TokenType: ParsedTokenTypes.Image, Content: ImageTokenContent img }
             ? img
             : throw new ArgumentInvalidException("Token Is Not Image");
     }

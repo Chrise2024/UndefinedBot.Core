@@ -1,6 +1,7 @@
 ﻿using System.Text.Json;
 using UndefinedBot.Core.Adapter;
 using UndefinedBot.Core.Adapter.ActionParam;
+using UndefinedBot.Core.BasicMessage;
 using UndefinedBot.Core.Command;
 using UndefinedBot.Core.Command.Arguments;
 using UndefinedBot.Core.Command.Arguments.TokenContentType;
@@ -136,13 +137,13 @@ internal static class HelpCommandHandler
         }
 
         if (invokeProperties.Tokens.Length == 0 || invokeProperties.Tokens[0] is not
-                { TokenType: ParsedTokenTypes.Text, Content: TextContent cmd })
+                { TokenType: ParsedTokenTypes.Text, Content: TextTokenContent cmd })
         {
             ctx.ActionInvoke.InvokeDefaultAction(DefaultActionType.SendGroupMsg,
                 DefaultActionParameterWrapper.Common(invokeProperties.SourceId.ToString(),
                     new SendGroupMgsParam
                     {
-                        Message = BaseHelpText
+                        MessageChain = [new TextMessageNode{Text = BaseHelpText}]
                     })
             );
             return;
@@ -168,7 +169,7 @@ internal static class HelpCommandHandler
                 DefaultActionParameterWrapper.Common(invokeProperties.SourceId.ToString(),
                     new SendGroupMgsParam
                     {
-                        Message = txt
+                        MessageChain = [new TextMessageNode{Text = txt}]
                     })
             );
         }
@@ -178,7 +179,7 @@ internal static class HelpCommandHandler
                 DefaultActionParameterWrapper.Common(invokeProperties.SourceId.ToString(),
                     new SendGroupMgsParam
                     {
-                        Message = "咦，没有这个指令"
+                        MessageChain = [new TextMessageNode{Text = "咦，没有这个指令"}]
                     })
             );
             ctx.Logger.Warn($"Command Not Found: <{cmd}>");

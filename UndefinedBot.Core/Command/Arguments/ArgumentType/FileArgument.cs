@@ -15,7 +15,7 @@ public sealed class FileArgument : IArgumentType
     }
     public object GetValue(ParsedToken token) => GetExactTypeValue(token);
 
-    public static FileContent GetFile(string key, CommandContext ctx)
+    public static FileTokenContent GetFile(string key, CommandContext ctx)
     {
         if (ctx.ArgumentReference.TryGetValue(key, out ParsedToken token))
         {
@@ -24,9 +24,9 @@ public sealed class FileArgument : IArgumentType
 
         throw new ArgumentInvalidException($"Undefined Argument: {key}");
     }
-    private static FileContent GetExactTypeValue(ParsedToken token)
+    private static FileTokenContent GetExactTypeValue(ParsedToken token)
     {
-        return token is { TokenType: ParsedTokenTypes.File, Content: FileContent file }
+        return token is { TokenType: ParsedTokenTypes.File, Content: FileTokenContent file }
             ? file
             : throw new ArgumentInvalidException("Token Is Not File");
     }

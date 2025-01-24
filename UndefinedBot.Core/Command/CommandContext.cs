@@ -1,5 +1,6 @@
 ﻿using UndefinedBot.Core.Adapter;
 using UndefinedBot.Core.Adapter.ActionParam;
+using UndefinedBot.Core.BasicMessage;
 using UndefinedBot.Core.NetWork;
 using UndefinedBot.Core.Utils;
 using UndefinedBot.Core.Command.Arguments;
@@ -20,6 +21,7 @@ public sealed class CommandContext : IDisposable
     public CacheManager Cache { get; }
     public HttpRequest Request { get; }
     public ActionInvokeManager ActionInvoke { get; }
+    public MessageBuilder MessageBuilder { get; }
     internal Dictionary<string, ParsedToken> ArgumentReference { get; set; } = [];
     public void SendFeedback(string message)
     {
@@ -31,7 +33,7 @@ public sealed class CommandContext : IDisposable
             DefaultActionParameterWrapper.Common(InvokeProperties.SourceId.ToString(),
                 new SendGroupMgsParam
                 {
-                    Message = message
+                    MessageChain = [new TextMessageNode{Text = message}]
                 })
             );
     }
@@ -46,6 +48,7 @@ public sealed class CommandContext : IDisposable
         Cache = commandInstance.Cache;
         Request = new HttpRequest(commandInstance.PluginId);
         ActionInvoke = new(ip, Logger);
+        MessageBuilder = new();
     }
 
     public void Dispose()

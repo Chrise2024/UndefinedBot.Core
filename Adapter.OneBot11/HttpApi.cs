@@ -50,13 +50,9 @@ public sealed class HttpApi
     /// Send Forward to Group
     /// </summary>
     /// <param name="targetGroupId">Group Id to send</param>
-    /// <param name="forwardPropertiesData">Onebot11 Forward MessageChain</param>
-    public async Task SendGroupForward(object targetGroupId, ForwardPropertiesData forwardPropertiesData)
+    public async Task SendGroupForward(object targetGroupId)
     {
-        //JsonNode reqJson = JsonNode.FromObject(forwardSummaryData);
-        JsonNode reqJson = JsonSerializer.SerializeToNode(forwardPropertiesData)!;
-        reqJson["group_id"] = $"{targetGroupId}";
-        await ApiPostRequestWithoutResponse("/send_group_forward_msg", reqJson);
+        throw new NotImplementedException();
     }
 
     /// <summary>

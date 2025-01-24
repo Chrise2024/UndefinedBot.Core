@@ -1,5 +1,3 @@
 ﻿namespace UndefinedBot.Core.BasicMessage;
 
-public class MessageNode
-{
-}
+public interface IMessageNode;

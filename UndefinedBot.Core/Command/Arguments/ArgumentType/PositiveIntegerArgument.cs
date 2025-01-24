@@ -11,7 +11,7 @@ public sealed class PositiveIntegerArgument(IArgumentRange? range = null) : IArg
 
     public bool IsValid(ParsedToken token)
     {
-        return token is { TokenType: ParsedTokenTypes.Text, Content: TextContent content } &&
+        return token is { TokenType: ParsedTokenTypes.Text, Content: TextTokenContent content } &&
                ulong.TryParse(content.Text, out ulong val) &&
                (Range?.InRange(val) ?? true);
     }
@@ -30,7 +30,7 @@ public sealed class PositiveIntegerArgument(IArgumentRange? range = null) : IArg
 
     private static ulong GetExactTypeValue(ParsedToken token)
     {
-        return token is { TokenType: ParsedTokenTypes.Text, Content: TextContent content } &&
+        return token is { TokenType: ParsedTokenTypes.Text, Content: TextTokenContent content } &&
                ulong.TryParse(content.Text, out ulong val)
             ? val
             : throw new ArgumentInvalidException("Token Is Not Valid Positive Integer");

@@ -11,7 +11,7 @@ public sealed class IntegerArgument(IArgumentRange? range = null) : IArgumentTyp
 
     public bool IsValid(ParsedToken token)
     {
-        return token is { TokenType: ParsedTokenTypes.Text, Content: TextContent content } &&
+        return token is { TokenType: ParsedTokenTypes.Text, Content: TextTokenContent content } &&
                long.TryParse(content.Text, out long val) &&
                (Range?.InRange(val) ?? true);
     }
@@ -30,7 +30,7 @@ public sealed class IntegerArgument(IArgumentRange? range = null) : IArgumentTyp
 
     private static long GetExactTypeValue(ParsedToken token)
     {
-        return token is { TokenType: ParsedTokenTypes.Text, Content: TextContent content } &&
+        return token is { TokenType: ParsedTokenTypes.Text, Content: TextTokenContent content } &&
                long.TryParse(content.Text, out long val)
             ? val
             : throw new ArgumentInvalidException("Token Is Not Integer");

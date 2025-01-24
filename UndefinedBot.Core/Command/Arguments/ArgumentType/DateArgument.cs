@@ -12,7 +12,7 @@ public sealed class DateArgument(IArgumentRange? range = null) : IArgumentType
 
     public bool IsValid(ParsedToken token)
     {
-        return token is { TokenType: ParsedTokenTypes.Text, Content: TextContent content } && 
+        return token is { TokenType: ParsedTokenTypes.Text, Content: TextTokenContent content } && 
                DateTime.TryParse(content.Text, out DateTime _);
     }
 
@@ -30,7 +30,7 @@ public sealed class DateArgument(IArgumentRange? range = null) : IArgumentType
 
     private static DateTime GetExactTypeValue(ParsedToken token)
     {
-        return token is { TokenType: ParsedTokenTypes.Text, Content: TextContent content } && 
+        return token is { TokenType: ParsedTokenTypes.Text, Content: TextTokenContent content } && 
                DateTime.TryParse(content.Text, out DateTime val)
             ? val
             : throw new ArgumentInvalidException($"{token} Is Not Valid Positive Integer");

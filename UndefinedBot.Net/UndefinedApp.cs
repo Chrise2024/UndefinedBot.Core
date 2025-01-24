@@ -80,7 +80,7 @@ public class UndefinedApp(IHost host) : IHost
                     "",
                     "",
                     [
-                        new ParsedToken(ParsedTokenTypes.Text, new TextContent{Text = "666"}),
+                        new ParsedToken(ParsedTokenTypes.Text, new TextTokenContent{Text = "666"}),
                         //new ParsedToken(ParsedTokenTypes.Normal, Encoding.UTF8.GetBytes("233"))
                     ],
                     "$$"

@@ -11,7 +11,7 @@ public sealed class StringArgument(IArgumentRange? range = null) : IArgumentType
 
     public bool IsValid(ParsedToken token)
     {
-        return token is { TokenType: ParsedTokenTypes.Text, Content: TextContent content } &&
+        return token is { TokenType: ParsedTokenTypes.Text, Content: TextTokenContent content } &&
                content.Text.Length != 0 &&
                (Range?.InRange(token.Content) ?? true);
     }
@@ -30,7 +30,7 @@ public sealed class StringArgument(IArgumentRange? range = null) : IArgumentType
 
     private static string GetExactTypeValue(ParsedToken token)
     {
-        return token is { TokenType: ParsedTokenTypes.Text, Content: TextContent content }
+        return token is { TokenType: ParsedTokenTypes.Text, Content: TextTokenContent content }
             ? content.Text
             : throw new ArgumentInvalidException("Token Is Not String");
     }

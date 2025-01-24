@@ -84,7 +84,7 @@ public sealed class SubCommandNode(string name) : ICommandNode
 
         // if (tokens[0].TokenType != ParsedTokenTypes.Normal || (tokens[0].Content is TextContent text &&
         //                                                        text.Text != NodeName))
-        if (tokens[0] is not {TokenType:ParsedTokenTypes.Text, Content:TextContent text} || text.Text != NodeName)
+        if (tokens[0] is not {TokenType:ParsedTokenTypes.Text, Content:TextTokenContent text} || text.Text != NodeName)
         {
             return new InvalidArgument(tokens[0].TokenType.ToString(), [GetArgumentRequire()]);
         }

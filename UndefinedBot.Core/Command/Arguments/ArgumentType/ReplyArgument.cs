@@ -18,7 +18,7 @@ public sealed class ReplyArgument(IArgumentRange? range = null) : IArgumentType
 
     public object GetValue(ParsedToken token) => GetExactTypeValue(token);
 
-    public static ReplyContent GetReply(string key, CommandContext ctx)
+    public static ReplyTokenContent GetReply(string key, CommandContext ctx)
     {
         if (ctx.ArgumentReference.TryGetValue(key, out ParsedToken token))
         {
@@ -31,9 +31,9 @@ public sealed class ReplyArgument(IArgumentRange? range = null) : IArgumentType
     /// <summary>
     /// 'Reply' may be a string of message id ?
     /// </summary>
-    private static ReplyContent GetExactTypeValue(ParsedToken token)
+    private static ReplyTokenContent GetExactTypeValue(ParsedToken token)
     {
-        return token is { TokenType: ParsedTokenTypes.Reply, Content: ReplyContent reply }
+        return token is { TokenType: ParsedTokenTypes.Reply, Content: ReplyTokenContent reply }
             ? reply
             : throw new ArgumentInvalidException("Token Is Not Reply");
     }
