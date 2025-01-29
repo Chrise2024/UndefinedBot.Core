@@ -1,6 +1,6 @@
-﻿namespace UndefinedBot.Core.BasicMessage;
+﻿namespace UndefinedBot.Core.Plugin.BasicMessage;
 
 public class AtMessageNode : IMessageNode
 {
-    public required string UserId { get; init; }
+    public required string UserId;
 }

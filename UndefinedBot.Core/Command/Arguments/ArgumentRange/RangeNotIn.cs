@@ -4,8 +4,8 @@ namespace UndefinedBot.Core.Command.Arguments.ArgumentRange;
 
 public sealed class RangeNotIn<T> : IArgumentRange where T : IEquatable<T>
 {
-    public List<T> Range { get; }
-    public string DescriptionString { get; }
+    public readonly List<T> Range;
+    public readonly string DescriptionString;
 
     public RangeNotIn(List<T> range)
     {

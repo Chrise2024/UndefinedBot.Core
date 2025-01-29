@@ -16,23 +16,27 @@ public sealed class CommandInvokeProperties : IDisposable
     /// <summary>
     /// Command name
     /// </summary>
-    public string Command { get; }
+    public readonly string Command;
+
     /// <summary>
     /// Where the command from
     /// </summary>
-    public long SourceId { get; }
+    public readonly long SourceId;
+
     /// <summary>
     /// Command's message id
     /// </summary>
-    public int MsgId { get; }
+    public readonly int MsgId;
+
     /// <summary>
     /// Command's message sub type
     /// </summary>
-    public MessageSubType SubType { get; }
+    public readonly MessageSubType SubType;
+
     /// <summary>
     /// Unix time samp,Command's message send time
     /// </summary>
-    public long TimeStamp { get; }
+    public readonly long TimeStamp;
     /// <summary>
     /// Check if the command is from group
     /// </summary>

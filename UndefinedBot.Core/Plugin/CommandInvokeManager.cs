@@ -1,13 +1,13 @@
 ﻿using System.Text.Json;
 using UndefinedBot.Core.Adapter;
 using UndefinedBot.Core.Adapter.ActionParam;
-using UndefinedBot.Core.BasicMessage;
 using UndefinedBot.Core.Command;
 using UndefinedBot.Core.Command.Arguments;
 using UndefinedBot.Core.Command.Arguments.TokenContentType;
 using UndefinedBot.Core.Command.CommandNodes;
 using UndefinedBot.Core.Command.CommandResult;
 using UndefinedBot.Core.Command.CommandSource;
+using UndefinedBot.Core.Plugin.BasicMessage;
 
 namespace UndefinedBot.Core.Plugin;
 

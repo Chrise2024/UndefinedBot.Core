@@ -1,9 +1,9 @@
 ﻿using UndefinedBot.Core.Adapter;
 using UndefinedBot.Core.Adapter.ActionParam;
-using UndefinedBot.Core.BasicMessage;
 using UndefinedBot.Core.NetWork;
 using UndefinedBot.Core.Utils;
 using UndefinedBot.Core.Command.Arguments;
+using UndefinedBot.Core.Plugin.BasicMessage;
 
 namespace UndefinedBot.Core.Command;
 
@@ -12,17 +12,17 @@ namespace UndefinedBot.Core.Command;
 /// </summary>
 public sealed class CommandContext : IDisposable
 {
-    public string PluginName { get; }
-    public string CommandName { get; }
-    public string RootPath { get; } = Environment.CurrentDirectory;
-    public string CachePath { get; }
-    public CommandInvokeProperties InvokeProperties { get; }
-    public ExtendableLogger Logger { get; }
-    public CacheManager Cache { get; }
-    public HttpRequest Request { get; }
-    public ActionInvokeManager ActionInvoke { get; }
-    public MessageBuilder MessageBuilder { get; }
-    internal Dictionary<string, ParsedToken> ArgumentReference { get; set; } = [];
+    public readonly string PluginName;
+    public readonly string CommandName;
+    public readonly string RootPath = Environment.CurrentDirectory;
+    public readonly string CachePath;
+    public readonly CommandInvokeProperties InvokeProperties;
+    public readonly ExtendableLogger Logger;
+    public readonly CacheManager Cache;
+    public readonly HttpRequest Request;
+    public readonly ActionInvokeManager ActionInvoke;
+    public readonly MessageBuilder MessageBuilder;
+    internal readonly Dictionary<string, ParsedToken> ArgumentReference = [];
     public void SendFeedback(string message)
     {
         //ActionInvoke.InvokeDefaultAction();

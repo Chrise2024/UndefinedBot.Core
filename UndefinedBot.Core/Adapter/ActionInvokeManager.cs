@@ -76,8 +76,8 @@ public enum DefaultActionType
 
 public class DefaultActionParameterWrapper
 {
-    public string Target { get; init; }
-    public IActionParam? Parameter { get; init; }
+    public readonly string Target;
+    public readonly IActionParam? Parameter;
     private DefaultActionParameterWrapper(string target, IActionParam? parameter = default)
     {
         Target = target;
@@ -98,8 +98,8 @@ public class DefaultActionParameterWrapper
 }
 public class CustomActionParameterWrapper
 {
-    public string Target { get; init; }
-    public byte[]? Parameter { get; init; }
+    public readonly string Target;
+    public readonly byte[]? Parameter;
     private CustomActionParameterWrapper(string target, byte[]? parameter = null)
     {
         Target = target;

@@ -2,8 +2,8 @@
 
 public sealed class RangeBetween<T> : IArgumentRange where T : IComparable
 {
-    public T Maximum { get; }
-    public T Minimum { get; }
+    public readonly T Maximum;
+    public readonly T Minimum;
 
     public RangeBetween(T range1, T range2)
     {

@@ -1,6 +1,6 @@
-﻿namespace UndefinedBot.Core.BasicMessage;
+﻿namespace UndefinedBot.Core.Plugin.BasicMessage;
 
 public class CustomMessageNode : IMessageNode
 {
-    public required byte[] Content { get; init; }
+    public required byte[] Content;
 }

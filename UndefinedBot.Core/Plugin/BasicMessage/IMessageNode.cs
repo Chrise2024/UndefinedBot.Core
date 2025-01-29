@@ -1,3 +1,3 @@
-﻿namespace UndefinedBot.Core.BasicMessage;
+﻿namespace UndefinedBot.Core.Plugin.BasicMessage;
 
 public interface IMessageNode;

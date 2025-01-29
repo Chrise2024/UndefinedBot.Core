@@ -1,6 +1,6 @@
-﻿namespace UndefinedBot.Core.BasicMessage;
+﻿namespace UndefinedBot.Core.Plugin.BasicMessage;
 
 public class ReplyMessageNode : IMessageNode
 {
-    public required string ReplyToId { get; init; }
+    public required string ReplyToId;
 }

@@ -1,5 +1,6 @@
 ﻿using System.Text.Json;
 using UndefinedBot.Core.Adapter;
+using UndefinedBot.Core.Adapter.ActionParam;
 
 namespace Adapter.OneBot11;
 
@@ -27,6 +28,10 @@ public sealed class OneBot11Adapter : BaseAdapter
     public override byte[]? HandleDefaultAction(DefaultActionType action, DefaultActionParameterWrapper? paras)
     {
         Console.WriteLine(JsonSerializer.Serialize(paras));
+        if (paras?.Parameter is SendGroupMgsParam sgmp)
+        {
+            Console.WriteLine(JsonSerializer.Serialize(sgmp));
+        }
         //None
         return null;
     }

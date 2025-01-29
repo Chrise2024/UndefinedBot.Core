@@ -1,6 +1,6 @@
-﻿namespace UndefinedBot.Core.BasicMessage;
+﻿namespace UndefinedBot.Core.Plugin.BasicMessage;
 
 public class FileMessageNode : IMessageNode
 {
-    public required string Url { get; init; }
+    public required string Url;
 }

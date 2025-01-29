@@ -1,7 +1,7 @@
-﻿namespace UndefinedBot.Core.BasicMessage;
+﻿namespace UndefinedBot.Core.Plugin.BasicMessage;
 
 public class ImageMessageNode : IMessageNode
 {
-    public required string Url { get; init; }
-    public string? SubType { get;init; }
+    public required string Url;
+    public string? SubType;
 }
