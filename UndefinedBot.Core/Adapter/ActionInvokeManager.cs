@@ -17,9 +17,9 @@ public sealed class ActionInvokeManager(CommandInvokeProperties cip, ExtendableL
                 ? inst.HandleDefaultAction(action, paras)
                 : null;
         }
-        catch (Exception)
+        catch (Exception ex)
         {
-            Logger.Error("Fail to Invoke Action");
+            Logger.Error(ex,"Fail to Invoke Action");
         }
 
         return null;
@@ -32,9 +32,9 @@ public sealed class ActionInvokeManager(CommandInvokeProperties cip, ExtendableL
                 ? inst.HandleCustomAction(action, paras)
                 : null;
         }
-        catch (Exception)
+        catch (Exception ex)
         {
-            Logger.Error("Fail to Invoke Action");
+            Logger.Error(ex,"Fail to Invoke Action");
         }
 
         return null;
