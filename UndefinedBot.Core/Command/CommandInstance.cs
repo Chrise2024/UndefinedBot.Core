@@ -23,6 +23,8 @@ public sealed class CommandInstance : IDisposable
     private string? CommandUsage { get; set; }
     private string? CommandExample { get; set; }
     private TimeSpan CommandRateLimit { get; set; } = TimeSpan.Zero;
+    
+    private Func<CommandInvokeProperties, BaseCommandSource, bool>? CommandRequire { get; set; }
     private CommandAttribFlags CommandAttrib { get; set; } = DefaultCommandAttrib;
 
     private long _lastExecute;
@@ -37,7 +39,7 @@ public sealed class CommandInstance : IDisposable
         RootNode.SetCommandAttrib(CommandAttrib);
     }
 
-    internal bool IsTargetCommand(CommandInvokeProperties cip)
+    internal bool IsTargetCommand(CommandInvokeProperties cip, BaseCommandSource source)
     {
         switch (cip.SubType)
         {
@@ -46,6 +48,11 @@ public sealed class CommandInstance : IDisposable
             case MessageSubType.Guild when !CommandAttrib.HasFlag(CommandAttribFlags.ActiveInGuild):
                 return false;
         }
+        if (!CommandAttrib.HasFlag(CommandAttribFlags.IgnoreAuthority) && CommandRequire is not null && CommandRequire(cip, source))
+        {
+            return false;
+        }
+        
         StringComparison comparison = CommandAttrib.HasFlag(CommandAttribFlags.IgnoreCase)
             ? StringComparison.OrdinalIgnoreCase
             : StringComparison.Ordinal;
@@ -141,6 +148,17 @@ public sealed class CommandInstance : IDisposable
     public CommandInstance RateLimit(TimeSpan limit)
     {
         CommandRateLimit = limit;
+        return this;
+    }
+    
+    /// <summary>
+    /// Add command requirement
+    /// </summary>
+    /// <param name="predicate">requirement</param>
+    /// <returns>self</returns>
+    public CommandInstance Require(Func<CommandInvokeProperties, BaseCommandSource, bool> predicate)
+    {
+        CommandRequire = predicate;
         return this;
     }
 

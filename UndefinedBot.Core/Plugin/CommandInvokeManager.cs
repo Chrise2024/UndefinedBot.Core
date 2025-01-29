@@ -24,12 +24,12 @@ internal static class CommandInvokeManager
             return CommandInvokeResult.SuccessInvoke;
         }
 
-        if (!CommandInstanceIndexByAdapter.TryGetValue(invokeProperties.AdapterId, out var refCollection))
+        if (!CommandInstanceIndexByAdapter.TryGetValue(invokeProperties.AdapterId, out CommandInstance[]? refCollection))
         {
             return CommandInvokeResult.NoCommandRelateToAdapter;
         }
 
-        CommandInstance? targetCommand = Array.Find(refCollection, t => t.IsTargetCommand(invokeProperties));
+        CommandInstance? targetCommand = Array.Find(refCollection, t => t.IsTargetCommand(invokeProperties,source));
         if (targetCommand is null)
         {
             return CommandInvokeResult.NoSuchCommand;
