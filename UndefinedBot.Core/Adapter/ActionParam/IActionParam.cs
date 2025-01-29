@@ -1,5 +1,3 @@
 ﻿namespace UndefinedBot.Core.Adapter.ActionParam;
 
-public interface IActionParam
-{
-}
+public interface IActionParam;

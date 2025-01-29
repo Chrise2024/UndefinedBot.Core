@@ -1,8 +1,6 @@
 ﻿using System.Reflection;
 using System.Runtime.CompilerServices;
-using UndefinedBot.Core.Command;
 using UndefinedBot.Core.NetWork;
-using UndefinedBot.Core.Utils;
 
 [assembly: InternalsVisibleTo("UndefinedBot.Net")]
 [assembly: InternalsVisibleTo("UndefinedBot.Core.Test")]

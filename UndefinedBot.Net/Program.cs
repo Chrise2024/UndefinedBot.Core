@@ -1,16 +1,9 @@
 ﻿using System.Text;
 using System.Reflection;
-using System.Text.Json;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
-using UndefinedBot.Core.Command;
-using UndefinedBot.Core.Command.Arguments;
 using UndefinedBot.Core.Utils;
 using System.Runtime;
-using UndefinedBot.Core.Adapter;
-using UndefinedBot.Core.Plugin;
-using UndefinedBot.Net.Utils;
 
 namespace UndefinedBot.Net;
 

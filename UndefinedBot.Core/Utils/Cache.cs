@@ -84,7 +84,8 @@ public sealed class CacheManager : IDisposable
 
     public T? GetStorage<T>(string cacheName) where T : notnull
     {
-        return (T)_storageCache[cacheName].Content;
+        if (!_storageCache.TryGetValue(cacheName, out StorageCacheProperty? cp)) return default;
+        return cp.Content is T content ? content : throw new Exception("Incorrect Cache Type");
     }
 
     public void Dispose()
