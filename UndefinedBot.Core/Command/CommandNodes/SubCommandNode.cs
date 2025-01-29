@@ -13,7 +13,7 @@ public sealed class SubCommandNode(string name) : ICommandNode
     public CommandAttribFlags CommandAttrib { get; private set; } = CommandInstance.DefaultCommandAttrib;
     public IArgumentType ArgumentType => new StringArgument();
     public ICommandNode? Parent { get; private set; }
-    public List<ICommandNode> Child { get; private set; } = [];
+    public List<ICommandNode> Child { get; } = [];
     public Func<CommandContext, BaseCommandSource, Task>? NodeAction { get; private set; }
     public Func<CommandInvokeProperties, BaseCommandSource, bool>? NodeRequire { get; private set; }
 

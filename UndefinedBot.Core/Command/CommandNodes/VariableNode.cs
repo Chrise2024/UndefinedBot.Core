@@ -12,7 +12,7 @@ public sealed class VariableNode(string name, IArgumentType argumentType) : ICom
     public CommandAttribFlags CommandAttrib { get; private set; } = CommandInstance.DefaultCommandAttrib;
     public IArgumentType ArgumentType => argumentType;
     public ICommandNode? Parent { get; private set; }
-    public List<ICommandNode> Child { get; private set; } = [];
+    public List<ICommandNode> Child { get; } = [];
     public Func<CommandContext, BaseCommandSource, Task>? NodeAction { get; private set; }
     public Func<CommandInvokeProperties,BaseCommandSource,bool>? NodeRequire { get; private set; }
     public void SetAction(Func<CommandContext, BaseCommandSource, Task> action)
