@@ -3,7 +3,7 @@ using System.Runtime.CompilerServices;
 using UndefinedBot.Core.NetWork;
 
 [assembly: InternalsVisibleTo("UndefinedBot.Net")]
-[assembly: InternalsVisibleTo("UndefinedBot.Core.Test")]
+//[assembly: InternalsVisibleTo("UndefinedBot.Core.Test")]
 
 namespace UndefinedBot.Core;
 
