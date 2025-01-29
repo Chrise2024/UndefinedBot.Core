@@ -1,6 +1,6 @@
 ﻿namespace UndefinedBot.Core.Adapter.ActionParam;
 
-public class RecallMsgParam : IActionParam
+public sealed class RecallMsgParam : IActionParam
 {
-    public required string MsgId { get; init; }
+    public required string MsgId;
 }

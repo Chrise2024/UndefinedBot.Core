@@ -28,9 +28,15 @@ public sealed class OneBot11Adapter : BaseAdapter
     public override byte[]? HandleDefaultAction(DefaultActionType action, DefaultActionParameterWrapper? paras)
     {
         Console.WriteLine(JsonSerializer.Serialize(paras));
-        if (paras?.Parameter is SendGroupMgsParam sgmp)
+
+        switch (paras?.Parameter)
         {
-            Console.WriteLine(JsonSerializer.Serialize(sgmp));
+            case SendGroupMgsParam sgmp:
+                Console.WriteLine(JsonSerializer.Serialize(sgmp));
+                break;
+            case SendPrivateMsgParam spmp:
+                Console.WriteLine(spmp);
+                break;
         }
         //None
         return null;

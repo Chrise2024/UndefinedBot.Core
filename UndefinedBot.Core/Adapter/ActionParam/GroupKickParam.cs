@@ -1,7 +1,7 @@
 ﻿namespace UndefinedBot.Core.Adapter.ActionParam;
 
-public class GroupKickParam : IActionParam
+public sealed class GroupKickParam : IActionParam
 {
-    public required bool PermanentReject { get; init; }
-    public required string UserId { get; init; }
+    public required bool PermanentReject;
+    public required string UserId;
 }

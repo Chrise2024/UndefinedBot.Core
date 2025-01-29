@@ -1,6 +1,6 @@
 ﻿namespace UndefinedBot.Core.Adapter.ActionParam;
 
-public class GetGroupMemberListParam : IActionParam
+public sealed class GetGroupMemberListParam : IActionParam
 {
     
 }
