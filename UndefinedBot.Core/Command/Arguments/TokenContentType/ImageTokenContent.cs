@@ -2,8 +2,8 @@
 
 public sealed class ImageTokenContent : ITokenContent
 {
-    public required string ImageUrl { get; init; }
-    public string? ImageUnique { get; init; }
-    public ImageSize? Size { get; init; }
+    public required string ImageUrl;
+    public string? ImageUnique;
+    public ImageSize? Size;
 }
 public record ImageSize(int Width, int Height);

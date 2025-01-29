@@ -2,6 +2,6 @@
 
 public sealed class ReplyTokenContent : ITokenContent
 {
-    public required string ReplyToId { get; init; }
-    public object? AdditionalInfo { get; init; }
+    public required string ReplyToId;
+    public byte[]? AdditionalInfo;
 }

@@ -2,7 +2,7 @@
 
 public sealed class FileTokenContent : ITokenContent
 {
-    public required string FileUrl { get; init; }
-    public string? FileUnique  { get; init; }
-    public uint? Size { get; init; }
+    public required string FileUrl;
+    public string? FileUnique;
+    public uint? Size;
 }

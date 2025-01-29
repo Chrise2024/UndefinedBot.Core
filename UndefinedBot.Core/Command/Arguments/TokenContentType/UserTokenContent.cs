@@ -2,6 +2,6 @@
 
 public sealed class UserTokenContent : ITokenContent
 {
-    public required string UserId { get; init; }
-    public object? AdditionalInfo { get; init; }
+    public required string UserId;
+    public byte[]? AdditionalInfo;
 }

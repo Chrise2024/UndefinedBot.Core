@@ -2,5 +2,5 @@
 
 public sealed class TextTokenContent : ITokenContent
 {
-    public required string Text { get; init; }
+    public required string Text;
 }

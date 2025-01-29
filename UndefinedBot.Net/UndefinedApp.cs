@@ -25,7 +25,7 @@ public class UndefinedApp(IHost host) : IHost
 
     private readonly JsonSerializerOptions _serializerOptions = new() { WriteIndented = true, IndentSize = 4 };
 
-    private LogLevel ConvertLogLevel(UndefinedLogLevel ul)
+    private static LogLevel ConvertLogLevel(UndefinedLogLevel ul)
     {
         return ul switch
         {
