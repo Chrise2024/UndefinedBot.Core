@@ -15,36 +15,36 @@ internal static class CommandInvokeManager
 {
     internal static Dictionary<string, CommandInstance[]> CommandInstanceIndexByAdapter { get; private set; } = [];
 
-    public static async Task<CommandInvokeResult> InvokeCommand(CommandInvokeProperties invokeProperties,
+    public static async Task<CommandInvokeResult> InvokeCommand(CommandBackgroundEnvironment backgroundEnvironment,
         BaseCommandSource source)
     {
-        if (invokeProperties.Command.Equals("help", StringComparison.OrdinalIgnoreCase))
+        if (backgroundEnvironment.Command.Equals("help", StringComparison.OrdinalIgnoreCase))
         {
-            HelpCommandHandler.HandleHelpCommand(invokeProperties);
+            HelpCommandHandler.HandleHelpCommand(backgroundEnvironment);
             return CommandInvokeResult.SuccessInvoke;
         }
 
-        if (!CommandInstanceIndexByAdapter.TryGetValue(invokeProperties.AdapterId, out CommandInstance[]? refCollection))
+        if (!CommandInstanceIndexByAdapter.TryGetValue(backgroundEnvironment.AdapterId, out CommandInstance[]? refCollection))
         {
             return CommandInvokeResult.NoCommandRelateToAdapter;
         }
 
-        CommandInstance? targetCommand = Array.Find(refCollection, t => t.IsTargetCommand(invokeProperties,source));
+        CommandInstance? targetCommand = Array.Find(refCollection, t => t.IsTargetCommand(backgroundEnvironment,source));
         if (targetCommand is null)
         {
             return CommandInvokeResult.NoSuchCommand;
         }
 
-        if (targetCommand.IsReachRateLimit(invokeProperties))
+        if (targetCommand.IsReachRateLimit(backgroundEnvironment))
         {
             return CommandInvokeResult.CommandRateLimited;
         }
 
-        CommandContext ctx = new(targetCommand, invokeProperties);
+        CommandContext ctx = new(targetCommand, backgroundEnvironment);
         ctx.Logger.Info("Command Triggered");
         try
         {
-            ICommandResult result = await targetCommand.Run(ctx, source, invokeProperties.Tokens);
+            ICommandResult result = await targetCommand.Run(ctx, source, backgroundEnvironment.Tokens);
             switch (result)
             {
                 case CommandSuccess:
@@ -115,23 +115,23 @@ internal static class HelpCommandHandler
 
     private static Dictionary<string, CommandProperties[]> _commandReference = [];
 
-    public static void HandleHelpCommand(CommandInvokeProperties invokeProperties)
+    public static void HandleHelpCommand(CommandBackgroundEnvironment backgroundEnvironment)
     {
-        HelpCommandContext ctx = new(invokeProperties);
+        HelpCommandContext ctx = new(backgroundEnvironment);
         ctx.Logger.Info("Help Command Triggered");
         if (_commandReference.Count == 0)
         {
             _commandReference = CommandInvokeManager.CommandInstanceIndexByAdapter.ToDictionary(
                 k => k.Key,
                 v => v.Value.Select(x =>
-                    x.ExportToCommandProperties(ActionInvokeManager.AdapterInstanceReference)).ToArray()
+                    x.ExportToCommandProperties(ActionManager.AdapterInstanceReference)).ToArray()
             );
         }
 
         if (BaseHelpText.Length == 0)
         {
             CommandProperties[] commandCollection =
-                _commandReference.TryGetValue(invokeProperties.AdapterId, out var v) ? v : [];
+                _commandReference.TryGetValue(backgroundEnvironment.AdapterId, out var v) ? v : [];
             string text = commandCollection
                 .Where(c => !c.IsHidden)
                 .Aggregate("",
@@ -141,14 +141,14 @@ internal static class HelpCommandHandler
                 );
             BaseHelpText = "---------------help---------------\n指令列表：\n" +
                            text +
-                           $"使用#help+具体指令查看使用方法\ne.g. {invokeProperties.CommandPrefix}help help";
+                           $"使用#help+具体指令查看使用方法\ne.g. {backgroundEnvironment.CommandPrefix}help help";
         }
 
-        if (invokeProperties.Tokens.Length == 0 || invokeProperties.Tokens[0] is not
+        if (backgroundEnvironment.Tokens.Length == 0 || backgroundEnvironment.Tokens[0] is not
                 { TokenType: ParsedTokenTypes.Text, Content: TextTokenContent cmd })
         {
-            ctx.ActionInvoke.InvokeDefaultAction(DefaultActionType.SendGroupMsg,
-                DefaultActionParameterWrapper.Common(invokeProperties.SourceId.ToString(),
+            ctx.Action.InvokeDefaultAction(DefaultActionType.SendGroupMsg,
+                DefaultActionParameterWrapper.Common(backgroundEnvironment.SourceId.ToString(),
                     new SendGroupMgsParam
                     {
                         MessageChain = [new TextMessageNode{Text = BaseHelpText}]
@@ -158,7 +158,7 @@ internal static class HelpCommandHandler
         }
 
         //string cmd = Encoding.UTF8.GetString(invokeProperties.Tokens[0].Content);
-        if (_commandReference.TryGetValue(invokeProperties.AdapterId, out var cps) && cps.Length > 0)
+        if (_commandReference.TryGetValue(backgroundEnvironment.AdapterId, out var cps) && cps.Length > 0)
         {
             CommandProperties cp = cps[0];
             string? desc = cp.CommandDescription;
@@ -173,8 +173,8 @@ internal static class HelpCommandHandler
                     JsonSerializer.Serialize(cp.CommandAlias)
                 ]
             );
-            ctx.ActionInvoke.InvokeDefaultAction(DefaultActionType.SendGroupMsg,
-                DefaultActionParameterWrapper.Common(invokeProperties.SourceId.ToString(),
+            ctx.Action.InvokeDefaultAction(DefaultActionType.SendGroupMsg,
+                DefaultActionParameterWrapper.Common(backgroundEnvironment.SourceId.ToString(),
                     new SendGroupMgsParam
                     {
                         MessageChain = [new TextMessageNode{Text = txt}]
@@ -183,8 +183,8 @@ internal static class HelpCommandHandler
         }
         else
         {
-            ctx.ActionInvoke.InvokeDefaultAction(DefaultActionType.SendGroupMsg,
-                DefaultActionParameterWrapper.Common(invokeProperties.SourceId.ToString(),
+            ctx.Action.InvokeDefaultAction(DefaultActionType.SendGroupMsg,
+                DefaultActionParameterWrapper.Common(backgroundEnvironment.SourceId.ToString(),
                     new SendGroupMgsParam
                     {
                         MessageChain = [new TextMessageNode{Text = "咦，没有这个指令"}]

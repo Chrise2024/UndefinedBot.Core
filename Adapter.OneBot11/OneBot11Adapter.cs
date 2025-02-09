@@ -27,7 +27,7 @@ public sealed class OneBot11Adapter : BaseAdapter
 
     public override byte[]? HandleDefaultAction(DefaultActionType action, DefaultActionParameterWrapper? paras)
     {
-        Console.WriteLine(JsonSerializer.Serialize(paras));
+        Console.WriteLine(paras?.Parameter?.GetType());
 
         switch (paras?.Parameter)
         {

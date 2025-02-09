@@ -2,7 +2,7 @@
 
 namespace UndefinedBot.Core.Adapter.ActionParam;
 
-public sealed class SendGroupMgsParam : IActionParam
+public sealed class SendGroupMgsParam : IDefaultActionParam
 {
     public required IMessageNode[] MessageChain;
 }

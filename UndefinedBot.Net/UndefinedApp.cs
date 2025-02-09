@@ -69,7 +69,7 @@ public class UndefinedApp(IHost host) : IHost
         Logger.LogInformation("UndefinedBot.Net Implementation has started");
         //for test
         _ = await CommandInvokeManager.InvokeCommand(
-            CommandInvokeProperties.Group(
+            CommandBackgroundEnvironment.Group(
                     "help",
                     0,
                     0,
@@ -84,7 +84,7 @@ public class UndefinedApp(IHost host) : IHost
                     ],
                     "$$"
                 ),
-            UserCommandSource.Friend(0, "", 0)
+            UserCommandSource.Friend("", "", 0)
         );
         //Console.WriteLine(r);
         //Console Loop
@@ -106,7 +106,7 @@ public class UndefinedApp(IHost host) : IHost
     public async Task StopAsync(CancellationToken cancellationToken = new())
     {
         CommandInvokeManager.DisposeCommandInstance();
-        ActionInvokeManager.DisposeAdapterInstance();
+        ActionManager.DisposeAdapterInstance();
         await HostApp.StopAsync(cancellationToken);
 
         Logger.LogInformation("UndefinedBot.Net Implementation has stopped");
@@ -130,7 +130,7 @@ public class UndefinedApp(IHost host) : IHost
             CommandInvokeManager.CommandInstanceIndexByAdapter.ToDictionary(
                 k => k.Key,
                 v => v.Value.Select(x =>
-                    x.ExportToCommandProperties(ActionInvokeManager.AdapterInstanceReference)).ToArray()),
+                    x.ExportToCommandProperties(ActionManager.AdapterInstanceReference)).ToArray()),
             _serializerOptions);
 
         FileIO.WriteFile(Path.Join(_programRoot, "loaded_adapters.json"), adapterListText);

@@ -5,10 +5,10 @@ namespace UndefinedBot.Core.Command.CommandSource;
 
 public abstract class BaseCommandSource
 {
-    public virtual long UserId { get; protected set; } = 0;
+    public virtual string UserId { get; protected set; } = "";
     public virtual string UserName { get; protected set; } = "";
     public virtual string UserCard { get; protected set; } = "";
-    public virtual long GroupId { get; protected set; } = 0;
+    public virtual string GroupId { get; protected set; } = "";
     public virtual CommandSourceAuthority Authority { get; protected set; } = CommandSourceAuthority.InvalidSource;
     public abstract bool HasAuthorityLevel(CommandSourceAuthority authorityLevel);
     public abstract bool IsFrom(CommandSourceType sourceType);

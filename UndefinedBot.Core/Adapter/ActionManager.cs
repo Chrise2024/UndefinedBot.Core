@@ -4,16 +4,16 @@ using UndefinedBot.Core.Utils;
 
 namespace UndefinedBot.Core.Adapter;
 
-public sealed class ActionInvokeManager(CommandInvokeProperties cip, ExtendableLogger logger) : IDisposable
+public sealed class ActionManager(CommandBackgroundEnvironment cip, ExtendableLogger logger) : IDisposable
 {
     internal static Dictionary<string, IAdapterInstance> AdapterInstanceReference { get; private set; } = [];
-    private CommandInvokeProperties InvokeProperties => cip;
+    private CommandBackgroundEnvironment BackgroundEnvironment => cip;
     private ExtendableLogger Logger => logger;
     public byte[]? InvokeDefaultAction(DefaultActionType action, DefaultActionParameterWrapper? paras = null)
     {
         try
         {
-            return AdapterInstanceReference.TryGetValue(InvokeProperties.AdapterId, out IAdapterInstance? inst)
+            return AdapterInstanceReference.TryGetValue(BackgroundEnvironment.AdapterId, out IAdapterInstance? inst)
                 ? inst.HandleDefaultAction(action, paras)
                 : null;
         }
@@ -28,7 +28,7 @@ public sealed class ActionInvokeManager(CommandInvokeProperties cip, ExtendableL
     {
         try
         {
-            return AdapterInstanceReference.TryGetValue(InvokeProperties.AdapterId, out IAdapterInstance? inst)
+            return AdapterInstanceReference.TryGetValue(BackgroundEnvironment.AdapterId, out IAdapterInstance? inst)
                 ? inst.HandleCustomAction(action, paras)
                 : null;
         }
@@ -50,7 +50,7 @@ public sealed class ActionInvokeManager(CommandInvokeProperties cip, ExtendableL
     {
         AdapterInstanceReference.Clear();
         Logger.Dispose();
-        InvokeProperties.Dispose();
+        BackgroundEnvironment.Dispose();
     }
 
     internal static void DisposeAdapterInstance()
@@ -77,13 +77,13 @@ public enum DefaultActionType
 public class DefaultActionParameterWrapper
 {
     public readonly string Target;
-    public readonly IActionParam? Parameter;
-    private DefaultActionParameterWrapper(string target, IActionParam? parameter = default)
+    public readonly IDefaultActionParam? Parameter;
+    private DefaultActionParameterWrapper(string target, IDefaultActionParam? parameter = default)
     {
         Target = target;
         Parameter = parameter;
     }
-    public static DefaultActionParameterWrapper Direct(IActionParam content)
+    public static DefaultActionParameterWrapper Direct(IDefaultActionParam content)
     {
         return new DefaultActionParameterWrapper("", content);
     }
@@ -91,7 +91,7 @@ public class DefaultActionParameterWrapper
     {
         return new DefaultActionParameterWrapper(target);
     }
-    public static DefaultActionParameterWrapper Common(string target, IActionParam content)
+    public static DefaultActionParameterWrapper Common(string target, IDefaultActionParam content)
     {
         return new DefaultActionParameterWrapper(target, content);
     }

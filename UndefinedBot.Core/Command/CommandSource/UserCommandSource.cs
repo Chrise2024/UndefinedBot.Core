@@ -2,15 +2,15 @@
 
 public sealed class UserCommandSource : BaseCommandSource
 {
-    public override long UserId { get; protected set; }
+    public override string UserId { get; protected set; }
     public override string UserName { get; protected set; }
     public override string UserCard { get; protected set; }
-    public override long GroupId { get; protected set; }
+    public override string GroupId { get; protected set; }
     public override CommandSourceAuthority Authority { get; protected set; }
 
     public override bool HasAuthorityLevel(CommandSourceAuthority authorityLevel)
     {
-        return CurrentCommandAttrib.HasFlag(CommandAttribFlags.IgnoreAuthority) ||
+        return CurrentCommandAttrib.HasFlag(CommandAttribFlags.IgnoreRequirement) ||
                Authority >= authorityLevel;
     }
 
@@ -20,8 +20,8 @@ public sealed class UserCommandSource : BaseCommandSource
     }
 
     private UserCommandSource(
-        long userId,
-        long groupId,
+        string userId,
+        string groupId,
         string userName,
         CommandSourceAuthority authorityLevel,
         string userCard = ""
@@ -35,18 +35,18 @@ public sealed class UserCommandSource : BaseCommandSource
     }
 
     public static UserCommandSource Friend(
-        long userId,
+        string userId,
         string userName,
         CommandSourceAuthority authorityLevel,
         string userCard = ""
     )
     {
-        return new UserCommandSource(userId, 0, userName, authorityLevel, userCard);
+        return new UserCommandSource(userId, "", userName, authorityLevel, userCard);
     }
 
     public static UserCommandSource Group(
-        long userId,
-        long groupId,
+        string userId,
+        string groupId,
         string userName,
         CommandSourceAuthority authorityLevel,
         string userCard = ""

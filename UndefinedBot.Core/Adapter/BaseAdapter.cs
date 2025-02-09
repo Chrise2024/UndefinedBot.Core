@@ -89,18 +89,18 @@ public abstract class BaseAdapter : IAdapterInstance
     /// <summary>
     /// After processing message, use it to submit this event
     /// </summary>
-    /// <param name="invokeProperties">Command's basic information</param>
+    /// <param name="backgroundEnvironment">Command's basic information</param>
     /// <param name="source">Command Source</param>
     /// <param name="tokens">Tokens, the body of the command</param>
     protected async void SubmitCommandEvent(
-        CommandInvokeProperties invokeProperties,
+        CommandBackgroundEnvironment backgroundEnvironment,
         BaseCommandSource source,
         ParsedToken[] tokens
     )
     {
         CommandInvokeResult result =
             await CommandInvokeManager.InvokeCommand(
-                invokeProperties.Implement(Id, Platform, Protocol, tokens, CommandPrefix),
+                backgroundEnvironment.Implement(Id, Platform, Protocol, tokens, CommandPrefix),
                 source);
         switch (result)
         {

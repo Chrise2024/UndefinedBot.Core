@@ -16,21 +16,21 @@ public sealed class CommandContext : IDisposable
     public readonly string CommandName;
     public readonly string RootPath = Environment.CurrentDirectory;
     public readonly string CachePath;
-    public readonly CommandInvokeProperties InvokeProperties;
+    public readonly CommandBackgroundEnvironment BackgroundEnvironment;
     public readonly ExtendableLogger Logger;
     public readonly CacheManager Cache;
     public readonly HttpRequest Request;
-    public readonly ActionInvokeManager ActionInvoke;
+    public readonly ActionManager Action;
     public readonly MessageBuilder MessageBuilder;
     internal readonly Dictionary<string, ParsedToken> ArgumentReference = [];
     public void SendFeedback(string message)
     {
         //ActionInvoke.InvokeDefaultAction();
-        ActionInvoke.InvokeDefaultAction(
-            InvokeProperties.SubType == MessageSubType.Group
+        Action.InvokeDefaultAction(
+            BackgroundEnvironment.SubType == MessageSubType.Group
                 ? DefaultActionType.SendGroupMsg
                 : DefaultActionType.SendPrivateMsg,
-            DefaultActionParameterWrapper.Common(InvokeProperties.SourceId.ToString(),
+            DefaultActionParameterWrapper.Common(BackgroundEnvironment.SourceId.ToString(),
                 new SendGroupMgsParam
                 {
                     MessageChain = [new TextMessageNode{Text = message}]
@@ -38,16 +38,16 @@ public sealed class CommandContext : IDisposable
             );
     }
 
-    internal CommandContext(CommandInstance commandInstance, CommandInvokeProperties ip)
+    internal CommandContext(CommandInstance commandInstance, CommandBackgroundEnvironment ip)
     {
         PluginName = commandInstance.PluginId;
         CommandName = commandInstance.Name;
         CachePath = Path.Join(RootPath, "Cache", commandInstance.PluginId);
-        InvokeProperties = ip;
+        BackgroundEnvironment = ip;
         Logger = new(["Command", commandInstance.PluginId, commandInstance.Name]);
         Cache = commandInstance.Cache;
         Request = new HttpRequest(commandInstance.PluginId);
-        ActionInvoke = new(ip, Logger);
+        Action = new(ip, Logger);
         MessageBuilder = new();
     }
 
@@ -55,7 +55,7 @@ public sealed class CommandContext : IDisposable
     {
         Logger.Dispose();
         Request.Dispose();
-        ActionInvoke.Dispose();
+        Action.Dispose();
         ArgumentReference.Clear();
     }
 }
@@ -63,8 +63,8 @@ public sealed class CommandContext : IDisposable
 /// <summary>
 /// For help command
 /// </summary>
-internal class HelpCommandContext(CommandInvokeProperties ip)
+internal class HelpCommandContext(CommandBackgroundEnvironment ip)
 {
     public ExtendableLogger Logger => new("Help");
-    public ActionInvokeManager ActionInvoke => new(ip, Logger);
+    public ActionManager Action => new(ip, Logger);
 }

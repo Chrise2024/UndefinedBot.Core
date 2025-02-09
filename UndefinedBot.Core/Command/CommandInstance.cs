@@ -13,7 +13,7 @@ public sealed class CommandInstance : IDisposable
                                                            CommandAttribFlags.ActiveInFriend |
                                                            CommandAttribFlags.ActiveInGroup |
                                                            CommandAttribFlags.ActiveInGuild |
-                                                           CommandAttribFlags.IgnoreAuthority;
+                                                           CommandAttribFlags.IgnoreRequirement;
     internal string TargetAdapterId { get; }
     internal string PluginId { get; }
     internal string Name { get; }
@@ -24,7 +24,7 @@ public sealed class CommandInstance : IDisposable
     private string? CommandExample { get; set; }
     private TimeSpan CommandRateLimit { get; set; } = TimeSpan.Zero;
     
-    private Func<CommandInvokeProperties, BaseCommandSource, bool>? CommandRequire { get; set; }
+    private Func<CommandBackgroundEnvironment, BaseCommandSource, bool>? CommandRequire { get; set; }
     private CommandAttribFlags CommandAttrib { get; set; } = DefaultCommandAttrib;
 
     private long _lastExecute;
@@ -39,7 +39,7 @@ public sealed class CommandInstance : IDisposable
         RootNode.SetCommandAttrib(CommandAttrib);
     }
 
-    internal bool IsTargetCommand(CommandInvokeProperties cip, BaseCommandSource source)
+    internal bool IsTargetCommand(CommandBackgroundEnvironment cip, BaseCommandSource source)
     {
         switch (cip.SubType)
         {
@@ -48,7 +48,7 @@ public sealed class CommandInstance : IDisposable
             case MessageSubType.Guild when !CommandAttrib.HasFlag(CommandAttribFlags.ActiveInGuild):
                 return false;
         }
-        if (!CommandAttrib.HasFlag(CommandAttribFlags.IgnoreAuthority) && CommandRequire is not null && CommandRequire(cip, source))
+        if (!CommandAttrib.HasFlag(CommandAttribFlags.IgnoreRequirement) && CommandRequire is not null && CommandRequire(cip, source))
         {
             return false;
         }
@@ -61,7 +61,7 @@ public sealed class CommandInstance : IDisposable
                (allowAlias && CommandAlias.FindIndex(x => x.Equals(cip.Command, comparison)) != -1);
     }
 
-    internal bool IsReachRateLimit(CommandInvokeProperties ip)
+    internal bool IsReachRateLimit(CommandBackgroundEnvironment ip)
     {
         return !CommandAttrib.HasFlag(CommandAttribFlags.RateLimit) &&
                CommandRateLimit != TimeSpan.Zero && ip.TimeStamp - _lastExecute < CommandRateLimit.TotalSeconds;
@@ -69,7 +69,7 @@ public sealed class CommandInstance : IDisposable
     //For internal invoke command
     internal async Task<ICommandResult> Run(CommandContext ctx, BaseCommandSource source, ParsedToken[] tokens)
     {
-        _lastExecute = ctx.InvokeProperties.TimeStamp;
+        _lastExecute = ctx.BackgroundEnvironment.TimeStamp;
         source.SetCurrentCommandAttrib(CommandAttrib);
         return await RootNode.ExecuteSelf(ctx, source, tokens);
     }
@@ -156,7 +156,7 @@ public sealed class CommandInstance : IDisposable
     /// </summary>
     /// <param name="predicate">requirement</param>
     /// <returns>self</returns>
-    public CommandInstance Require(Func<CommandInvokeProperties, BaseCommandSource, bool> predicate)
+    public CommandInstance Require(Func<CommandBackgroundEnvironment, BaseCommandSource, bool> predicate)
     {
         CommandRequire = predicate;
         return this;
@@ -233,7 +233,7 @@ public readonly struct CommandProperties()
 }
 
 /// <summary>
-/// Attrib of command,default is <see cref="CommandAttribFlags.AllowAlias"/> | <see cref="CommandAttribFlags.ActiveInFriend"/> | <see cref="CommandAttribFlags.ActiveInGroup"/> | <see cref="CommandAttribFlags.ActiveInGuild"/> | <see cref="CommandAttribFlags.IgnoreAuthority"/>
+/// Attrib of command,default is <see cref="CommandAttribFlags.AllowAlias"/> | <see cref="CommandAttribFlags.ActiveInFriend"/> | <see cref="CommandAttribFlags.ActiveInGroup"/> | <see cref="CommandAttribFlags.ActiveInGuild"/> | <see cref="IgnoreRequirement"/>
 /// </summary>
 [Flags]
 public enum CommandAttribFlags
@@ -253,7 +253,7 @@ public enum CommandAttribFlags
     /// <summary>
     /// The command can be triggered without authority check
     /// </summary>
-    IgnoreAuthority = 0b_0000_0000_0000_1000,
+    IgnoreRequirement = 0b_0000_0000_0000_1000,
     /// <summary>
     /// The command's trigger rate will be limited.If command not have this attrib,rate limit set in <see cref="CommandInstance"/> will be ignored
     /// </summary>

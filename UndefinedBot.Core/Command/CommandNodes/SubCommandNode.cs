@@ -15,7 +15,7 @@ public sealed class SubCommandNode(string name) : ICommandNode
     public ICommandNode? Parent { get; private set; }
     public List<ICommandNode> Child { get; } = [];
     public Func<CommandContext, BaseCommandSource, Task>? NodeAction { get; private set; }
-    public Func<CommandInvokeProperties, BaseCommandSource, bool>? NodeRequire { get; private set; }
+    public Func<CommandBackgroundEnvironment, BaseCommandSource, bool>? NodeRequire { get; private set; }
 
     public void SetAction(Func<CommandContext, BaseCommandSource, Task> action)
     {
@@ -50,7 +50,7 @@ public sealed class SubCommandNode(string name) : ICommandNode
         return this;
     }
 
-    public ICommandNode Require(Func<CommandInvokeProperties, BaseCommandSource, bool> predicate)
+    public ICommandNode Require(Func<CommandBackgroundEnvironment, BaseCommandSource, bool> predicate)
     {
         NodeRequire = predicate;
         return this;
@@ -116,7 +116,7 @@ public sealed class SubCommandNode(string name) : ICommandNode
         List<ICommandResult> result = [];
         //Ignore Nodes that Not Hits NodeRequire
         foreach (ICommandNode node in Child.Where(node =>
-                     node.NodeRequire is null || node.NodeRequire(ctx.InvokeProperties, source)))
+                     node.NodeRequire is null || node.NodeRequire(ctx.BackgroundEnvironment, source)))
         {
             ICommandResult res = await node.ExecuteSelf(ctx, source, tokens[1..]);
             if (res is CommandSuccess)

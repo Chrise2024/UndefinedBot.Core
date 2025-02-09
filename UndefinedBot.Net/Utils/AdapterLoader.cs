@@ -63,7 +63,7 @@ internal static class AdapterLoader
         //AssemblyLoadContext.Unload();
         GC.Collect();
         //Mount AdapterInstances on ActionManager to Handle Plugin's Action
-        ActionInvokeManager.UpdateAdapterInstances(adapterInstances);
+        ActionManager.UpdateAdapterInstances(adapterInstances);
         return adapterInstances;
     }
 

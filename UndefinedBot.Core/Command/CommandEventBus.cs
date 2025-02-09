@@ -11,7 +11,7 @@ namespace UndefinedBot.Core.Command;
 /// <remarks>
 /// Don't create instance directly.
 /// </remarks>
-public sealed class CommandInvokeProperties : IDisposable
+public sealed class CommandBackgroundEnvironment : IDisposable
 {
     /// <summary>
     /// Command name
@@ -85,7 +85,7 @@ public sealed class CommandInvokeProperties : IDisposable
     /// <returns></returns>
     public string GetEnvironmentInfo() => $"[{AdapterId}]{Platform}:{Protocol}";
 
-    private CommandInvokeProperties(string command, long sourceId, int msgId, MessageSubType subType, long timeStamp)
+    private CommandBackgroundEnvironment(string command, long sourceId, int msgId, MessageSubType subType, long timeStamp)
     {
         Command = command;
         SourceId = sourceId;
@@ -101,9 +101,9 @@ public sealed class CommandInvokeProperties : IDisposable
     /// <param name="msgId">Message Id of Message</param>
     /// <param name="time">Message Send Time</param>
     /// <returns></returns>
-    public static CommandInvokeProperties Group(string command, long sourceId, int msgId, long time)
+    public static CommandBackgroundEnvironment Group(string command, long sourceId, int msgId, long time)
     {
-        return new CommandInvokeProperties(command, sourceId, msgId, MessageSubType.Group, time);
+        return new CommandBackgroundEnvironment(command, sourceId, msgId, MessageSubType.Group, time);
     }
     /// <summary>
     /// Create Friend Message Event's Meta Data
@@ -113,9 +113,9 @@ public sealed class CommandInvokeProperties : IDisposable
     /// <param name="msgId">Message Id of Message</param>
     /// <param name="time">Message Send Time</param>
     /// <returns></returns>
-    public static CommandInvokeProperties Friend(string command, long sourceId, int msgId, long time)
+    public static CommandBackgroundEnvironment Friend(string command, long sourceId, int msgId, long time)
     {
-        return new CommandInvokeProperties(command, sourceId, msgId, MessageSubType.Friend, time);
+        return new CommandBackgroundEnvironment(command, sourceId, msgId, MessageSubType.Friend, time);
     }
     /// <summary>
     /// Create Guild Message Event's Meta Data
@@ -125,11 +125,11 @@ public sealed class CommandInvokeProperties : IDisposable
     /// <param name="msgId">Message Id of Message</param>
     /// <param name="time">Message Send Time</param>
     /// <returns></returns>
-    public static CommandInvokeProperties Guild(string command, long sourceId, int msgId, long time)
+    public static CommandBackgroundEnvironment Guild(string command, long sourceId, int msgId, long time)
     {
-        return new CommandInvokeProperties(command, sourceId, msgId, MessageSubType.Guild, time);
+        return new CommandBackgroundEnvironment(command, sourceId, msgId, MessageSubType.Guild, time);
     }
-    internal CommandInvokeProperties Implement(string adapterId, string platform, string protocol,
+    internal CommandBackgroundEnvironment Implement(string adapterId, string platform, string protocol,
         ParsedToken[] tokens, string prefix)
     {
         AdapterId = adapterId;

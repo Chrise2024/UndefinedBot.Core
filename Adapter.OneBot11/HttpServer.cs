@@ -37,7 +37,7 @@ public sealed class HttpServiceOptions(string host, uint port, string? accessTok
 
 internal sealed class HttpServer(
     AdapterConfigData adapterConfig,
-    Action<CommandInvokeProperties, BaseCommandSource, ParsedToken[]> submitter,
+    Action<CommandBackgroundEnvironment, BaseCommandSource, ParsedToken[]> submitter,
     ExtendableLogger parentLogger
     )
 {
@@ -45,7 +45,7 @@ internal sealed class HttpServer(
     private readonly HttpServiceOptions _options = HttpServiceOptions.CreateFromConfig(adapterConfig);
     private readonly MsgHandler _handler = new(adapterConfig,parentLogger);
     private ILogger Logger => parentLogger.GetSubLogger("HttpServer");
-    private Action<CommandInvokeProperties, BaseCommandSource, ParsedToken[]> Submitter => submitter;
+    private Action<CommandBackgroundEnvironment, BaseCommandSource, ParsedToken[]> Submitter => submitter;
 
     public async Task ExecuteAsync(CancellationToken token)
     {
@@ -162,7 +162,7 @@ internal sealed class HttpServer(
             sr.Close();
             context.Response.StatusCode = 200;
             context.Response.Close();
-            (CommandInvokeProperties? cip, BaseCommandSource? ucs, ParsedToken[]? tokens) =
+            (CommandBackgroundEnvironment? cip, BaseCommandSource? ucs, ParsedToken[]? tokens) =
                 _handler.HandleMsg(JsonNode.Parse(reqString) ?? throw new Exception("Parse Failed"));
             if (cip is not null && ucs is not null && tokens is not null)
             {

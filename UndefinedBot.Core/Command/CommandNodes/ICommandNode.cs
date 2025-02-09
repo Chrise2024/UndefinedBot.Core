@@ -14,12 +14,12 @@ public interface ICommandNode : IDisposable
     internal ICommandNode? Parent { get; }
     internal List<ICommandNode> Child { get; }
     internal Func<CommandContext, BaseCommandSource, Task>? NodeAction { get; }
-    internal Func<CommandInvokeProperties,BaseCommandSource,bool>? NodeRequire { get; }
+    internal Func<CommandBackgroundEnvironment,BaseCommandSource,bool>? NodeRequire { get; }
     internal void SetParent(ICommandNode parentNode);
     internal void SetCommandAttrib(CommandAttribFlags attr);
     internal void SetAction(Func<CommandContext, BaseCommandSource, Task> action);
     public ICommandNode Then(ICommandNode nextNode);
-    public ICommandNode Require(Func<CommandInvokeProperties,BaseCommandSource,bool> predicate);
+    public ICommandNode Require(Func<CommandBackgroundEnvironment,BaseCommandSource,bool> predicate);
     public ICommandNode Execute(Func<CommandContext, BaseCommandSource, Task> action);
     internal Task<ICommandResult> ExecuteSelf(CommandContext ctx, BaseCommandSource source, ParsedToken[] tokens);
     public string GetArgumentRequire();
