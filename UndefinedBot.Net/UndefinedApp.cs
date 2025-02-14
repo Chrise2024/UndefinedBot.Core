@@ -9,6 +9,7 @@ using UndefinedBot.Core.Adapter;
 using UndefinedBot.Core.Command.Arguments;
 using UndefinedBot.Core.Command.Arguments.TokenContentType;
 using UndefinedBot.Core.Command.CommandSource;
+using UndefinedBot.Core.NetWork;
 using UndefinedBot.Core.Plugin;
 using UndefinedBot.Net.Utils;
 
@@ -71,8 +72,9 @@ public class UndefinedApp(IHost host) : IHost
         _ = await CommandManager.InvokeCommand(
             CommandBackgroundEnvironment.Group(
                     "help",
-                    0,
-                    0,
+                    "0",
+                    "0",
+                    "0",
                     114514191)
                 .Implement(
                     "OneBot11Adapter",
@@ -120,6 +122,7 @@ public class UndefinedApp(IHost host) : IHost
 
     private void Init()
     {
+        HttpRequest.SetConfig(Configuration["HttpRequest:TimeoutMS"],Configuration["HttpRequest:MaxBufferSizeByte"]);
         //Load Adapters
         List<IAdapterInstance> adapterList = AdapterLoader.LoadAdapters();
         //Load Plugins

@@ -16,17 +16,22 @@ public sealed class CommandBackgroundEnvironment : IDisposable
     /// <summary>
     /// Command name
     /// </summary>
-    public readonly string Command;
+    public readonly string CalledCommandName;
 
     /// <summary>
     /// Where the command from
     /// </summary>
-    public readonly long SourceId;
+    public readonly string SenderId;
+
+    /// <summary>
+    /// Where the command from
+    /// </summary>
+    public readonly string SourceId;
 
     /// <summary>
     /// Command's message id
     /// </summary>
-    public readonly int MsgId;
+    public readonly string MsgId;
 
     /// <summary>
     /// Command's message sub type
@@ -85,10 +90,11 @@ public sealed class CommandBackgroundEnvironment : IDisposable
     /// <returns></returns>
     public string GetEnvironmentInfo() => $"[{AdapterId}]{Platform}:{Protocol}";
 
-    private CommandBackgroundEnvironment(string command, long sourceId, int msgId, MessageSubType subType, long timeStamp)
+    private CommandBackgroundEnvironment(string calledCommandName, string sourceId,string senderId, string msgId, MessageSubType subType, long timeStamp)
     {
-        Command = command;
+        CalledCommandName = calledCommandName;
         SourceId = sourceId;
+        SenderId = senderId;
         MsgId = msgId;
         SubType = subType;
         TimeStamp = timeStamp;
@@ -98,12 +104,13 @@ public sealed class CommandBackgroundEnvironment : IDisposable
     /// </summary>
     /// <param name="command">Command Name</param>
     /// <param name="sourceId">Where The Command From(Group Id)</param>
+    /// <param name="senderId">Who called this command(User Id)</param>
     /// <param name="msgId">Message Id of Message</param>
     /// <param name="time">Message Send Time</param>
     /// <returns></returns>
-    public static CommandBackgroundEnvironment Group(string command, long sourceId, int msgId, long time)
+    public static CommandBackgroundEnvironment Group(string command, string sourceId,string senderId, string msgId, long time)
     {
-        return new CommandBackgroundEnvironment(command, sourceId, msgId, MessageSubType.Group, time);
+        return new CommandBackgroundEnvironment(command, sourceId,senderId, msgId, MessageSubType.Group, time);
     }
     /// <summary>
     /// Create Friend Message Event's Meta Data
@@ -113,21 +120,22 @@ public sealed class CommandBackgroundEnvironment : IDisposable
     /// <param name="msgId">Message Id of Message</param>
     /// <param name="time">Message Send Time</param>
     /// <returns></returns>
-    public static CommandBackgroundEnvironment Friend(string command, long sourceId, int msgId, long time)
+    public static CommandBackgroundEnvironment Friend(string command, string sourceId, string msgId, long time)
     {
-        return new CommandBackgroundEnvironment(command, sourceId, msgId, MessageSubType.Friend, time);
+        return new CommandBackgroundEnvironment(command, sourceId,sourceId, msgId, MessageSubType.Friend, time);
     }
     /// <summary>
     /// Create Guild Message Event's Meta Data
     /// </summary>
     /// <param name="command">Command Name</param>
     /// <param name="sourceId">Where The Command From(Guild Id)</param>
+    /// <param name="senderId">Who called this command(User Id)</param>
     /// <param name="msgId">Message Id of Message</param>
     /// <param name="time">Message Send Time</param>
     /// <returns></returns>
-    public static CommandBackgroundEnvironment Guild(string command, long sourceId, int msgId, long time)
+    public static CommandBackgroundEnvironment Guild(string command, string sourceId,string senderId, string msgId, long time)
     {
-        return new CommandBackgroundEnvironment(command, sourceId, msgId, MessageSubType.Guild, time);
+        return new CommandBackgroundEnvironment(command, sourceId,senderId, msgId, MessageSubType.Guild, time);
     }
     internal CommandBackgroundEnvironment Implement(string adapterId, string platform, string protocol,
         ParsedToken[] tokens, string prefix)

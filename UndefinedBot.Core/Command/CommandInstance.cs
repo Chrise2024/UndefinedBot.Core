@@ -57,8 +57,8 @@ public sealed class CommandInstance : IDisposable
             ? StringComparison.OrdinalIgnoreCase
             : StringComparison.Ordinal;
         bool allowAlias = CommandAttrib.HasFlag(CommandAttribFlags.AllowAlias);
-        return Name.Equals(cip.Command, comparison) ||
-               (allowAlias && CommandAlias.FindIndex(x => x.Equals(cip.Command, comparison)) != -1);
+        return Name.Equals(cip.CalledCommandName, comparison) ||
+               (allowAlias && CommandAlias.FindIndex(x => x.Equals(cip.CalledCommandName, comparison)) != -1);
     }
 
     internal bool IsReachRateLimit(CommandBackgroundEnvironment ip)

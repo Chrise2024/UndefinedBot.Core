@@ -18,7 +18,7 @@ internal static class CommandManager
     public static async Task<CommandInvokeResult> InvokeCommand(CommandBackgroundEnvironment backgroundEnvironment,
         BaseCommandSource source)
     {
-        if (backgroundEnvironment.Command.Equals("help", StringComparison.OrdinalIgnoreCase))
+        if (backgroundEnvironment.CalledCommandName.Equals("help", StringComparison.OrdinalIgnoreCase))
         {
             HelpCommandHandler.HandleHelpCommand(backgroundEnvironment);
             return CommandInvokeResult.SuccessInvoke;
@@ -144,7 +144,7 @@ internal static class HelpCommandHandler
                 { TokenType: ParsedTokenTypes.Text, Content: TextTokenContent cmd })
         {
             ctx.Action.InvokeDefaultAction(DefaultActionType.SendGroupMsg,
-                DefaultActionParameterWrapper.Common(backgroundEnvironment.SourceId.ToString(),
+                DefaultActionParameterWrapper.Common(backgroundEnvironment.SourceId,
                     new SendGroupMgsParam
                     {
                         MessageChain = [new TextMessageNode{Text = BaseHelpText}]
@@ -170,7 +170,7 @@ internal static class HelpCommandHandler
                 ]
             );
             ctx.Action.InvokeDefaultAction(DefaultActionType.SendGroupMsg,
-                DefaultActionParameterWrapper.Common(backgroundEnvironment.SourceId.ToString(),
+                DefaultActionParameterWrapper.Common(backgroundEnvironment.SourceId,
                     new SendGroupMgsParam
                     {
                         MessageChain = [new TextMessageNode{Text = txt}]
@@ -180,7 +180,7 @@ internal static class HelpCommandHandler
         else
         {
             ctx.Action.InvokeDefaultAction(DefaultActionType.SendGroupMsg,
-                DefaultActionParameterWrapper.Common(backgroundEnvironment.SourceId.ToString(),
+                DefaultActionParameterWrapper.Common(backgroundEnvironment.SourceId,
                     new SendGroupMgsParam
                     {
                         MessageChain = [new TextMessageNode{Text = "咦，没有这个指令"}]

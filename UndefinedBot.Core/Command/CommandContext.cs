@@ -30,7 +30,7 @@ public sealed class CommandContext : IDisposable
             BackgroundEnvironment.SubType == MessageSubType.Group
                 ? DefaultActionType.SendGroupMsg
                 : DefaultActionType.SendPrivateMsg,
-            DefaultActionParameterWrapper.Common(BackgroundEnvironment.SourceId.ToString(),
+            DefaultActionParameterWrapper.Common(BackgroundEnvironment.SourceId,
                 new SendGroupMgsParam
                 {
                     MessageChain = [new TextMessageNode{Text = message}]

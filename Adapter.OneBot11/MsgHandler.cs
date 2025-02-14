@@ -31,7 +31,7 @@ internal sealed partial class MsgHandler(AdapterConfigData adapterConfig, ILogge
         }
 
         CommandBackgroundEnvironment cip =
-            CommandBackgroundEnvironment.Group(cmdName, msgBody.UserId, msgBody.MessageId, msgBody.Time);
+            CommandBackgroundEnvironment.Group(cmdName,msgBody.GroupId.ToString(), msgBody.UserId.ToString(), msgBody.MessageId.ToString(), msgBody.Time);
         UserCommandSource ucs = UserCommandSource.Group(msgBody.UserId.ToString(), msgBody.GroupId.ToString(), msgBody.Sender.Nickname, 0);
         return (cip, ucs, tokens.ToArray());
     }
