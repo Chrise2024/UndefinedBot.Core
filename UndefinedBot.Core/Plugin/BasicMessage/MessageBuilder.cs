@@ -10,13 +10,6 @@ public sealed class MessageBuilder
         return this;
     }
 
-    public MessageBuilder QFace(string face)
-    {
-        throw new NotImplementedException(nameof(QFace));
-        //_msgChain.Add(temp);
-        return this;
-    }
-
     public MessageBuilder Image(string imageUrl)
     {
         _msgChain.Add(new ImageMessageNode{Url = imageUrl});

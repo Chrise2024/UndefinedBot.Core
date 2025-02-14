@@ -55,8 +55,7 @@ internal sealed class RootCommandNode(string name) : ICommandNode
 
     ICommandNode ICommandNode.Require(Func<CommandBackgroundEnvironment, BaseCommandSource, bool> predicate)
     {
-        NodeRequire = predicate;
-        return this;
+        throw new NotSupportedException("Root Node should not have NodeRequire");
     }
 
     /// <summary>
