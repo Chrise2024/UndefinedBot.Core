@@ -76,7 +76,7 @@ public sealed class VariableNode(string name, IArgumentType argumentType) : ICom
 
         if (!ArgumentType.IsValid(tokens[0]))
         {
-            return new InvalidArgument(tokens[0].TokenType.ToString(), [GetArgumentRequire()]);
+            return new InvalidArgumentCommandResult(tokens[0].TokenType.ToString(), [GetArgumentRequire()]);
         }
 
         ctx.ArgumentReference[NodeName] = tokens[0];
@@ -127,8 +127,8 @@ public sealed class VariableNode(string name, IArgumentType argumentType) : ICom
         }
 
         //传递
-        List<InvalidArgument> il = result.OfType<InvalidArgument>().ToList();
-        return new InvalidArgument(
+        List<InvalidArgumentCommandResult> il = result.OfType<InvalidArgumentCommandResult>().ToList();
+        return new InvalidArgumentCommandResult(
             il.Count == 0 ? "" : il[0].ErrorToken,
             il.SelectMany(item => item.RequiredType).ToList()
         );

@@ -86,7 +86,7 @@ public sealed class SubCommandNode(string name) : ICommandNode
         //                                                        text.Text != NodeName))
         if (tokens[0] is not {TokenType:ParsedTokenTypes.Text, Content:TextTokenContent text} || text.Text != NodeName)
         {
-            return new InvalidArgument(tokens[0].TokenType.ToString(), [GetArgumentRequire()]);
+            return new InvalidArgumentCommandResult(tokens[0].TokenType.ToString(), [GetArgumentRequire()]);
         }
 
         if (NodeAction is not null && (tokens.Length == 1 || Child.Count == 0))
@@ -135,14 +135,12 @@ public sealed class SubCommandNode(string name) : ICommandNode
                 result.OfType<TooLessArgument>().SelectMany(item => item.RequiredType).ToList()
             );
         }
-        else
-        {
-            List<InvalidArgument> il = result.OfType<InvalidArgument>().ToList();
-            return new InvalidArgument(
-                il.Count == 0 ? "" : il[0].ErrorToken,
-                il.SelectMany(item => item.RequiredType).ToList()
-            );
-        }
+
+        List<InvalidArgumentCommandResult> il = result.OfType<InvalidArgumentCommandResult>().ToList();
+        return new InvalidArgumentCommandResult(
+            il.Count == 0 ? "" : il[0].ErrorToken,
+            il.SelectMany(item => item.RequiredType).ToList()
+        );
     }
 
     public string GetArgumentRequire()

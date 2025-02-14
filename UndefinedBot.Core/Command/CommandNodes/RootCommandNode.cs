@@ -127,8 +127,8 @@ internal sealed class RootCommandNode(string name) : ICommandNode
         }
 
         //传递
-        List<InvalidArgument> il = result.OfType<InvalidArgument>().ToList();
-        return new InvalidArgument(
+        List<InvalidArgumentCommandResult> il = result.OfType<InvalidArgumentCommandResult>().ToList();
+        return new InvalidArgumentCommandResult(
             il.Count == 0 ? "" : il[0].ErrorToken,
             il.SelectMany(item => item.RequiredType).ToList()
         );
