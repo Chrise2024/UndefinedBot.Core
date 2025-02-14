@@ -1,18 +1,12 @@
 ﻿
 namespace UndefinedBot.Core.Utils;
 
-public sealed class CacheManager : IDisposable
+public sealed class CacheManager(string pluginName) : IDisposable
 {
-    private readonly Dictionary<string, StorageCacheProperty> _storageCache = [];
-    private readonly Dictionary<string, FileCacheProperty> _fileCache = [];
-    private readonly FixedLogger _cacheLogger;
-    private readonly string _cacheRootPath;
-
-    public CacheManager(string pluginName)
-    {
-        _cacheLogger = new (["Plugin", pluginName, "Cache"]);
-        _cacheRootPath = Path.Join(Environment.CurrentDirectory, "Cache", pluginName);
-    }
+    private readonly Dictionary<string, StorageCacheWrapper> _storageCache = [];
+    private readonly Dictionary<string, FileCacheWrapper> _fileCache = [];
+    private readonly FixedLogger _cacheLogger = new (["Plugin", pluginName, "Cache"]);
+    private readonly string _cacheRootPath = Path.Join(Environment.CurrentDirectory, "Cache", pluginName);
 
     public void UpdateCache()
     {
@@ -37,7 +31,7 @@ public sealed class CacheManager : IDisposable
         {
             string fullPath = Path.Join(_cacheRootPath, cachePath);
             _fileCache[cacheName] =
-                new FileCacheProperty(fullPath, DateTime.Now + cacheDuration);
+                new FileCacheWrapper(fullPath, DateTime.Now + cacheDuration);
             return fullPath;
         }
         catch (Exception ex)
@@ -52,7 +46,7 @@ public sealed class CacheManager : IDisposable
     {
         try
         {
-            _storageCache[cacheName] = new StorageCacheProperty(cacheContent, DateTime.Now + cacheDuration);
+            _storageCache[cacheName] = new StorageCacheWrapper(cacheContent, DateTime.Now + cacheDuration);
             return true;
         }
         catch (Exception ex)
@@ -66,7 +60,7 @@ public sealed class CacheManager : IDisposable
     {
         try
         {
-            StorageCacheProperty sp = _storageCache[cacheName];
+            StorageCacheWrapper sp = _storageCache[cacheName];
             sp.Content = newContent;
             return newContent;
         }
@@ -79,12 +73,12 @@ public sealed class CacheManager : IDisposable
 
     public string? GetFile(string cacheName)
     {
-        return _fileCache.TryGetValue(cacheName, out FileCacheProperty? fp) ? fp.FilePath : null;
+        return _fileCache.TryGetValue(cacheName, out FileCacheWrapper? fp) ? fp.FilePath : null;
     }
 
     public T? GetStorage<T>(string cacheName) where T : notnull
     {
-        if (!_storageCache.TryGetValue(cacheName, out StorageCacheProperty? cp)) return default;
+        if (!_storageCache.TryGetValue(cacheName, out StorageCacheWrapper? cp)) return default;
         return cp.Content is T content ? content : throw new Exception("Incorrect Cache Type");
     }
 
@@ -96,20 +90,14 @@ public sealed class CacheManager : IDisposable
     }
 }
 
-public sealed class StorageCacheProperty(object content, DateTime expiredTime)
+public sealed class StorageCacheWrapper(object content, DateTime expiredTime)
 {
     public object Content = content;
     public readonly DateTime ExpiredTime = expiredTime;
 }
 
-public sealed class FileCacheProperty(string path, DateTime expiredTime)
+public sealed class FileCacheWrapper(string path, DateTime expiredTime)
 {
     public readonly string FilePath = path;
     public readonly DateTime ExpiredTime = expiredTime;
-}
-
-public enum CacheType
-{
-    File = 0,
-    Storage = 1,
 }
