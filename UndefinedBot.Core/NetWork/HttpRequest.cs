@@ -9,8 +9,23 @@ public sealed class HttpRequest(string pluginName) : IDisposable
 {
     private readonly HttpClient _httpClient = new()
     {
-        Timeout = TimeSpan.FromSeconds(10)
+        Timeout = DefaultTimeout,
+        MaxResponseContentBufferSize = MaxBufferSize
     };
+    private static TimeSpan DefaultTimeout { get; set; } = TimeSpan.FromSeconds(10);
+    private static long MaxBufferSize { get; set; } = 0x80000000;
+    
+    internal static void SetConfig(string? timeoutString,string? maxBufferSizeString)
+    {
+        if (int.TryParse(timeoutString, out int timeoutMs))
+        {
+            DefaultTimeout = TimeSpan.FromMicroseconds(timeoutMs);
+        }
+        if (int.TryParse(maxBufferSizeString, out int maxBufferSize))
+        {
+            MaxBufferSize = maxBufferSize;
+        }
+    }
 
     private FixedLogger HttpRequestLogger => new (["Network",pluginName, "HttpRequest"]);
 
@@ -41,26 +56,26 @@ public sealed class HttpRequest(string pluginName) : IDisposable
         }
     }
 
-    public async Task<string> Get([StringSyntax("Uri")] string url)
+    public async Task<string?> Get([StringSyntax("Uri")] string url)
     {
         try
         {
             HttpResponseMessage response = await _httpClient.GetAsync(url);
-            return response.IsSuccessStatusCode ? await response.Content.ReadAsStringAsync() : "";
+            return response.IsSuccessStatusCode ? await response.Content.ReadAsStringAsync() : null;
         }
         catch (TaskCanceledException)
         {
-            HttpRequestLogger.Error("Task Canceled: ");
-            return "";
+            HttpRequestLogger.Error("Http request timeout");
         }
         catch (Exception ex)
         {
             PrintExceptionInfo(ex);
-            return "";
         }
+
+        return null;
     }
 
-    public async Task<byte[]> GetBinary([StringSyntax("Uri")] string url)
+    public async Task<byte[]> GetBytes([StringSyntax("Uri")] string url)
     {
         try
         {
@@ -69,7 +84,7 @@ public sealed class HttpRequest(string pluginName) : IDisposable
         }
         catch (TaskCanceledException)
         {
-            HttpRequestLogger.Error("Task Canceled: ");
+            HttpRequestLogger.Error("Http request timeout");
             return [];
         }
         catch (Exception ex)
