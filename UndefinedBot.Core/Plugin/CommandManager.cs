@@ -11,7 +11,7 @@ using UndefinedBot.Core.Plugin.BasicMessage;
 
 namespace UndefinedBot.Core.Plugin;
 
-internal static class CommandInvokeManager
+internal static class CommandManager
 {
     internal static Dictionary<string, CommandInstance[]> CommandInstanceIndexByAdapter { get; private set; } = [];
 
@@ -50,17 +50,13 @@ internal static class CommandInvokeManager
                 case CommandSuccess:
                     //ignore
                     break;
-                case InvalidArgument iae:
+                case InvalidArgumentCommandResult iae:
                     ctx.Logger.Error(
                         $"Invalid argument: {iae.ErrorToken}, require {JsonSerializer.Serialize(iae.RequiredType)}");
                     break;
                 case TooLessArgument tae:
                     ctx.Logger.Error(
                         $"To less arguments, require {JsonSerializer.Serialize(tae.RequiredType)}");
-                    break;
-                case PermissionDenied pde:
-                    ctx.Logger.Error(
-                        $"Not enough permission: {pde.CurrentPermission} at {pde.CurrentNode}, require {pde.RequiredPermission}");
                     break;
             }
         }
@@ -121,7 +117,7 @@ internal static class HelpCommandHandler
         ctx.Logger.Info("Help Command Triggered");
         if (_commandReference.Count == 0)
         {
-            _commandReference = CommandInvokeManager.CommandInstanceIndexByAdapter.ToDictionary(
+            _commandReference = CommandManager.CommandInstanceIndexByAdapter.ToDictionary(
                 k => k.Key,
                 v => v.Value.Select(x =>
                     x.ExportToCommandProperties(ActionManager.AdapterInstanceReference)).ToArray()

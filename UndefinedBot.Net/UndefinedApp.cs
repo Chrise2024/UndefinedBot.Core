@@ -68,7 +68,7 @@ public class UndefinedApp(IHost host) : IHost
 
         Logger.LogInformation("UndefinedBot.Net Implementation has started");
         //for test
-        _ = await CommandInvokeManager.InvokeCommand(
+        _ = await CommandManager.InvokeCommand(
             CommandBackgroundEnvironment.Group(
                     "help",
                     0,
@@ -105,7 +105,7 @@ public class UndefinedApp(IHost host) : IHost
 
     public async Task StopAsync(CancellationToken cancellationToken = new())
     {
-        CommandInvokeManager.DisposeCommandInstance();
+        CommandManager.DisposeCommandInstance();
         ActionManager.DisposeAdapterInstance();
         await HostApp.StopAsync(cancellationToken);
 
@@ -127,7 +127,7 @@ public class UndefinedApp(IHost host) : IHost
         string pluginListText = JsonSerializer.Serialize(pluginList, _serializerOptions);
         string adapterListText = JsonSerializer.Serialize(adapterList, _serializerOptions);
         string commandReferenceText = JsonSerializer.Serialize(
-            CommandInvokeManager.CommandInstanceIndexByAdapter.ToDictionary(
+            CommandManager.CommandInstanceIndexByAdapter.ToDictionary(
                 k => k.Key,
                 v => v.Value.Select(x =>
                     x.ExportToCommandProperties(ActionManager.AdapterInstanceReference)).ToArray()),

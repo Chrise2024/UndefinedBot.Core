@@ -99,7 +99,7 @@ public abstract class BaseAdapter : IAdapterInstance
     )
     {
         CommandInvokeResult result =
-            await CommandInvokeManager.InvokeCommand(
+            await CommandManager.InvokeCommand(
                 backgroundEnvironment.Implement(Id, Platform, Protocol, tokens, CommandPrefix),
                 source);
         switch (result)

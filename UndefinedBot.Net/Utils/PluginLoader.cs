@@ -79,7 +79,7 @@ internal static class PluginLoader
             pluginInstanceList.Add(pluginInstance);
         }
 
-        CommandInvokeManager.UpdateCommandInstances(commandInstanceList);
+        CommandManager.UpdateCommandInstances(commandInstanceList);
         return pluginInstanceList;
     }
 
