@@ -1,27 +1,28 @@
 ﻿using System.Reflection;
 using System.Text.Json.Nodes;
+using Microsoft.Extensions.Logging;
 using UndefinedBot.Core.Utils;
 using UndefinedBot.Core.Command;
 using UndefinedBot.Core.Plugin;
-using UndefinedBot.Core.Utils.Logging;
 
 namespace UndefinedBot.Net.Utils;
 
-internal static class PluginLoader
+internal sealed class PluginLoader(ILogger<PluginLoader> logger) : IDisposable
 {
     private static string PluginRoot => Path.Join(Program.GetProgramRoot(), "Plugins");
     private static string LibSuffix => GetLibSuffix();
-    private static InternalLogger PluginInitializeLogger => new(["Init", "Load Plugin"]);
+    private readonly List<IPluginInstance> _pluginInstanceList = [];
+    private ILogger<PluginLoader> Logger => logger;
 
-    internal static List<IPluginInstance> LoadPlugins()
+    public List<IPluginInstance> LoadPlugins()
     {
+
         List<CommandInstance> commandInstanceList = [];
-        List<IPluginInstance> pluginInstanceList = [];
-        PluginInitializeLogger.Info("Start Loading Plugins");
+        Logger.LogInformation("Start loading plugins");
         if (!Directory.Exists(PluginRoot))
         {
             Directory.CreateDirectory(PluginRoot);
-            PluginInitializeLogger.Warn("Plugins Folder Not Fount, Creating Adapters Folder.");
+            Logger.LogWarning("Plugins folder not fount, creating Plugins folder.");
             return [];
         }
 
@@ -35,7 +36,7 @@ internal static class PluginLoader
 
             if (!File.Exists(pluginPropertiesFile))
             {
-                PluginInitializeLogger.Warn($"Plugin: <{pf}> Not Have plugin.json");
+                Logger.LogWarning("<{pf}> not have plugin.json", pf);
                 continue;
             }
 
@@ -43,14 +44,14 @@ internal static class PluginLoader
             string? ef = originJson?["EntryFile"]?.GetValue<string>();
             if (originJson is null || ef is null)
             {
-                PluginInitializeLogger.Warn($"Plugin: <{pf}> Invalid plugin.json");
+                Logger.LogWarning("<{pf}> has invalid plugin.json", pf);
                 continue;
             }
 
             string entryFile = $"{Path.Join(pf, ef)}.{LibSuffix}";
             if (!File.Exists(entryFile))
             {
-                PluginInitializeLogger.Warn($"Plugin: <{pf}> Binary EntryFile: <{entryFile}> Not Found");
+                Logger.LogWarning("Binary EntryFile: <{entryFile}> Not Found", entryFile);
                 continue;
             }
 
@@ -69,58 +70,42 @@ internal static class PluginLoader
                 //Clear Remaining Cache
                 FileIO.SafeDeleteFile(cf);
             }
-
-            // string commandRefPath = Path.Join(
-            //     Environment.CurrentDirectory, "CommandReference",
-            //     $"{pluginInstance.Id}.reference.json"
-            // );
-            // FileIO.WriteAsJson(commandRefPath,
-            //     pluginInstance.GetCommandInstance()
-            //         .Select(ci => ci.ExportToCommandProperties(ActionInvokeManager.AdapterInstanceReference)));
-            pluginInstanceList.Add(pluginInstance);
+            _pluginInstanceList.Add(pluginInstance);
         }
 
         CommandManager.UpdateCommandInstances(commandInstanceList);
-        return pluginInstanceList;
+        return _pluginInstanceList;
     }
 
-    private static IPluginInstance? CreatePluginInstance(string pluginLibPath)
+    private IPluginInstance? CreatePluginInstance(string pluginLibPath)
     {
         try
         {
             //Get Plugin Class
-            Type targetClass = Assembly
-                                   .LoadFrom(pluginLibPath)
-                                   .GetTypes()
-                                   .ToList()
-                                   .Find(type => type.BaseType?.FullName == "UndefinedBot.Core.Plugin.BasePlugin")
-                               ?? throw new TypeAccessException("Plugin Class Not Fount");
+            Type? targetClass = Assembly
+                .LoadFrom(pluginLibPath)
+                .GetTypes()
+                .ToList()
+                .Find(type => type.BaseType?.FullName == "UndefinedBot.Core.Plugin.BasePlugin");
+            if (targetClass is null)
+            {
+                Logger.LogWarning("Entry point not found in assembly {pluginLibPath}", pluginLibPath);
+                return null;
+            }
+
             //Create Plugin Class Instance to Invoke Initialize Method
-            IPluginInstance targetClassInstance =
-                Activator.CreateInstance(targetClass) as IPluginInstance ??
-                throw new TypeInitializationException(targetClass.FullName, null);
-            targetClassInstance.Initialize();
-            return targetClassInstance;
-        }
-        catch (TargetInvocationException tie)
-        {
-            PluginInitializeLogger.Error(tie.InnerException, "Plugin's Constructor Occurs Exception");
-        }
-        catch (TypeLoadException tle)
-        {
-            PluginInitializeLogger.Error(tle, "Unable to Find Specific Plugin Class");
-        }
-        catch (TypeInitializationException tie)
-        {
-            PluginInitializeLogger.Error(tie, "Unable to Create Plugin Instance");
-        }
-        catch (MethodAccessException)
-        {
-            PluginInitializeLogger.Error("Unable to Find Specific Plugin Initialize Method");
+            if (Activator.CreateInstance(targetClass) is IPluginInstance targetPluginInstance)
+            {
+                Logger.LogTrace("Adapter instance created: {targetAdapterInstance}", targetPluginInstance.Id);
+                targetPluginInstance.Initialize();
+                return targetPluginInstance;
+            }
+
+            Logger.LogWarning("Fail to create instance from {targetClass}", targetClass.FullName);
         }
         catch (Exception ex)
         {
-            PluginInitializeLogger.Error(ex, $"Unable to Load Command From {pluginLibPath}");
+            Logger.LogError(ex, "Unable to Load Command From {pluginLibPath}", pluginLibPath);
         }
 
         return null;
@@ -148,26 +133,19 @@ internal static class PluginLoader
         }
     }*/
     //for Help command
-    [Obsolete("Help command is build-in now",true)]
-    public static Dictionary<string, CommandProperties> GetCommandReference()
+    public void Unload()
     {
-        PluginInitializeLogger.Info("Extracting Command References");
-        if (FileIO.EnsurePath(Path.Join(Program.GetProgramRoot(), "CommandReference")))
+        CommandManager.DisposeCommandInstance();
+        foreach (var pi in _pluginInstanceList)
         {
-            return Directory
-                .GetFiles(Path.Join(Program.GetProgramRoot(), "CommandReference"))
-                .Select(cfp =>
-                    (FileIO.ReadAsJson<List<CommandProperties>>(cfp) ?? [])
-                    .ToDictionary(k =>
-                            $"{Path.GetFileName(cfp).Split(".")[0]}:{k.Name}", v => v
-                    )
-                )
-                .SelectMany(item => item)
-                .Where(item => item.Value.IsValid())
-                .ToDictionary(k => k.Key, v => v.Value);
+            pi.Dispose();
         }
+        _pluginInstanceList.Clear();
+    }
 
-        PluginInitializeLogger.Warn("CommandReference Folder Not Exist");
-        return [];
+    public void Dispose()
+    {
+        Unload();
+        _pluginInstanceList.Clear();
     }
 }

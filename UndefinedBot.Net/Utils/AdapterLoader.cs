@@ -1,24 +1,29 @@
 ﻿using System.Reflection;
 using System.Text.Json.Nodes;
+using Microsoft.Extensions.Logging;
 using UndefinedBot.Core.Adapter;
 using UndefinedBot.Core.Utils;
-using UndefinedBot.Core.Utils.Logging;
 
 namespace UndefinedBot.Net.Utils;
 
-internal static class AdapterLoader
+internal sealed class AdapterLoader(ILogger<AdapterLoader> logger) : IDisposable
 {
     private static string AdapterRoot => Path.Join(Environment.CurrentDirectory, "Adapters");
+
     private static string LibSuffix => GetLibSuffix();
-    private static InternalLogger AdapterInitializeLogger => new(["Init","Load Adapter"]);
-    public static List<IAdapterInstance> LoadAdapters()
+
+    //private static InternalLogger AdapterInitializeLogger => new(["Init","Load Adapter"]);
+    private ILogger<AdapterLoader> Logger => logger;
+
+    public List<IAdapterInstance> LoadAdapters()
     {
+
         List<IAdapterInstance> adapterInstances = [];
-        AdapterInitializeLogger.Info("Start Loading Adapters");
+        Logger.LogInformation("Start loading adapters");
         if (!Directory.Exists(AdapterRoot))
         {
             Directory.CreateDirectory(AdapterRoot);
-            AdapterInitializeLogger.Warn("Adapters Folder Not Fount, Creating Adapters Folder.");
+            Logger.LogWarning("Adapters folder not fount, creating adapters folder.");
             return [];
         }
 
@@ -26,11 +31,12 @@ internal static class AdapterLoader
         foreach (string af in adapterFolders)
         {
             string adapterPropertiesFile = Path.Join(af, "adapter.json");
+            Logger.LogTrace("Adapter path: {af}", af);
             string sdkFile = Path.Join(af, $"UndefinedBot.Core.{LibSuffix}");
             FileIO.SafeDeleteFile(sdkFile);
             if (!File.Exists(adapterPropertiesFile))
             {
-                AdapterInitializeLogger.Warn($"Adapter: <{af}> Not Have adapter.json");
+                Logger.LogWarning("<{af}> not have adapter.json", af);
                 continue;
             }
 
@@ -38,27 +44,27 @@ internal static class AdapterLoader
             string? ef = originJson?["EntryFile"]?.GetValue<string>();
             if (originJson is null || ef is null)
             {
-                AdapterInitializeLogger.Warn($"Adapter: <{af}> Invalid adapter.json");
+                Logger.LogWarning("<{af}> has invalid adapter.json", af);
                 continue;
             }
-            
+
             string entryFile = $"{Path.Join(af, ef)}.{LibSuffix}";
             if (!File.Exists(entryFile))
             {
-                AdapterInitializeLogger.Warn($"Adapter: <{af}> Binary EntryFile: <{entryFile}> Not Found");
+                Logger.LogWarning("Binary entry file: <{entryFile}> not found", entryFile);
                 continue;
             }
 
             IAdapterInstance? inst = CreateAdapterInstance(entryFile);
             if (inst is null)
             {
-                AdapterInitializeLogger.Warn($"Adapter: <{af}> Load Failed");
+                Logger.LogWarning("<{af}> failed to create instance", af);
                 continue;
             }
 
             //_adapterReferences[inst.Id] = adapterProperties;
             adapterInstances.Add(inst);
-            AdapterInitializeLogger.Info($"Success Load Adapter: {inst.Id}");
+            Logger.LogInformation("Success Load Adapter: {Id}", inst.Id);
         }
 
         //AssemblyLoadContext.Unload();
@@ -68,48 +74,42 @@ internal static class AdapterLoader
         return adapterInstances;
     }
 
-    private static IAdapterInstance? CreateAdapterInstance(string adapterLibPath)
+    private IAdapterInstance? CreateAdapterInstance(string adapterLibPath)
     {
         try
         {
             //Get Adapter Class
-            Type targetClass = Assembly
-                                   .LoadFrom(adapterLibPath)
-                                   .GetTypes()
-                                   .ToList()
-                                   .Find(type => type.BaseType?.FullName == "UndefinedBot.Core.Adapter.BaseAdapter") ??
-                               throw new TypeLoadException(adapterLibPath);
+            Type? targetClass = Assembly
+                .LoadFrom(adapterLibPath)
+                .GetTypes()
+                .ToList()
+                .Find(type => type.BaseType?.FullName == "UndefinedBot.Core.Adapter.BaseAdapter");
+            if (targetClass is null)
+            {
+                Logger.LogWarning("Entry point not found in assembly {adapterLibPath}", adapterLibPath);
+                return null;
+            }
+
+            Logger.LogTrace("Adapter class: {targetClass}", targetClass.FullName);
             //Create Adapter Instance
-            IAdapterInstance targetAdapterInstance =
-                Activator.CreateInstance(targetClass) as IAdapterInstance ??
-                throw new TypeInitializationException(targetClass.FullName, null);
-            return targetAdapterInstance;
-        }
-        catch (TargetInvocationException tie)
-        {
-            AdapterInitializeLogger.Error(tie.InnerException, "Adapter's Constructor Occurs Exception");
-        }
-        catch (TypeLoadException tle)
-        {
-            AdapterInitializeLogger.Error(tle, "Unable to Find Specific Adapter Class");
-        }
-        catch (TypeInitializationException tie)
-        {
-            AdapterInitializeLogger.Error(tie, "Unable to Create Adapter Instance");
-        }
-        catch (MethodAccessException)
-        {
-            AdapterInitializeLogger.Error("Unable to Find Specific Adapter Handler Method");
+            if (Activator.CreateInstance(targetClass) is IAdapterInstance targetAdapterInstance)
+            {
+                Logger.LogTrace("Adapter instance created: {targetAdapterInstance}", targetAdapterInstance.Id);
+                return targetAdapterInstance;
+            }
+
+            Logger.LogWarning("Fail to create instance from {targetClass}", targetClass.FullName);
         }
         catch (Exception ex)
         {
-            AdapterInitializeLogger.Error(ex, $"Unable to Load Adapter From {adapterLibPath}");
+            Logger.LogWarning(ex, "Unable to Load Adapter From {adapterLibPath}", adapterLibPath);
         }
 
         return null;
     }
 
     private static string GetLibSuffix() => "dll";
+
     // .Net dll on Unix is still .dll extension(?
     /*{
         if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
@@ -129,4 +129,9 @@ internal static class AdapterLoader
             throw new PlatformNotSupportedException();
         }
     }*/
+    public void Dispose()
+    {
+        ActionManager.DisposeAdapterInstance();
+        GC.SuppressFinalize(this);
+    }
 }

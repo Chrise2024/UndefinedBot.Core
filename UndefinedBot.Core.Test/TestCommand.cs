@@ -11,7 +11,7 @@ public sealed class TestCommand : BasePlugin
     public override string TargetAdapterId => "OneBot11Adapter";
     public override void Initialize()
     {
-        Console.WriteLine(PluginPath);
+        //Console.WriteLine(PluginPath);
         RegisterCommand("test")
             .Description("指令帮助文档")
             .ShortDescription("帮助")

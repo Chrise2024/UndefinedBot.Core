@@ -6,7 +6,6 @@ using Microsoft.Extensions.DependencyInjection;
 using UndefinedBot.Core.Command;
 using UndefinedBot.Core.Adapter;
 using UndefinedBot.Core.Utils;
-using UndefinedBot.Core.Utils.Logging;
 using UndefinedBot.Core.Command.Arguments;
 using UndefinedBot.Core.Command.Arguments.TokenContentType;
 using UndefinedBot.Core.Command.CommandSource;
@@ -22,47 +21,17 @@ public class UndefinedApp(IHost host) : IHost
     private IHost HostApp => host;
     private ILogger<UndefinedApp> Logger => Services.GetRequiredService<ILogger<UndefinedApp>>();
     private IConfiguration Configuration => Services.GetRequiredService<IConfiguration>();
+    private AdapterLoader AdapterLoader => new(Services.GetRequiredService<ILogger<AdapterLoader>>());
+    private PluginLoader PluginLoader => new(Services.GetRequiredService<ILogger<PluginLoader>>());
+    private LoggerWrapper LoggerWrapper => new(Services.GetRequiredService<ILogger<LoggerWrapper>>());
 
     private readonly string _programRoot = Environment.CurrentDirectory;
 
     private readonly JsonSerializerOptions _serializerOptions = new() { WriteIndented = true, IndentSize = 4 };
 
-    private static LogLevel ConvertLogLevel(UndefinedLogLevel ul)
-    {
-        return ul switch
-        {
-            UndefinedLogLevel.Trace => LogLevel.Trace,
-            UndefinedLogLevel.Debug => LogLevel.Debug,
-            UndefinedLogLevel.Information => LogLevel.Information,
-            UndefinedLogLevel.Warning => LogLevel.Warning,
-            UndefinedLogLevel.Error => LogLevel.Error,
-            UndefinedLogLevel.Critical => LogLevel.Critical,
-            UndefinedLogLevel.None => LogLevel.None,
-            _ => LogLevel.Error,
-        };
-    }
-
     public async Task StartAsync(CancellationToken cancellationToken = new())
     {
-        //Add LogEvent Handler
-        LogEventBus.RegisterCommonLogEventHandler((undefinedLogLevel, template, content) =>
-        {
-            Logger.Log(
-                ConvertLogLevel(undefinedLogLevel),
-                template,
-                content
-            );
-        });
-        LogEventBus.RegisterExceptionLogEventHandler((undefinedLogLevel, ex,  template, content) =>
-        {
-            Logger.Log(
-                ConvertLogLevel(undefinedLogLevel),
-                ex,
-                template,
-                content
-            );
-        });
-        Logger.LogTrace("LogEventBus Registered");
+        LoggerWrapper.StartLogging();
         //Load Adapter and Plugin
         Init();
 
@@ -101,6 +70,8 @@ public class UndefinedApp(IHost host) : IHost
 
             if (tempString == "reload")
             {
+                ActionManager.DisposeAdapterInstance();
+                PluginLoader.Unload();
                 Init();
             }
         }
@@ -108,8 +79,9 @@ public class UndefinedApp(IHost host) : IHost
 
     public async Task StopAsync(CancellationToken cancellationToken = new())
     {
-        CommandManager.DisposeCommandInstance();
+        PluginLoader.Unload();
         ActionManager.DisposeAdapterInstance();
+        LoggerWrapper.StopLogging();
         await HostApp.StopAsync(cancellationToken);
 
         Logger.LogInformation("UndefinedBot.Net Implementation has stopped");
@@ -117,15 +89,15 @@ public class UndefinedApp(IHost host) : IHost
 
     public void Dispose()
     {
+        AdapterLoader.Dispose();
+        PluginLoader.Dispose();
+        LoggerWrapper.Dispose();
         HostApp.Dispose();
         GC.SuppressFinalize(this);
     }
 
     private void Init()
     {
-        //Remove Old Adapter and Plugin
-        CommandManager.DisposeCommandInstance();
-        ActionManager.DisposeAdapterInstance();
         HttpRequest.SetConfig(Configuration["HttpRequest:TimeoutMS"],Configuration["HttpRequest:MaxBufferSizeByte"]);
         //Load Adapters
         List<IAdapterInstance> adapterList = AdapterLoader.LoadAdapters();
