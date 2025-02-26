@@ -2,6 +2,7 @@
 using System.Text.Json.Nodes;
 using UndefinedBot.Core.Adapter;
 using UndefinedBot.Core.Utils;
+using UndefinedBot.Core.Utils.Logging;
 
 namespace UndefinedBot.Net.Utils;
 
@@ -9,7 +10,7 @@ internal static class AdapterLoader
 {
     private static string AdapterRoot => Path.Join(Environment.CurrentDirectory, "Adapters");
     private static string LibSuffix => GetLibSuffix();
-    private static ILogger AdapterInitializeLogger => new ExtendableLogger(["Init","Load Adapter"]);
+    private static InternalLogger AdapterInitializeLogger => new(["Init","Load Adapter"]);
     public static List<IAdapterInstance> LoadAdapters()
     {
         List<IAdapterInstance> adapterInstances = [];

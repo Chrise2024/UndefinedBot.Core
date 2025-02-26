@@ -8,7 +8,7 @@ using UndefinedBot.Core.Adapter;
 using UndefinedBot.Core.Command;
 using UndefinedBot.Core.Command.Arguments;
 using UndefinedBot.Core.Command.CommandSource;
-using UndefinedBot.Core.Utils;
+using UndefinedBot.Core.Utils.Logging;
 
 namespace Adapter.OneBot11;
 
@@ -38,13 +38,13 @@ public sealed class HttpServiceOptions(string host, uint port, string? accessTok
 internal sealed class HttpServer(
     AdapterConfigData adapterConfig,
     Action<CommandBackgroundEnvironment, BaseCommandSource, ParsedToken[]> submitter,
-    ExtendableLogger parentLogger
+    AdapterLogger parentLogger
     )
 {
     private readonly HttpListener _httpListener = new();
     private readonly HttpServiceOptions _options = HttpServiceOptions.CreateFromConfig(adapterConfig);
     private readonly MsgHandler _handler = new(adapterConfig,parentLogger);
-    private ILogger Logger => parentLogger.GetSubLogger("HttpServer");
+    private AdapterLogger Logger => parentLogger.Extend("HttpServer");
     private Action<CommandBackgroundEnvironment, BaseCommandSource, ParsedToken[]> Submitter => submitter;
 
     public async Task ExecuteAsync(CancellationToken token)

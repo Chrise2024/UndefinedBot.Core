@@ -5,6 +5,7 @@ using UndefinedBot.Core.Command.Arguments;
 using UndefinedBot.Core.Command.CommandSource;
 using UndefinedBot.Core.Plugin;
 using UndefinedBot.Core.Utils;
+using UndefinedBot.Core.Utils.Logging;
 
 namespace UndefinedBot.Core.Adapter;
 
@@ -57,7 +58,7 @@ public abstract class BaseAdapter : IAdapterInstance
     /// </summary>
     public string CommandPrefix { get; }
 
-    protected ExtendableLogger Logger => new(["Adapter", Name]);
+    protected AdapterLogger Logger => new(Name);
     protected AdapterConfigData AdapterConfig { get; }
 
     /// <summary>

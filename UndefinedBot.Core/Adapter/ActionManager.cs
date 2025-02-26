@@ -1,14 +1,14 @@
 ﻿using UndefinedBot.Core.Adapter.ActionParam;
 using UndefinedBot.Core.Command;
-using UndefinedBot.Core.Utils;
+using UndefinedBot.Core.Utils.Logging;
 
 namespace UndefinedBot.Core.Adapter;
 
-public sealed class ActionManager(CommandBackgroundEnvironment cip, ExtendableLogger logger) : IDisposable
+public sealed class ActionManager(CommandBackgroundEnvironment cip, CommandLogger logger) : IDisposable
 {
     internal static Dictionary<string, IAdapterInstance> AdapterInstanceReference { get; private set; } = [];
     private CommandBackgroundEnvironment BackgroundEnvironment => cip;
-    private ExtendableLogger Logger => logger;
+    private CommandLogger Logger => logger;
     public byte[]? InvokeDefaultAction(DefaultActionType action, DefaultActionParameterWrapper? paras = null)
     {
         try

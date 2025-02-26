@@ -3,15 +3,16 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using UndefinedBot.Core.Utils;
 using UndefinedBot.Core.Command;
 using UndefinedBot.Core.Adapter;
+using UndefinedBot.Core.Utils;
+using UndefinedBot.Core.Utils.Logging;
 using UndefinedBot.Core.Command.Arguments;
 using UndefinedBot.Core.Command.Arguments.TokenContentType;
 using UndefinedBot.Core.Command.CommandSource;
+using UndefinedBot.Net.Utils;
 using UndefinedBot.Core.NetWork;
 using UndefinedBot.Core.Plugin;
-using UndefinedBot.Net.Utils;
 
 namespace UndefinedBot.Net;
 
@@ -44,21 +45,21 @@ public class UndefinedApp(IHost host) : IHost
     public async Task StartAsync(CancellationToken cancellationToken = new())
     {
         //Add LogEvent Handler
-        LogEventBus.RegisterCommonLogEventHandler((time, undefinedLogLevel, message, template, tags) =>
+        LogEventBus.RegisterCommonLogEventHandler((undefinedLogLevel, template, content) =>
         {
             Logger.Log(
                 ConvertLogLevel(undefinedLogLevel),
                 template,
-                [time, ..tags, undefinedLogLevel.ToString(), message]
+                content
             );
         });
-        LogEventBus.RegisterExceptionLogEventHandler((time, undefinedLogLevel, ex, message, template, tags) =>
+        LogEventBus.RegisterExceptionLogEventHandler((undefinedLogLevel, ex,  template, content) =>
         {
             Logger.Log(
                 ConvertLogLevel(undefinedLogLevel),
                 ex,
                 template,
-                [time, ..tags, undefinedLogLevel.ToString(), message]
+                content
             );
         });
         Logger.LogTrace("LogEventBus Registered");
@@ -122,6 +123,9 @@ public class UndefinedApp(IHost host) : IHost
 
     private void Init()
     {
+        //Remove Old Adapter and Plugin
+        CommandManager.DisposeCommandInstance();
+        ActionManager.DisposeAdapterInstance();
         HttpRequest.SetConfig(Configuration["HttpRequest:TimeoutMS"],Configuration["HttpRequest:MaxBufferSizeByte"]);
         //Load Adapters
         List<IAdapterInstance> adapterList = AdapterLoader.LoadAdapters();

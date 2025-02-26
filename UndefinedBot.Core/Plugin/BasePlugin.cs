@@ -3,6 +3,7 @@ using System.Text.Json.Nodes;
 using UndefinedBot.Core.Command;
 using UndefinedBot.Core.NetWork;
 using UndefinedBot.Core.Utils;
+using UndefinedBot.Core.Utils.Logging;
 
 namespace UndefinedBot.Core.Plugin;
 
@@ -29,7 +30,7 @@ public abstract class BasePlugin : IPluginInstance
     public abstract string TargetAdapterId { get; }
     public long[] GroupId { get; }
     public abstract void Initialize();
-    protected ExtendableLogger Logger => new (["Plugin", Name]);
+    protected PluginLogger Logger => new (Name);
     protected HttpRequest Request => new(Name);
     protected PluginConfigData PluginConfig { get; }
     protected string PluginPath => Path.GetDirectoryName(GetType().Assembly.Location) ?? "/";

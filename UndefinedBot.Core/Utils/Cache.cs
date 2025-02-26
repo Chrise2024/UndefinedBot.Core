@@ -1,11 +1,13 @@
 ﻿
+using UndefinedBot.Core.Utils.Logging;
+
 namespace UndefinedBot.Core.Utils;
 
-public sealed class CacheManager(string pluginName) : IDisposable
+public sealed class CacheManager(string pluginName,string commandName) : IDisposable
 {
     private readonly Dictionary<string, StorageCacheWrapper> _storageCache = [];
     private readonly Dictionary<string, FileCacheWrapper> _fileCache = [];
-    private readonly FixedLogger _cacheLogger = new (["Plugin", pluginName, "Cache"]);
+    private readonly CommandLogger _cacheLogger = new(pluginName,commandName,["Cache"]);
     private readonly string _cacheRootPath = Path.Join(Environment.CurrentDirectory, "Cache", pluginName);
 
     public void UpdateCache()

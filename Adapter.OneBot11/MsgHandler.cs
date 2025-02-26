@@ -6,14 +6,14 @@ using UndefinedBot.Core.Adapter;
 using UndefinedBot.Core.Command;
 using UndefinedBot.Core.Command.Arguments;
 using UndefinedBot.Core.Command.CommandSource;
-using UndefinedBot.Core.Utils;
+using UndefinedBot.Core.Utils.Logging;
 using UndefinedBot.Core.Command.Arguments.TokenContentType;
 
 namespace Adapter.OneBot11;
 
-internal sealed partial class MsgHandler(AdapterConfigData adapterConfig, ILogger parentLogger)
+internal sealed partial class MsgHandler(AdapterConfigData adapterConfig, AdapterLogger parentLogger)
 {
-    private ILogger Logger => parentLogger.GetSubLogger("MsgHandler");
+    private AdapterLogger Logger => parentLogger.Extend("MsgHandler");
     private AdapterConfigData AdapterConfig => adapterConfig;
 
     public (CommandBackgroundEnvironment?, BaseCommandSource?, ParsedToken[]?) HandleMsg(JsonNode msgJson)

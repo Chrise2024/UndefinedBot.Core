@@ -4,6 +4,7 @@ using UndefinedBot.Core.NetWork;
 using UndefinedBot.Core.Utils;
 using UndefinedBot.Core.Command.Arguments;
 using UndefinedBot.Core.Plugin.BasicMessage;
+using UndefinedBot.Core.Utils.Logging;
 
 namespace UndefinedBot.Core.Command;
 
@@ -17,7 +18,7 @@ public sealed class CommandContext : IDisposable
     public readonly string RootPath = Environment.CurrentDirectory;
     public readonly string CachePath;
     public readonly CommandBackgroundEnvironment BackgroundEnvironment;
-    public readonly ExtendableLogger Logger;
+    public readonly CommandLogger Logger;
     public readonly CacheManager Cache;
     public readonly HttpRequest Request;
     public readonly ActionManager Action;
@@ -44,7 +45,7 @@ public sealed class CommandContext : IDisposable
         CommandName = commandInstance.Name;
         CachePath = Path.Join(RootPath, "Cache", commandInstance.PluginId);
         BackgroundEnvironment = ip;
-        Logger = new(["Command", commandInstance.PluginId, commandInstance.Name]);
+        Logger = new(commandInstance.PluginId, commandInstance.Name);
         Cache = commandInstance.Cache;
         Request = new HttpRequest(commandInstance.PluginId);
         Action = new(ip, Logger);
@@ -65,6 +66,6 @@ public sealed class CommandContext : IDisposable
 /// </summary>
 internal class HelpCommandContext(CommandBackgroundEnvironment ip)
 {
-    public ExtendableLogger Logger => new("Help");
+    public CommandLogger Logger => new("Help","Help");
     public ActionManager Action => new(ip, Logger);
 }

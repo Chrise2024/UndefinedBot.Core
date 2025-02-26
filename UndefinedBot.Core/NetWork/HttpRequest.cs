@@ -2,6 +2,7 @@
 using System.Text;
 using System.Text.Json;
 using UndefinedBot.Core.Utils;
+using UndefinedBot.Core.Utils.Logging;
 
 namespace UndefinedBot.Core.NetWork;
 
@@ -27,7 +28,7 @@ public sealed class HttpRequest(string pluginName) : IDisposable
         }
     }
 
-    private FixedLogger HttpRequestLogger => new (["Network",pluginName, "HttpRequest"]);
+    private InternalLogger HttpRequestLogger => new (["Network",pluginName]);
 
     public async Task<string> Post([StringSyntax("Uri")] string url, object? content = null)
     {

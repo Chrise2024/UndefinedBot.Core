@@ -3,6 +3,7 @@ using System.Text.Json.Nodes;
 using UndefinedBot.Core.Utils;
 using UndefinedBot.Core.Command;
 using UndefinedBot.Core.Plugin;
+using UndefinedBot.Core.Utils.Logging;
 
 namespace UndefinedBot.Net.Utils;
 
@@ -10,7 +11,7 @@ internal static class PluginLoader
 {
     private static string PluginRoot => Path.Join(Program.GetProgramRoot(), "Plugins");
     private static string LibSuffix => GetLibSuffix();
-    private static ILogger PluginInitializeLogger => new ExtendableLogger(["Init", "Load Plugin"]);
+    private static InternalLogger PluginInitializeLogger => new(["Init", "Load Plugin"]);
 
     internal static List<IPluginInstance> LoadPlugins()
     {

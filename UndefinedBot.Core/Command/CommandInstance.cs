@@ -29,7 +29,7 @@ public sealed class CommandInstance : IDisposable
 
     private long _lastExecute;
     private RootCommandNode RootNode { get; }
-    internal CacheManager Cache => new(PluginId);
+    internal CacheManager Cache => new(PluginId, Name);
     internal CommandInstance(string commandName, string pluginId, string targetAdapterId)
     {
         TargetAdapterId = targetAdapterId;

@@ -4,15 +4,16 @@ using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
 using UndefinedBot.Core.Adapter;
 using UndefinedBot.Core.Utils;
+using UndefinedBot.Core.Utils.Logging;
 
 namespace Adapter.OneBot11;
 
 public sealed class HttpApi
 {
     private string HttpPostUrl { get; }
-    private ILogger HttpApiLogger { get; }
+    private AdapterLogger HttpApiLogger { get; }
 
-    public HttpApi(AdapterConfigData adapterConfig,ILogger parentLogger)
+    public HttpApi(AdapterConfigData adapterConfig,AdapterLogger parentLogger)
     {
         HttpServiceOptions? postConfig = adapterConfig.OriginalConfig["Post"]?.Deserialize<HttpServiceOptions>();
         if (postConfig is null)
@@ -23,7 +24,7 @@ public sealed class HttpApi
         HttpClient.DefaultRequestHeaders.Add("Authorization", postConfig.AccessToken);
         HttpPostUrl = $"http://{postConfig.Host}:{postConfig.Port}";
 
-        HttpApiLogger  = parentLogger.GetSubLogger("Http Api");
+        HttpApiLogger  = parentLogger.Extend("Http Api");
     }
 
     private static HttpClient HttpClient => new()
