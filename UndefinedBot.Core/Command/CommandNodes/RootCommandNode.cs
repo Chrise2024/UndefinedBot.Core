@@ -76,7 +76,7 @@ internal sealed class RootCommandNode(string name) : ICommandNode
         return this;
     }
 
-    public async Task<ICommandResult> ExecuteSelf(CommandContext ctx, BaseCommandSource source,
+    public async Task<ICommandResult> ExecuteSelfAsyncAsync(CommandContext ctx, BaseCommandSource source,
         ParsedToken[] tokens)
     {
         if (NodeAction is not null && (tokens.Length == 0 || Child.Count == 0))
@@ -107,7 +107,7 @@ internal sealed class RootCommandNode(string name) : ICommandNode
         //Ignore Nodes that Not Hits NodeRequire
         foreach (ICommandNode node in Child.Where(node => node.NodeRequire is null || node.NodeRequire(ctx.BackgroundEnvironment, source)))
         {
-            ICommandResult res = await node.ExecuteSelf(ctx, source, tokens);
+            ICommandResult res = await node.ExecuteSelfAsyncAsync(ctx, source, tokens);
             if (res is CommandSuccess)
             {
                 //有一个子节点可以执行

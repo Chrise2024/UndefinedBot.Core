@@ -30,7 +30,7 @@ public sealed class HttpRequest(string pluginName) : IDisposable
 
     private InternalLogger HttpRequestLogger => new (["Network",pluginName]);
 
-    public async Task<string> Post([StringSyntax("Uri")] string url, object? content = null)
+    public async Task<string> PostAsync([StringSyntax("Uri")] string url, object? content = null)
     {
         try
         {
@@ -57,7 +57,7 @@ public sealed class HttpRequest(string pluginName) : IDisposable
         }
     }
 
-    public async Task<string?> Get([StringSyntax("Uri")] string url)
+    public async Task<string?> GetAsync([StringSyntax("Uri")] string url)
     {
         try
         {
@@ -76,7 +76,7 @@ public sealed class HttpRequest(string pluginName) : IDisposable
         return null;
     }
 
-    public async Task<byte[]> GetBytes([StringSyntax("Uri")] string url)
+    public async Task<byte[]> GetBytesAsync([StringSyntax("Uri")] string url)
     {
         try
         {

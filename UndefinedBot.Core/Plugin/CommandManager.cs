@@ -15,7 +15,7 @@ internal static class CommandManager
 {
     internal static Dictionary<string, CommandInstance[]> CommandInstanceIndexByAdapter { get; private set; } = [];
 
-    public static async Task<CommandInvokeResult> InvokeCommand(CommandBackgroundEnvironment backgroundEnvironment,
+    public static async Task<CommandInvokeResult> InvokeCommandAsync(CommandBackgroundEnvironment backgroundEnvironment,
         BaseCommandSource source)
     {
         if (backgroundEnvironment.CalledCommandName.Equals("help", StringComparison.OrdinalIgnoreCase))
@@ -44,7 +44,7 @@ internal static class CommandManager
         ctx.Logger.Info("Command Triggered");
         try
         {
-            ICommandResult result = await targetCommand.Run(ctx, source, backgroundEnvironment.Tokens);
+            ICommandResult result = await targetCommand.RunAsync(ctx, source, backgroundEnvironment.Tokens);
             switch (result)
             {
                 case CommandSuccess:

@@ -37,9 +37,9 @@ public sealed class HttpApi
     /// </summary>
     /// <param name="targetGroupId">Group Id to send</param>
     /// <param name="msgChain">Onebot11 MessageChain</param>
-    public async Task SendGroupMsg(object targetGroupId, List<JsonNode> msgChain)
+    public async Task SendGroupMsgAsync(object targetGroupId, List<JsonNode> msgChain)
     {
-        await ApiPostRequestWithoutResponse("/send_group_msg", new
+        await ApiPostRequestWithoutResponseAsync("/send_group_msg", new
         {
             group_id = targetGroupId,
             message = msgChain
@@ -50,7 +50,7 @@ public sealed class HttpApi
     /// Send Forward to Group
     /// </summary>
     /// <param name="targetGroupId">Group Id to send</param>
-    public async Task SendGroupForward(object targetGroupId)
+    public async Task SendGroupForwardAsync(object targetGroupId)
     {
         throw new NotImplementedException();
     }
@@ -59,9 +59,9 @@ public sealed class HttpApi
     /// Recall Message in Group
     /// </summary>
     /// <param name="msgId">Message Id of Message to Recall</param>
-    public async void RecallGroupMsg(object msgId)
+    public async void RecallGroupMsgAsync(object msgId)
     {
-        await ApiPostRequestWithoutResponse("/delete_msg", new
+        await ApiPostRequestWithoutResponseAsync("/delete_msg", new
         {
             message_id = msgId
         });
@@ -72,9 +72,9 @@ public sealed class HttpApi
     /// </summary>
     /// <param name="msgId">Message Id of Message to get</param>
     /// <returns>MsgBody</returns>
-    public async Task<MsgBody?> GetMsg(object msgId)
+    public async Task<MsgBody?> GetMsgAsync(object msgId)
     {
-        return await ApiPostRequestWithResponse<MsgBody>("/get_msg", new
+        return await ApiPostRequestWithResponseAsync<MsgBody>("/get_msg", new
         {
             message_id = msgId
         });
@@ -86,9 +86,9 @@ public sealed class HttpApi
     /// <param name="targetGroupId">Group Id</param>
     /// <param name="targetUin">User Id to get</param>
     /// <returns>GroupMember</returns>
-    public async Task<GroupMember?> GetGroupMember(object targetGroupId, object targetUin)
+    public async Task<GroupMember?> GetGroupMemberAsync(object targetGroupId, object targetUin)
     {
-        return await ApiPostRequestWithResponse<GroupMember>("/get_group_member_info", new
+        return await ApiPostRequestWithResponseAsync<GroupMember>("/get_group_member_info", new
         {
             group_id = targetGroupId,
             user_id = targetUin,
@@ -101,21 +101,21 @@ public sealed class HttpApi
     /// </summary>
     /// <param name="targetGroupId">Group Id to get</param>
     /// <returns>A list contains GroupMember</returns>
-    public async Task<List<GroupMember>> GetGroupMemberList(object targetGroupId)
+    public async Task<List<GroupMember>> GetGroupMemberListAsync(object targetGroupId)
     {
-        return await ApiPostRequestWithResponse<List<GroupMember>>("/get_group_member_list", new
+        return await ApiPostRequestWithResponseAsync<List<GroupMember>>("/get_group_member_list", new
         {
             group_id = targetGroupId,
             no_cache = false
         }) ?? [];
     }
 
-    public async Task<bool> CheckUin(long targetGroupId, long targetUin)
+    public async Task<bool> CheckUinAsync(long targetGroupId, long targetUin)
     {
-        return ((await GetGroupMember(targetGroupId, targetUin))?.GroupId ?? 0) != 0;
+        return ((await GetGroupMemberAsync(targetGroupId, targetUin))?.GroupId ?? 0) != 0;
     }
 
-    private async Task<T?> ApiPostRequestWithResponse<T>(string subUrl, object? content = null)
+    private async Task<T?> ApiPostRequestWithResponseAsync<T>(string subUrl, object? content = null)
     {
         try
         {
@@ -144,7 +144,7 @@ public sealed class HttpApi
         }
     }
 
-    private async Task ApiPostRequestWithoutResponse(string subUrl, object? content = null)
+    private async Task ApiPostRequestWithoutResponseAsync(string subUrl, object? content = null)
     {
         try
         {

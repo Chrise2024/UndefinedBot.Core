@@ -67,11 +67,11 @@ public sealed class CommandInstance : IDisposable
                CommandRateLimit != TimeSpan.Zero && ip.TimeStamp - _lastExecute < CommandRateLimit.TotalSeconds;
     }
     //For internal invoke command
-    internal async Task<ICommandResult> Run(CommandContext ctx, BaseCommandSource source, ParsedToken[] tokens)
+    internal async Task<ICommandResult> RunAsync(CommandContext ctx, BaseCommandSource source, ParsedToken[] tokens)
     {
         _lastExecute = ctx.BackgroundEnvironment.TimeStamp;
         source.SetCurrentCommandAttrib(CommandAttrib);
-        return await RootNode.ExecuteSelf(ctx, source, tokens);
+        return await RootNode.ExecuteSelfAsyncAsync(ctx, source, tokens);
     }
     /// <summary>
     /// Add command attrib

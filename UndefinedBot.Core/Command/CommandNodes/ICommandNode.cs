@@ -21,7 +21,7 @@ public interface ICommandNode : IDisposable
     public ICommandNode Then(ICommandNode nextNode);
     public ICommandNode Require(Func<CommandBackgroundEnvironment,BaseCommandSource,bool> predicate);
     public ICommandNode Execute(Func<CommandContext, BaseCommandSource, Task> action);
-    internal Task<ICommandResult> ExecuteSelf(CommandContext ctx, BaseCommandSource source, ParsedToken[] tokens);
+    internal Task<ICommandResult> ExecuteSelfAsyncAsync(CommandContext ctx, BaseCommandSource source, ParsedToken[] tokens);
     public string GetArgumentRequire();
 }
 

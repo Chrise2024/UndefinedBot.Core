@@ -15,7 +15,7 @@ public sealed class OneBot11Adapter : BaseAdapter
     private CancellationTokenSource Cts { get; } = new();
     public OneBot11Adapter()
     {
-        HttpServer hs = new(AdapterConfig, SubmitCommandEvent,Logger);
+        HttpServer hs = new(AdapterConfig, SubmitCommandEventAsync,Logger);
         MainLoopInstance = hs.ExecuteAsync(Cts.Token);
     }
 

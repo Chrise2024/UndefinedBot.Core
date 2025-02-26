@@ -74,7 +74,7 @@ public sealed class SubCommandNode(string name) : ICommandNode
         return this;
     }
 
-    public async Task<ICommandResult> ExecuteSelf(CommandContext ctx, BaseCommandSource source,
+    public async Task<ICommandResult> ExecuteSelfAsyncAsync(CommandContext ctx, BaseCommandSource source,
         ParsedToken[] tokens)
     {
         if (tokens.Length == 0)
@@ -118,7 +118,7 @@ public sealed class SubCommandNode(string name) : ICommandNode
         foreach (ICommandNode node in Child.Where(node =>
                      node.NodeRequire is null || node.NodeRequire(ctx.BackgroundEnvironment, source)))
         {
-            ICommandResult res = await node.ExecuteSelf(ctx, source, tokens[1..]);
+            ICommandResult res = await node.ExecuteSelfAsyncAsync(ctx, source, tokens[1..]);
             if (res is CommandSuccess)
             {
                 //有一个子节点可以执行

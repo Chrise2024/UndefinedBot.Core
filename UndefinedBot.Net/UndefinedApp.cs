@@ -15,7 +15,7 @@ using UndefinedBot.Core.Plugin;
 
 namespace UndefinedBot.Net;
 
-public class UndefinedApp(IHost host) : IHost
+public sealed class UndefinedApp(IHost host) : IHost
 {
     public IServiceProvider Services => HostApp.Services;
     private IHost HostApp => host;
@@ -39,7 +39,7 @@ public class UndefinedApp(IHost host) : IHost
 
         Logger.LogInformation("UndefinedBot.Net Implementation has started");
         //for test
-        _ = await CommandManager.InvokeCommand(
+        _ = await CommandManager.InvokeCommandAsync(
             CommandBackgroundEnvironment.Group(
                     "help",
                     "0",
