@@ -7,12 +7,12 @@ using UndefinedBot.Core.Plugin;
 
 namespace UndefinedBot.Net.Utils;
 
-internal sealed class PluginLoader(ILogger<PluginLoader> logger) : IDisposable
+internal sealed class PluginService(ILogger<PluginService> logger) : IDisposable
 {
     private static string PluginRoot => Path.Join(Program.GetProgramRoot(), "Plugins");
     private static string LibSuffix => GetLibSuffix();
     private readonly List<IPluginInstance> _pluginInstanceList = [];
-    private ILogger<PluginLoader> Logger => logger;
+    private ILogger<PluginService> Logger => logger;
 
     public List<IPluginInstance> LoadPlugins()
     {

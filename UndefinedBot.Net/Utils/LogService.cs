@@ -3,7 +3,7 @@ using UndefinedBot.Core.Utils.Logging;
 
 namespace UndefinedBot.Net.Utils;
 
-internal sealed class LoggerWrapper(ILogger<LoggerWrapper> logger) : IDisposable
+internal sealed class LogService(ILogger<LogService> logger) : IDisposable
 {
     private Task? LoggerTask { get; set; }
     private readonly CancellationTokenSource _cancellationTokenSource = new();

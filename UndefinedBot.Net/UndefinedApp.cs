@@ -15,29 +15,40 @@ using UndefinedBot.Core.Plugin;
 
 namespace UndefinedBot.Net;
 
-public sealed class UndefinedApp(IHost host) : IHost
+public sealed class UndefinedApp : IHost
 {
-    public IServiceProvider Services => HostApp.Services;
-    private IHost HostApp => host;
-    private ILogger<UndefinedApp> Logger => Services.GetRequiredService<ILogger<UndefinedApp>>();
-    private IConfiguration Configuration => Services.GetRequiredService<IConfiguration>();
-    private AdapterLoader AdapterLoader => new(Services.GetRequiredService<ILogger<AdapterLoader>>());
-    private PluginLoader PluginLoader => new(Services.GetRequiredService<ILogger<PluginLoader>>());
-    private LoggerWrapper LoggerWrapper => new(Services.GetRequiredService<ILogger<LoggerWrapper>>());
+    private readonly IHost _hostApp;
+    public IServiceProvider Services => _hostApp.Services;
+    
+    private readonly ILogger<UndefinedApp> _logger;
+    private readonly IConfiguration _configuration;
+    private readonly AdapterService _adapterService;
+    private readonly PluginService _pluginService;
+    private readonly LogService _logService;
 
     private readonly string _programRoot = Environment.CurrentDirectory;
 
     private readonly JsonSerializerOptions _serializerOptions = new() { WriteIndented = true, IndentSize = 4 };
 
+    public UndefinedApp(IHost host)
+    {
+        _hostApp = host;
+        _logger = Services.GetRequiredService<ILogger<UndefinedApp>>();
+        _configuration = Services.GetRequiredService<IConfiguration>();
+        _adapterService = Services.GetRequiredService<AdapterService>();
+        _pluginService = Services.GetRequiredService<PluginService>();
+        _logService = Services.GetRequiredService<LogService>();
+    }
+
     public async Task StartAsync(CancellationToken cancellationToken = new())
     {
-        LoggerWrapper.StartLogging();
+        _logService.StartLogging();
         //Load Adapter and Plugin
         Init();
 
-        await HostApp.StartAsync(cancellationToken);
+        await _hostApp.StartAsync(cancellationToken);
 
-        Logger.LogInformation("UndefinedBot.Net Implementation has started");
+        _logger.LogInformation("UndefinedBot.Net Implementation has started");
         //for test
         _ = await CommandManager.InvokeCommandAsync(
             CommandBackgroundEnvironment.Group(
@@ -71,7 +82,7 @@ public sealed class UndefinedApp(IHost host) : IHost
             if (tempString == "reload")
             {
                 ActionManager.DisposeAdapterInstance();
-                PluginLoader.Unload();
+                _pluginService.Unload();
                 Init();
             }
         }
@@ -79,30 +90,29 @@ public sealed class UndefinedApp(IHost host) : IHost
 
     public async Task StopAsync(CancellationToken cancellationToken = new())
     {
-        PluginLoader.Unload();
+        _pluginService.Unload();
         ActionManager.DisposeAdapterInstance();
-        LoggerWrapper.StopLogging();
-        await HostApp.StopAsync(cancellationToken);
+        _logService.StopLogging();
+        await _hostApp.StopAsync(cancellationToken);
 
-        Logger.LogInformation("UndefinedBot.Net Implementation has stopped");
+        _logger.LogInformation("UndefinedBot.Net Implementation has stopped");
     }
 
     public void Dispose()
     {
-        AdapterLoader.Dispose();
-        PluginLoader.Dispose();
-        LoggerWrapper.Dispose();
-        HostApp.Dispose();
-        GC.SuppressFinalize(this);
+        _adapterService.Dispose();
+        _pluginService.Dispose();
+        _logService.Dispose();
+        _hostApp.Dispose();
     }
 
     private void Init()
     {
-        HttpRequest.SetConfig(Configuration["HttpRequest:TimeoutMS"],Configuration["HttpRequest:MaxBufferSizeByte"]);
+        HttpRequest.SetConfig(_configuration["HttpRequest:TimeoutMS"],_configuration["HttpRequest:MaxBufferSizeByte"]);
         //Load Adapters
-        List<IAdapterInstance> adapterList = AdapterLoader.LoadAdapters();
+        List<IAdapterInstance> adapterList = _adapterService.LoadAdapters();
         //Load Plugins
-        List<IPluginInstance> pluginList = PluginLoader.LoadPlugins();
+        List<IPluginInstance> pluginList = _pluginService.LoadPlugins();
         string pluginListText = JsonSerializer.Serialize(pluginList, _serializerOptions);
         string adapterListText = JsonSerializer.Serialize(adapterList, _serializerOptions);
         string commandReferenceText = JsonSerializer.Serialize(
@@ -116,10 +126,10 @@ public sealed class UndefinedApp(IHost host) : IHost
 
         FileIO.WriteFile(Path.Join(_programRoot, "loaded_plugins.json"), pluginListText);
 
-        Logger.LogInformation("Loaded Adapters:{AdapterList}", adapterListText);
+        _logger.LogInformation("Loaded Adapters:{AdapterList}", adapterListText);
 
-        Logger.LogInformation("Loaded Plugins:{PluginList}", pluginListText);
+        _logger.LogInformation("Loaded Plugins:{PluginList}", pluginListText);
 
-        Logger.LogInformation("Loaded Commands:{CommandList}", commandReferenceText);
+        _logger.LogInformation("Loaded Commands:{CommandList}", commandReferenceText);
     }
 }

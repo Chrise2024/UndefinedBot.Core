@@ -1,19 +1,20 @@
 ﻿using System.Reflection;
 using System.Text.Json.Nodes;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using UndefinedBot.Core.Adapter;
 using UndefinedBot.Core.Utils;
 
 namespace UndefinedBot.Net.Utils;
 
-internal sealed class AdapterLoader(ILogger<AdapterLoader> logger) : IDisposable
+internal sealed class AdapterService(ILogger<AdapterService> logger) : IDisposable
 {
     private static string AdapterRoot => Path.Join(Environment.CurrentDirectory, "Adapters");
 
     private static string LibSuffix => GetLibSuffix();
 
     //private static InternalLogger AdapterInitializeLogger => new(["Init","Load Adapter"]);
-    private ILogger<AdapterLoader> Logger => logger;
+    private ILogger<AdapterService> Logger => logger;
 
     public List<IAdapterInstance> LoadAdapters()
     {
