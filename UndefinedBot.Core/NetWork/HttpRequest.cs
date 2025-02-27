@@ -14,7 +14,7 @@ public sealed class HttpRequest(string pluginName) : IDisposable
         MaxResponseContentBufferSize = MaxBufferSize
     };
     private static TimeSpan DefaultTimeout { get; set; } = TimeSpan.FromSeconds(10);
-    private static long MaxBufferSize { get; set; } = 0x80000000;
+    private static long MaxBufferSize { get; set; } = 0x10000000;
     
     internal static void SetConfig(string? timeoutString,string? maxBufferSizeString)
     {

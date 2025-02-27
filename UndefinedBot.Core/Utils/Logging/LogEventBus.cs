@@ -4,7 +4,7 @@ namespace UndefinedBot.Core.Utils.Logging;
 
 internal static class LogEventBus
 {
-    public static readonly Channel<LogMessage> LogMessageChannel = Channel.CreateBounded<LogMessage>(new BoundedChannelOptions(128)
+    private static readonly Channel<LogMessage> _logMessageChannel = Channel.CreateBounded<LogMessage>(new BoundedChannelOptions(128)
     {
         FullMode = BoundedChannelFullMode.DropOldest,
         SingleReader = true
@@ -16,7 +16,7 @@ internal static class LogEventBus
     {
         LogMessage logMessage = new(undefinedLogLevel,
             template, [GetTimeString(), ..tags, undefinedLogLevel, message]);
-        LogMessageChannel.Writer.TryWrite(logMessage);
+        _logMessageChannel.Writer.TryWrite(logMessage);
     }
 
     public static void SendLogMessageWithException(UndefinedLogLevel undefinedLogLevel, Exception? ex,
@@ -25,7 +25,11 @@ internal static class LogEventBus
     {
         LogMessage logMessage = new(undefinedLogLevel,
             template, [GetTimeString(), ..tags, undefinedLogLevel, message], ex);
-        LogMessageChannel.Writer.TryWrite(logMessage);
+        _logMessageChannel.Writer.TryWrite(logMessage);
+    }
+    public static async Task<LogMessage> ReadLogMessageAsync(CancellationToken token)
+    {
+        return await _logMessageChannel.Reader.ReadAsync(token);
     }
 
     private static string GetTimeString() => DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");

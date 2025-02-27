@@ -24,7 +24,7 @@ internal sealed class LogService(ILogger<LogService> logger) : IDisposable
     {
         while (!token.IsCancellationRequested)
         {
-            LogMessage lm = await LogEventBus.LogMessageChannel.Reader.ReadAsync(token);
+            LogMessage lm = await LogEventBus.ReadLogMessageAsync(token);
             logger.Log(
                 ConvertLogLevel(lm.LogLevel),
                 lm.Exception,

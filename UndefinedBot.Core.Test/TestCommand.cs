@@ -8,7 +8,7 @@ public sealed class TestCommand : BasePlugin
 {
     public override string Id => "Test";
     public override string Name => "Test Plugin";
-    public override string TargetAdapterId => "OneBot11Adapter";
+    public override string[] TargetAdapter => ["OneBot11Adapter"];
     public override void Initialize()
     {
         //Console.WriteLine(PluginPath);

@@ -17,21 +17,21 @@ public sealed class CommandContext : IDisposable
     public readonly string CommandName;
     public readonly string RootPath = Environment.CurrentDirectory;
     public readonly string CachePath;
-    public readonly CommandBackgroundEnvironment BackgroundEnvironment;
+    public readonly CommandInformation Information;
     public readonly CommandLogger Logger;
     public readonly CacheManager Cache;
     public readonly HttpRequest Request;
     public readonly ActionManager Action;
     public readonly MessageBuilder MessageBuilder;
     internal readonly Dictionary<string, ParsedToken> ArgumentReference = [];
-    public void SendFeedback(string message)
+    public async Task SendFeedbackAsync(string message)
     {
         //ActionInvoke.InvokeDefaultAction();
-        Action.InvokeDefaultAction(
-            BackgroundEnvironment.SubType == MessageSubType.Group
+        await Action.InvokeDefaultAction(
+            Information.SubType == MessageSubType.Group
                 ? DefaultActionType.SendGroupMsg
                 : DefaultActionType.SendPrivateMsg,
-            DefaultActionParameterWrapper.Common(BackgroundEnvironment.SourceId,
+            DefaultActionParameterWrapper.Common(Information.SourceId,
                 new SendGroupMgsParam
                 {
                     MessageChain = [new TextMessageNode{Text = message}]
@@ -39,12 +39,12 @@ public sealed class CommandContext : IDisposable
             );
     }
 
-    internal CommandContext(CommandInstance commandInstance, CommandBackgroundEnvironment ip)
+    internal CommandContext(CommandInstance commandInstance, CommandInformation ip)
     {
         PluginName = commandInstance.PluginId;
         CommandName = commandInstance.Name;
         CachePath = Path.Join(RootPath, "Cache", commandInstance.PluginId);
-        BackgroundEnvironment = ip;
+        Information = ip;
         Logger = new(commandInstance.PluginId, commandInstance.Name);
         Cache = commandInstance.Cache;
         Request = new HttpRequest(commandInstance.PluginId);
@@ -64,7 +64,7 @@ public sealed class CommandContext : IDisposable
 /// <summary>
 /// For help command
 /// </summary>
-internal class HelpCommandContext(CommandBackgroundEnvironment ip)
+internal class HelpCommandContext(CommandInformation ip)
 {
     public CommandLogger Logger => new("Help","Help");
     public ActionManager Action => new(ip, Logger);

@@ -11,7 +11,7 @@ public interface IPluginInstance : IDisposable
 {
     string Id { get; }
     string Name { get; }
-    string TargetAdapterId { get; }
+    string[] TargetAdapter { get; }
     long[] GroupId { get; }
     internal List<CommandInstance> GetCommandInstance();
     void Initialize();
@@ -27,7 +27,7 @@ public abstract class BasePlugin : IPluginInstance
     /// <summary>
     /// Adapter's identifier that plugin will docker on
     /// </summary>
-    public abstract string TargetAdapterId { get; }
+    public abstract string[] TargetAdapter { get; }
     public long[] GroupId { get; }
     public abstract void Initialize();
     protected PluginLogger Logger => new (Name);
@@ -66,7 +66,7 @@ public abstract class BasePlugin : IPluginInstance
     /// </returns>
     protected CommandInstance RegisterCommand(string commandName)
     {
-        CommandInstance ci = new(commandName, Id, TargetAdapterId);
+        CommandInstance ci = new(commandName, Id, TargetAdapter);
         CommandInstances.Add(ci);
         return ci;
     }

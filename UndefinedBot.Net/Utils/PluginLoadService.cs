@@ -7,14 +7,14 @@ using UndefinedBot.Core.Plugin;
 
 namespace UndefinedBot.Net.Utils;
 
-internal sealed class PluginService(ILogger<PluginService> logger) : IDisposable
+internal sealed class PluginLoadService(ILogger<PluginLoadService> logger) : IDisposable
 {
     private static string PluginRoot => Path.Join(Program.GetProgramRoot(), "Plugins");
     private static string LibSuffix => GetLibSuffix();
     private readonly List<IPluginInstance> _pluginInstanceList = [];
-    private ILogger<PluginService> Logger => logger;
+    private ILogger<PluginLoadService> Logger => logger;
 
-    public List<IPluginInstance> LoadPlugins()
+    public (List<IPluginInstance>,List<CommandInstance>) LoadPlugins()
     {
 
         List<CommandInstance> commandInstanceList = [];
@@ -23,7 +23,7 @@ internal sealed class PluginService(ILogger<PluginService> logger) : IDisposable
         {
             Directory.CreateDirectory(PluginRoot);
             Logger.LogWarning("Plugins folder not fount, creating Plugins folder.");
-            return [];
+            return ([],[]);
         }
 
         string[] pluginFolders = Directory.GetDirectories(PluginRoot);
@@ -72,9 +72,7 @@ internal sealed class PluginService(ILogger<PluginService> logger) : IDisposable
             }
             _pluginInstanceList.Add(pluginInstance);
         }
-
-        CommandManager.UpdateCommandInstances(commandInstanceList);
-        return _pluginInstanceList;
+        return (_pluginInstanceList,commandInstanceList);
     }
 
     private IPluginInstance? CreatePluginInstance(string pluginLibPath)
@@ -135,7 +133,6 @@ internal sealed class PluginService(ILogger<PluginService> logger) : IDisposable
     //for Help command
     public void Unload()
     {
-        CommandManager.DisposeCommandInstance();
         foreach (var pi in _pluginInstanceList)
         {
             pi.Dispose();

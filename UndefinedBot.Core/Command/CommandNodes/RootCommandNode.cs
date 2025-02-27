@@ -18,7 +18,7 @@ internal sealed class RootCommandNode(string name) : ICommandNode
     public ICommandNode? Parent { get; private set; }
     public List<ICommandNode> Child { get; } = [];
     public Func<CommandContext, BaseCommandSource, Task>? NodeAction { get; private set; }
-    public Func<CommandBackgroundEnvironment,BaseCommandSource,bool>? NodeRequire { get; private set; }
+    public Func<CommandInformation,BaseCommandSource,bool>? NodeRequire { get; private set; }
 
     /// <summary>
     /// <para>Set action of the node</para>
@@ -53,7 +53,7 @@ internal sealed class RootCommandNode(string name) : ICommandNode
         return this;
     }
 
-    ICommandNode ICommandNode.Require(Func<CommandBackgroundEnvironment, BaseCommandSource, bool> predicate)
+    ICommandNode ICommandNode.Require(Func<CommandInformation, BaseCommandSource, bool> predicate)
     {
         throw new NotSupportedException("Root Node should not have NodeRequire");
     }
@@ -105,7 +105,7 @@ internal sealed class RootCommandNode(string name) : ICommandNode
         //有子节点
         List<ICommandResult> result = [];
         //Ignore Nodes that Not Hits NodeRequire
-        foreach (ICommandNode node in Child.Where(node => node.NodeRequire is null || node.NodeRequire(ctx.BackgroundEnvironment, source)))
+        foreach (ICommandNode node in Child.Where(node => node.NodeRequire is null || node.NodeRequire(ctx.Information, source)))
         {
             ICommandResult res = await node.ExecuteSelfAsyncAsync(ctx, source, tokens);
             if (res is CommandSuccess)

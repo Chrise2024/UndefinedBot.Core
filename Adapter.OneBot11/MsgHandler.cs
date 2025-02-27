@@ -16,7 +16,7 @@ internal sealed partial class MsgHandler(AdapterConfigData adapterConfig, Adapte
     private AdapterLogger Logger => parentLogger.Extend("MsgHandler");
     private AdapterConfigData AdapterConfig => adapterConfig;
 
-    public (CommandBackgroundEnvironment?, BaseCommandSource?, ParsedToken[]?) HandleMsg(JsonNode msgJson)
+    public (CommandInformation?, BaseCommandSource?, ParsedToken[]?) HandleMsg(JsonNode msgJson)
     {
         if (!IsGroupMessageToHandle(msgJson))
         {
@@ -30,8 +30,8 @@ internal sealed partial class MsgHandler(AdapterConfigData adapterConfig, Adapte
             return (null, null, null);
         }
 
-        CommandBackgroundEnvironment cip =
-            CommandBackgroundEnvironment.Group(cmdName,msgBody.GroupId.ToString(), msgBody.UserId.ToString(), msgBody.MessageId.ToString(), msgBody.Time);
+        CommandInformation cip =
+            CommandInformation.Group(cmdName,msgBody.GroupId.ToString(), msgBody.UserId.ToString(), msgBody.MessageId.ToString(), msgBody.Time);
         UserCommandSource ucs = UserCommandSource.Group(msgBody.UserId.ToString(), msgBody.GroupId.ToString(), msgBody.Sender.Nickname, 0);
         return (cip, ucs, tokens.ToArray());
     }

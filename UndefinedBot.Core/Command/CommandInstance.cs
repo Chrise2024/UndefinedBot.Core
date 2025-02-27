@@ -1,4 +1,5 @@
-﻿using UndefinedBot.Core.Adapter;
+﻿using System.Text.Json;
+using UndefinedBot.Core.Adapter;
 using UndefinedBot.Core.Command.CommandResult;
 using UndefinedBot.Core.Command.CommandNodes;
 using UndefinedBot.Core.Command.Arguments;
@@ -14,7 +15,8 @@ public sealed class CommandInstance : IDisposable
                                                            CommandAttribFlags.ActiveInGroup |
                                                            CommandAttribFlags.ActiveInGuild |
                                                            CommandAttribFlags.IgnoreRequirement;
-    internal string TargetAdapterId { get; }
+
+    internal string[] TargetAdapterId { get; }
     internal string PluginId { get; }
     internal string Name { get; }
     private List<string> CommandAlias { get; } = [];
@@ -23,14 +25,15 @@ public sealed class CommandInstance : IDisposable
     private string? CommandUsage { get; set; }
     private string? CommandExample { get; set; }
     private TimeSpan CommandRateLimit { get; set; } = TimeSpan.Zero;
-    
-    private Func<CommandBackgroundEnvironment, BaseCommandSource, bool>? CommandRequire { get; set; }
+
+    private Func<CommandInformation, BaseCommandSource, bool>? CommandRequire { get; set; }
     private CommandAttribFlags CommandAttrib { get; set; } = DefaultCommandAttrib;
 
     private long _lastExecute;
     private RootCommandNode RootNode { get; }
     internal CacheManager Cache => new(PluginId, Name);
-    internal CommandInstance(string commandName, string pluginId, string targetAdapterId)
+
+    internal CommandInstance(string commandName, string pluginId, string[] targetAdapterId)
     {
         TargetAdapterId = targetAdapterId;
         PluginId = pluginId;
@@ -39,7 +42,7 @@ public sealed class CommandInstance : IDisposable
         RootNode.SetCommandAttrib(CommandAttrib);
     }
 
-    internal bool IsTargetCommand(CommandBackgroundEnvironment cip, BaseCommandSource source)
+    internal bool IsTargetCommand(CommandInformation cip, BaseCommandSource source)
     {
         switch (cip.SubType)
         {
@@ -48,11 +51,13 @@ public sealed class CommandInstance : IDisposable
             case MessageSubType.Guild when !CommandAttrib.HasFlag(CommandAttribFlags.ActiveInGuild):
                 return false;
         }
-        if (!CommandAttrib.HasFlag(CommandAttribFlags.IgnoreRequirement) && CommandRequire is not null && CommandRequire(cip, source))
+
+        if (!CommandAttrib.HasFlag(CommandAttribFlags.IgnoreRequirement) && CommandRequire is not null &&
+            CommandRequire(cip, source))
         {
             return false;
         }
-        
+
         StringComparison comparison = CommandAttrib.HasFlag(CommandAttribFlags.IgnoreCase)
             ? StringComparison.OrdinalIgnoreCase
             : StringComparison.Ordinal;
@@ -61,18 +66,20 @@ public sealed class CommandInstance : IDisposable
                (allowAlias && CommandAlias.FindIndex(x => x.Equals(cip.CalledCommandName, comparison)) != -1);
     }
 
-    internal bool IsReachRateLimit(CommandBackgroundEnvironment ip)
+    internal bool IsReachRateLimit(CommandInformation ip)
     {
         return !CommandAttrib.HasFlag(CommandAttribFlags.RateLimit) &&
                CommandRateLimit != TimeSpan.Zero && ip.TimeStamp - _lastExecute < CommandRateLimit.TotalSeconds;
     }
+
     //For internal invoke command
     internal async Task<ICommandResult> RunAsync(CommandContext ctx, BaseCommandSource source, ParsedToken[] tokens)
     {
-        _lastExecute = ctx.BackgroundEnvironment.TimeStamp;
+        _lastExecute = ctx.Information.TimeStamp;
         source.SetCurrentCommandAttrib(CommandAttrib);
         return await RootNode.ExecuteSelfAsyncAsync(ctx, source, tokens);
     }
+
     /// <summary>
     /// Add command attrib
     /// </summary>
@@ -83,6 +90,7 @@ public sealed class CommandInstance : IDisposable
         CommandAttrib = attr;
         return this;
     }
+
     /// <summary>
     /// Add command alias
     /// </summary>
@@ -150,13 +158,13 @@ public sealed class CommandInstance : IDisposable
         CommandRateLimit = limit;
         return this;
     }
-    
+
     /// <summary>
     /// Add command requirement
     /// </summary>
     /// <param name="predicate">requirement</param>
     /// <returns>self</returns>
-    public CommandInstance Require(Func<CommandBackgroundEnvironment, BaseCommandSource, bool> predicate)
+    public CommandInstance Require(Func<CommandInformation, BaseCommandSource, bool> predicate)
     {
         CommandRequire = predicate;
         return this;
@@ -195,20 +203,58 @@ public sealed class CommandInstance : IDisposable
         return RootNode.Then(nextNode);
     }
 
-    internal CommandProperties ExportToCommandProperties(Dictionary<string, IAdapterInstance> adapterList)
+    internal CommandProperties ExportToCommandProperties()
     {
         return new CommandProperties
         {
             Name = Name,
+            Attrib = (int)CommandAttrib,
             IsHidden = CommandAttrib.HasFlag(CommandAttribFlags.Hidden),
             CommandDescription = CommandDescription,
             CommandShortDescription = CommandShortDescription,
             CommandAlias = CommandAlias,
-            CommandPrefix = adapterList.TryGetValue(TargetAdapterId,out IAdapterInstance? v) ? v.CommandPrefix : "",
             CommandExample = CommandExample,
             CommandUsage = CommandUsage
         };
     }
+
+    internal string GetFullHelpText(CommandInformation information)
+    {
+        return string.Format(
+            "---------------help---------------\n{0}{1}{2}\n可用指令别名: \n{3}",
+            CommandDescription == null ? "" : $"{Name} - {CommandDescription}\n",
+            CommandUsage == null ? "" : $"使用方法: \n{string.Format(CommandUsage, information.CommandPrefix)}\n",
+            CommandExample == null ? "" : $"e.g.\n{string.Format(CommandExample, information.CommandPrefix)}\n",
+            JsonSerializer.Serialize(CommandAlias)
+        );
+    }
+    internal string GetShortHelpText(CommandInformation information)
+    {
+        return $"{information.CommandPrefix}{Name} - {CommandShortDescription ?? "NULL"}\n";
+    }
+    internal bool IsHidden()
+    {
+        return CommandAttrib.HasFlag(CommandAttribFlags.Hidden);
+    }
+
+    internal bool IsTargetCommandLiteral(CommandInformation information,string commandName)
+    {
+        switch (information.SubType)
+        {
+            case MessageSubType.Friend when !CommandAttrib.HasFlag(CommandAttribFlags.ActiveInFriend):
+            case MessageSubType.Group when !CommandAttrib.HasFlag(CommandAttribFlags.ActiveInGroup):
+            case MessageSubType.Guild when !CommandAttrib.HasFlag(CommandAttribFlags.ActiveInGuild):
+                return false;
+        }
+
+        StringComparison comparison = CommandAttrib.HasFlag(CommandAttribFlags.IgnoreCase)
+            ? StringComparison.OrdinalIgnoreCase
+            : StringComparison.Ordinal;
+        bool allowAlias = CommandAttrib.HasFlag(CommandAttribFlags.AllowAlias);
+        return Name.Equals(commandName, comparison) ||
+               (allowAlias && CommandAlias.FindIndex(x => x.Equals(commandName, comparison)) != -1);
+    }
+
     public void Dispose()
     {
         CommandAlias.Clear();
@@ -216,16 +262,21 @@ public sealed class CommandInstance : IDisposable
         RootNode.Dispose();
     }
 }
+
 public readonly struct CommandProperties()
 {
     public string Name { get; init; } = "";
     public bool IsHidden { get; init; }
+    public int Attrib { get; init; }
+
     public List<string> CommandAlias { get; init; } = [];
-    public string CommandPrefix { get; init; } = "";
+
+    //public string CommandPrefix { get; init; } = "";
     public string? CommandDescription { get; init; }
     public string? CommandShortDescription { get; init; }
     public string? CommandUsage { get; init; }
     public string? CommandExample { get; init; }
+
     public bool IsValid()
     {
         return !string.IsNullOrEmpty(Name);
@@ -241,33 +292,40 @@ public enum CommandAttribFlags
     /// <summary>
     /// The command can be triggered in friend chat
     /// </summary>
-    ActiveInFriend  = 0b_0000_0000_0000_0001,
+    ActiveInFriend = 0b_0000_0000_0000_0001,
+
     /// <summary>
     /// The command can be triggered in group chat
     /// </summary>
-    ActiveInGroup   = 0b_0000_0000_0000_0010,
+    ActiveInGroup = 0b_0000_0000_0000_0010,
+
     /// <summary>
     /// The command can be triggered in guild chat
     /// </summary>
-    ActiveInGuild   = 0b_0000_0000_0000_0100,
+    ActiveInGuild = 0b_0000_0000_0000_0100,
+
     /// <summary>
     /// The command can be triggered without authority check
     /// </summary>
     IgnoreRequirement = 0b_0000_0000_0000_1000,
+
     /// <summary>
     /// The command's trigger rate will be limited.If command not have this attrib,rate limit set in <see cref="CommandInstance"/> will be ignored
     /// </summary>
-    RateLimit       = 0b_0000_0000_0001_0000,
+    RateLimit = 0b_0000_0000_0001_0000,
+
     /// <summary>
     /// The command will be hidden in help command
     /// </summary>
-    Hidden          = 0b_0000_0000_0010_0000,
+    Hidden = 0b_0000_0000_0010_0000,
+
     /// <summary>
     /// The command can be triggered with ignoring case
     /// </summary>
-    IgnoreCase      = 0b_0000_0000_0100_0000,
+    IgnoreCase = 0b_0000_0000_0100_0000,
+
     /// <summary>
     /// Allow using alias to trigger the command
     /// </summary>
-    AllowAlias      = 0b_0000_0000_1000_0000,
+    AllowAlias = 0b_0000_0000_1000_0000,
 }

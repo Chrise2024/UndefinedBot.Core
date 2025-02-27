@@ -35,10 +35,15 @@ public static class TaskExtensions
             await task.WaitAsync(timeout, cts.Token);
             callbackSuccess?.Invoke();
         }
-        catch
+        catch (OperationCanceledException)
         {
             await cts.CancelAsync();
             callbackTimeout?.Invoke();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex.ToString());
+            cts.Dispose();
         }
         finally
         {

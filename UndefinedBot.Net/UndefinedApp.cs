@@ -12,6 +12,7 @@ using UndefinedBot.Core.Command.CommandSource;
 using UndefinedBot.Net.Utils;
 using UndefinedBot.Core.NetWork;
 using UndefinedBot.Core.Plugin;
+using UndefinedBot.Core.Service;
 
 namespace UndefinedBot.Net;
 
@@ -22,9 +23,10 @@ public sealed class UndefinedApp : IHost
     
     private readonly ILogger<UndefinedApp> _logger;
     private readonly IConfiguration _configuration;
-    private readonly AdapterService _adapterService;
-    private readonly PluginService _pluginService;
+    private readonly AdapterLoadService _adapterLoadService;
+    private readonly PluginLoadService _pluginLoadService;
     private readonly LogService _logService;
+    private readonly CommandService _commandService;
 
     private readonly string _programRoot = Environment.CurrentDirectory;
 
@@ -35,9 +37,10 @@ public sealed class UndefinedApp : IHost
         _hostApp = host;
         _logger = Services.GetRequiredService<ILogger<UndefinedApp>>();
         _configuration = Services.GetRequiredService<IConfiguration>();
-        _adapterService = Services.GetRequiredService<AdapterService>();
-        _pluginService = Services.GetRequiredService<PluginService>();
+        _adapterLoadService = Services.GetRequiredService<AdapterLoadService>();
+        _pluginLoadService = Services.GetRequiredService<PluginLoadService>();
         _logService = Services.GetRequiredService<LogService>();
+        _commandService = Services.GetRequiredService<CommandService>();
     }
 
     public async Task StartAsync(CancellationToken cancellationToken = new())
@@ -45,13 +48,15 @@ public sealed class UndefinedApp : IHost
         _logService.StartLogging();
         //Load Adapter and Plugin
         Init();
+        
+        _commandService.StartCommandLoop();
 
         await _hostApp.StartAsync(cancellationToken);
 
         _logger.LogInformation("UndefinedBot.Net Implementation has started");
         //for test
-        _ = await CommandManager.InvokeCommandAsync(
-            CommandBackgroundEnvironment.Group(
+        await CommandEventBus.SendCommandEventAsync(
+            CommandInformation.Group(
                     "help",
                     "0",
                     "0",
@@ -82,7 +87,8 @@ public sealed class UndefinedApp : IHost
             if (tempString == "reload")
             {
                 ActionManager.DisposeAdapterInstance();
-                _pluginService.Unload();
+                _pluginLoadService.Unload();
+                _commandService.Unload();
                 Init();
             }
         }
@@ -90,7 +96,8 @@ public sealed class UndefinedApp : IHost
 
     public async Task StopAsync(CancellationToken cancellationToken = new())
     {
-        _pluginService.Unload();
+        _pluginLoadService.Unload();
+        _commandService.Unload();
         ActionManager.DisposeAdapterInstance();
         _logService.StopLogging();
         await _hostApp.StopAsync(cancellationToken);
@@ -100,8 +107,8 @@ public sealed class UndefinedApp : IHost
 
     public void Dispose()
     {
-        _adapterService.Dispose();
-        _pluginService.Dispose();
+        _adapterLoadService.Dispose();
+        _pluginLoadService.Dispose();
         _logService.Dispose();
         _hostApp.Dispose();
     }
@@ -110,17 +117,18 @@ public sealed class UndefinedApp : IHost
     {
         HttpRequest.SetConfig(_configuration["HttpRequest:TimeoutMS"],_configuration["HttpRequest:MaxBufferSizeByte"]);
         //Load Adapters
-        List<IAdapterInstance> adapterList = _adapterService.LoadAdapters();
+        List<IAdapterInstance> adapterList = _adapterLoadService.LoadAdapters();
         //Load Plugins
-        List<IPluginInstance> pluginList = _pluginService.LoadPlugins();
+        (List<IPluginInstance> pluginList,List<CommandInstance> commandList) = _pluginLoadService.LoadPlugins();
+        _commandService.LoadCommand(commandList);
         string pluginListText = JsonSerializer.Serialize(pluginList, _serializerOptions);
         string adapterListText = JsonSerializer.Serialize(adapterList, _serializerOptions);
-        string commandReferenceText = JsonSerializer.Serialize(
+        string commandReferenceText = "";/*JsonSerializer.Serialize(
             CommandManager.CommandInstanceIndexByAdapter.ToDictionary(
                 k => k.Key,
                 v => v.Value.Select(x =>
                     x.ExportToCommandProperties(ActionManager.AdapterInstanceReference)).ToArray()),
-            _serializerOptions);
+            _serializerOptions);*/
 
         FileIO.WriteFile(Path.Join(_programRoot, "loaded_adapters.json"), adapterListText);
 

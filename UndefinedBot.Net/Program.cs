@@ -5,6 +5,7 @@ using Microsoft.Extensions.Configuration;
 using UndefinedBot.Core.Utils;
 using System.Runtime;
 using Microsoft.Extensions.DependencyInjection;
+using UndefinedBot.Core.Service;
 using UndefinedBot.Net.Utils;
 
 namespace UndefinedBot.Net;
@@ -37,9 +38,10 @@ internal class Program
         HostApplicationBuilder undefinedAppBuilder = new(args);
         undefinedAppBuilder.Configuration.AddJsonFile("appsettings.json", false, true);
         undefinedAppBuilder.Configuration.AddEnvironmentVariables();
-        undefinedAppBuilder.Services.AddSingleton<AdapterService>();
-        undefinedAppBuilder.Services.AddSingleton<PluginService>();
+        undefinedAppBuilder.Services.AddSingleton<AdapterLoadService>();
+        undefinedAppBuilder.Services.AddSingleton<PluginLoadService>();
         undefinedAppBuilder.Services.AddSingleton<LogService>();
+        undefinedAppBuilder.Services.AddSingleton<CommandService>();
         UndefinedApp undefinedApp = new(undefinedAppBuilder.Build());
         undefinedApp.Start();
         

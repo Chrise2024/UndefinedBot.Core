@@ -4,17 +4,17 @@ using UndefinedBot.Core.Utils.Logging;
 
 namespace UndefinedBot.Core.Adapter;
 
-public sealed class ActionManager(CommandBackgroundEnvironment cip, CommandLogger logger) : IDisposable
+public sealed class ActionManager(CommandInformation cip, CommandLogger logger) : IDisposable
 {
     internal static Dictionary<string, IAdapterInstance> AdapterInstanceReference { get; private set; } = [];
-    private CommandBackgroundEnvironment BackgroundEnvironment => cip;
+    private CommandInformation Information => cip;
     private CommandLogger Logger => logger;
-    public byte[]? InvokeDefaultAction(DefaultActionType action, DefaultActionParameterWrapper? paras = null)
+    public async Task<byte[]?> InvokeDefaultAction(DefaultActionType action, DefaultActionParameterWrapper? paras = null)
     {
         try
         {
-            return AdapterInstanceReference.TryGetValue(BackgroundEnvironment.AdapterId, out IAdapterInstance? inst)
-                ? inst.HandleDefaultAction(action, paras)
+            return AdapterInstanceReference.TryGetValue(Information.AdapterId, out IAdapterInstance? inst)
+                ? await inst.HandleDefaultActionAsync(action, paras)
                 : null;
         }
         catch (Exception ex)
@@ -24,12 +24,12 @@ public sealed class ActionManager(CommandBackgroundEnvironment cip, CommandLogge
 
         return null;
     }
-    public byte[]? InvokeCustomAction(string action, CustomActionParameterWrapper? paras = null)
+    public async Task<byte[]?> InvokeCustomAction(string action, CustomActionParameterWrapper? paras = null)
     {
         try
         {
-            return AdapterInstanceReference.TryGetValue(BackgroundEnvironment.AdapterId, out IAdapterInstance? inst)
-                ? inst.HandleCustomAction(action, paras)
+            return AdapterInstanceReference.TryGetValue(Information.AdapterId, out IAdapterInstance? inst)
+                ? await inst.HandleCustomActionAsync(action, paras)
                 : null;
         }
         catch (Exception ex)
@@ -50,7 +50,7 @@ public sealed class ActionManager(CommandBackgroundEnvironment cip, CommandLogge
     {
         AdapterInstanceReference.Clear();
         Logger.Dispose();
-        BackgroundEnvironment.Dispose();
+        Information.Dispose();
     }
 
     internal static void DisposeAdapterInstance()

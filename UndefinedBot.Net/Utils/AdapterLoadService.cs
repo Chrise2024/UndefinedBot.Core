@@ -7,14 +7,14 @@ using UndefinedBot.Core.Utils;
 
 namespace UndefinedBot.Net.Utils;
 
-internal sealed class AdapterService(ILogger<AdapterService> logger) : IDisposable
+internal sealed class AdapterLoadService(ILogger<AdapterLoadService> logger) : IDisposable
 {
     private static string AdapterRoot => Path.Join(Environment.CurrentDirectory, "Adapters");
 
     private static string LibSuffix => GetLibSuffix();
 
     //private static InternalLogger AdapterInitializeLogger => new(["Init","Load Adapter"]);
-    private ILogger<AdapterService> Logger => logger;
+    private ILogger<AdapterLoadService> Logger => logger;
 
     public List<IAdapterInstance> LoadAdapters()
     {

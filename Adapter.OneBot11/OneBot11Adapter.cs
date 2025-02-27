@@ -19,13 +19,13 @@ public sealed class OneBot11Adapter : BaseAdapter
         MainLoopInstance = hs.ExecuteAsync(Cts.Token);
     }
 
-    public override byte[]? HandleCustomAction(string action, CustomActionParameterWrapper? paras)
+    public async override Task<byte[]?> HandleCustomActionAsync(string action, CustomActionParameterWrapper? paras)
     {
         //None
         return null;
     }
 
-    public override byte[]? HandleDefaultAction(DefaultActionType action, DefaultActionParameterWrapper? paras)
+    public override async Task<byte[]?> HandleDefaultActionAsync(DefaultActionType action, DefaultActionParameterWrapper? paras)
     {
         Console.WriteLine(paras?.Parameter?.GetType());
 

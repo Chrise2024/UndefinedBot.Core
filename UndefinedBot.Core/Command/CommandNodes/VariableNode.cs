@@ -14,7 +14,7 @@ public sealed class VariableNode(string name, IArgumentType argumentType) : ICom
     public ICommandNode? Parent { get; private set; }
     public List<ICommandNode> Child { get; } = [];
     public Func<CommandContext, BaseCommandSource, Task>? NodeAction { get; private set; }
-    public Func<CommandBackgroundEnvironment,BaseCommandSource,bool>? NodeRequire { get; private set; }
+    public Func<CommandInformation,BaseCommandSource,bool>? NodeRequire { get; private set; }
     public void SetAction(Func<CommandContext, BaseCommandSource, Task> action)
     {
         NodeAction = action;
@@ -44,7 +44,7 @@ public sealed class VariableNode(string name, IArgumentType argumentType) : ICom
         Child.Add(nextNode);
         return this;
     }
-    public ICommandNode Require(Func<CommandBackgroundEnvironment, BaseCommandSource, bool> predicate)
+    public ICommandNode Require(Func<CommandInformation, BaseCommandSource, bool> predicate)
     {
         NodeRequire = predicate;
         return this;
@@ -106,7 +106,7 @@ public sealed class VariableNode(string name, IArgumentType argumentType) : ICom
         //有子节点
         List<ICommandResult> result = [];
         //Ignore Nodes that Not Hits NodeRequire
-        foreach (ICommandNode node in Child.Where(node => node.NodeRequire is null || node.NodeRequire(ctx.BackgroundEnvironment, source)))
+        foreach (ICommandNode node in Child.Where(node => node.NodeRequire is null || node.NodeRequire(ctx.Information, source)))
         {
             ICommandResult res = await node.ExecuteSelfAsyncAsync(ctx, source, tokens[1..]);
             if (res is CommandSuccess)

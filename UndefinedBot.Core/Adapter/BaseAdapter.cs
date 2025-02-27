@@ -21,12 +21,12 @@ public interface IAdapterInstance : IDisposable
     /// <summary>
     /// Handle custom action invoked by command
     /// </summary>
-    byte[]? HandleCustomAction(string action, CustomActionParameterWrapper? paras);
+    Task<byte[]?> HandleCustomActionAsync(string action, CustomActionParameterWrapper? paras);
 
     /// <summary>
     /// Handle default action invoked by command
     /// </summary>
-    byte[]? HandleDefaultAction(DefaultActionType action, DefaultActionParameterWrapper? paras);
+    Task<byte[]?> HandleDefaultActionAsync(DefaultActionType action, DefaultActionParameterWrapper? paras);
 }
 
 public abstract class BaseAdapter : IAdapterInstance
@@ -90,34 +90,16 @@ public abstract class BaseAdapter : IAdapterInstance
     /// <summary>
     /// After processing message, use it to submit this event
     /// </summary>
-    /// <param name="backgroundEnvironment">Command's basic information</param>
+    /// <param name="information">Command's basic information</param>
     /// <param name="source">Command Source</param>
     /// <param name="tokens">Tokens, the body of the command</param>
     protected async void SubmitCommandEventAsync(
-        CommandBackgroundEnvironment backgroundEnvironment,
+        CommandInformation information,
         BaseCommandSource source,
         ParsedToken[] tokens
     )
     {
-        CommandInvokeResult result =
-            await CommandManager.InvokeCommandAsync(
-                backgroundEnvironment.Implement(Id, Platform, Protocol, tokens, CommandPrefix),
-                source);
-        switch (result)
-        {
-            case CommandInvokeResult.SuccessInvoke:
-                Logger.Info("Successful Invoke Command");
-                break;
-            case CommandInvokeResult.NoSuchCommand:
-                Logger.Warn("No Such Command");
-                break;
-            case CommandInvokeResult.NoCommandRelateToAdapter:
-                Logger.Warn("No Command Bind to Adapter");
-                break;
-            case CommandInvokeResult.CommandRateLimited:
-                Logger.Warn("Command Reach Rate Limit");
-                break;
-        }
+        await CommandEventBus.SendCommandEventAsync(information, source);
     }
 
     /// <summary>
@@ -126,7 +108,7 @@ public abstract class BaseAdapter : IAdapterInstance
     /// <param name="action">Action Name</param>
     /// <param name="paras">Parameters</param>
     /// <returns></returns>
-    public abstract byte[]? HandleCustomAction(string action, CustomActionParameterWrapper? paras);
+    public abstract Task<byte[]?> HandleCustomActionAsync(string action, CustomActionParameterWrapper? paras);
 
     /// <summary>
     /// Handle Default Action Invoked by Command
@@ -134,7 +116,7 @@ public abstract class BaseAdapter : IAdapterInstance
     /// <param name="action">Action Type</param>
     /// <param name="paras">Parameters</param>
     /// <returns></returns>
-    public abstract byte[]? HandleDefaultAction(DefaultActionType action, DefaultActionParameterWrapper? paras);
+    public abstract Task<byte[]?> HandleDefaultActionAsync(DefaultActionType action, DefaultActionParameterWrapper? paras);
 
     public virtual void Dispose()
     {
