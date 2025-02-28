@@ -1,9 +1,9 @@
 ﻿using System.Text.Json;
 using UndefinedBot.Core.Command.Arguments.ArgumentType;
-using UndefinedBot.Core.Command.CommandNodes;
+using UndefinedBot.Core.Command.CommandNode;
 using UndefinedBot.Core.Command.CommandSource;
 
-namespace UndefinedBot.Core.Command;
+namespace UndefinedBot.Core.Command.CommandUtils;
 
 internal sealed class HelpCommand
 {

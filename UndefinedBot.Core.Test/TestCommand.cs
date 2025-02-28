@@ -1,5 +1,5 @@
-﻿using UndefinedBot.Core.Command.CommandNodes;
-using UndefinedBot.Core.Command.Arguments.ArgumentType;
+﻿using UndefinedBot.Core.Command.Arguments.ArgumentType;
+using UndefinedBot.Core.Command.CommandNode;
 using UndefinedBot.Core.Plugin;
 
 namespace UndefinedBot.Core.Test;

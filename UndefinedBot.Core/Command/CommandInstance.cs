@@ -1,9 +1,9 @@
 ﻿using System.Text.Json;
-using UndefinedBot.Core.Adapter;
 using UndefinedBot.Core.Command.CommandResult;
-using UndefinedBot.Core.Command.CommandNodes;
 using UndefinedBot.Core.Command.Arguments;
+using UndefinedBot.Core.Command.CommandNode;
 using UndefinedBot.Core.Command.CommandSource;
+using UndefinedBot.Core.Command.CommandUtils;
 using UndefinedBot.Core.Utils;
 
 namespace UndefinedBot.Core.Command;
@@ -19,17 +19,6 @@ public sealed class CommandInstance : IDisposable
     internal string[] TargetAdapterId { get; }
     internal string PluginId { get; }
     internal string Name { get; }
-    private List<string> CommandAlias { get; } = [];
-    private string? CommandDescription { get; set; }
-    private string? CommandShortDescription { get; set; }
-    private string? CommandUsage { get; set; }
-    private string? CommandExample { get; set; }
-    private TimeSpan CommandRateLimit { get; set; } = TimeSpan.Zero;
-
-    private Func<CommandInformation, BaseCommandSource, bool>? CommandRequire { get; set; }
-    private CommandAttribFlags CommandAttrib { get; set; } = DefaultCommandAttrib;
-
-    private long _lastExecute;
     private RootCommandNode RootNode { get; }
     internal CacheManager Cache => new(PluginId, Name);
 
@@ -42,7 +31,27 @@ public sealed class CommandInstance : IDisposable
         RootNode.SetCommandAttrib(CommandAttrib);
     }
 
-    internal bool IsTargetCommand(CommandInformation cip, BaseCommandSource source)
+    //For internal invoke command
+    internal async Task<ICommandResult> RunAsync(CommandContext ctx, BaseCommandSource source, ParsedToken[] tokens)
+    {
+        RateManager.UpdateLastExecute(ctx.Information);
+        source.SetCurrentCommandAttrib(CommandAttrib);
+        return await RootNode.ExecuteSelfAsyncAsync(ctx, source, tokens);
+    }
+
+    #region CommandTargetJudgment
+
+    internal bool IsTargetCommand(CommandInformation information, BaseCommandSource source)
+    {
+        return IsProperEnvironment(information) && IsRequirementMet(information, source) && IsNameMatch(information);
+    }
+
+    internal bool IsTargetCommandLiteral(CommandInformation information, string commandName)
+    {
+        return IsProperEnvironment(information) && IsNameMatch(commandName);
+    }
+
+    private bool IsProperEnvironment(CommandInformation cip)
     {
         switch (cip.SubType)
         {
@@ -52,44 +61,37 @@ public sealed class CommandInstance : IDisposable
                 return false;
         }
 
-        if (!CommandAttrib.HasFlag(CommandAttribFlags.IgnoreRequirement) && CommandRequire is not null &&
-            CommandRequire(cip, source))
-        {
-            return false;
-        }
+        return true;
+    }
 
+    private bool IsRequirementMet(CommandInformation cip, BaseCommandSource source)
+    {
+        return CommandAttrib.HasFlag(CommandAttribFlags.IgnoreRequirement) || CommandRequire is null ||
+               !CommandRequire(cip, source);
+    }
+
+    private bool IsNameMatch(CommandInformation cip) => IsNameMatch(cip.CalledCommandName);
+
+    private bool IsNameMatch(string commandName)
+    {
         StringComparison comparison = CommandAttrib.HasFlag(CommandAttribFlags.IgnoreCase)
             ? StringComparison.OrdinalIgnoreCase
             : StringComparison.Ordinal;
         bool allowAlias = CommandAttrib.HasFlag(CommandAttribFlags.AllowAlias);
-        return Name.Equals(cip.CalledCommandName, comparison) ||
-               (allowAlias && CommandAlias.FindIndex(x => x.Equals(cip.CalledCommandName, comparison)) != -1);
+        return Name.Equals(commandName, comparison) ||
+               (allowAlias && CommandAlias.FindIndex(x => x.Equals(commandName, comparison)) != -1);
     }
 
-    internal bool IsReachRateLimit(CommandInformation ip)
-    {
-        return !CommandAttrib.HasFlag(CommandAttribFlags.RateLimit) &&
-               CommandRateLimit != TimeSpan.Zero && ip.TimeStamp - _lastExecute < CommandRateLimit.TotalSeconds;
-    }
+    #endregion
 
-    //For internal invoke command
-    internal async Task<ICommandResult> RunAsync(CommandContext ctx, BaseCommandSource source, ParsedToken[] tokens)
-    {
-        _lastExecute = ctx.Information.TimeStamp;
-        source.SetCurrentCommandAttrib(CommandAttrib);
-        return await RootNode.ExecuteSelfAsyncAsync(ctx, source, tokens);
-    }
-
-    /// <summary>
-    /// Add command attrib
-    /// </summary>
-    /// <param name="attr">Command's attrib</param>
-    /// <returns>self</returns>
-    public CommandInstance Attrib(CommandAttribFlags attr)
-    {
-        CommandAttrib = attr;
-        return this;
-    }
+    #region Properties
+    
+    private List<string> CommandAlias { get; } = [];
+    private string? CommandDescription { get; set; }
+    private string? CommandShortDescription { get; set; }
+    private string? CommandUsage { get; set; }
+    private string? CommandExample { get; set; }
+    private CommandAttribFlags CommandAttrib { get; set; } = DefaultCommandAttrib;
 
     /// <summary>
     /// Add command alias
@@ -147,17 +149,49 @@ public sealed class CommandInstance : IDisposable
         CommandExample = example;
         return this;
     }
+    
+    /// <summary>
+    /// Add command attrib
+    /// </summary>
+    /// <param name="attr">Command's attrib</param>
+    /// <returns>self</returns>
+    public CommandInstance Attrib(CommandAttribFlags attr)
+    {
+        if (attr.HasFlag(CommandAttribFlags.RateLimit))
+        {
+            RateManager.SetMode(CommandRateManagerMode.Individual);
+        }
+        RateManager.SetMode(CommandRateManagerMode.Disable);
+        CommandAttrib = attr;
+        return this;
+    }
 
+    #endregion
+
+    #region RateLimit
+    
+    private CommandRateManager RateManager { get; } = new();
+    
     /// <summary>
     /// Add command example
     /// </summary>
     /// <param name="limit">Rate Limit</param>
+    /// <param name="global">Rate limit will be operated global or environment individual</param>
     /// <returns>self</returns>
-    public CommandInstance RateLimit(TimeSpan limit)
+    public CommandInstance RateLimit(TimeSpan limit,bool global = false)
     {
-        CommandRateLimit = limit;
+        RateManager.SetMode(global ? CommandRateManagerMode.Global : CommandRateManagerMode.Individual);
+        RateManager.SetRateLimit(limit);
         return this;
     }
+
+    internal bool IsReachRateLimit(CommandInformation information) => RateManager.IsReachRateLimit(information);
+
+    #endregion
+
+    #region UserFunctional
+
+    private Func<CommandInformation, BaseCommandSource, bool>? CommandRequire { get; set; }
 
     /// <summary>
     /// Add command requirement
@@ -183,7 +217,7 @@ public sealed class CommandInstance : IDisposable
     /// </example>
     /// <remarks>While action added,control flow will goto command tree building.</remarks>
     /// <returns>self</returns>
-    public ICommandNode Execute(Func<CommandContext, BaseCommandSource, Task> action)
+    public CommandNode.CommandNode Execute(Func<CommandContext, BaseCommandSource, Task> action)
     {
         //RootNode.SetAction(action);
         return RootNode.Execute(action);
@@ -192,31 +226,20 @@ public sealed class CommandInstance : IDisposable
     /// <summary>
     /// Add child node to this node
     /// </summary>
-    /// <param name="nextNode"><see cref="UndefinedBot.Core.Command.CommandNodes.SubCommandNode"/> or <see cref="UndefinedBot.Core.Command.CommandNodes.VariableNode"/></param>
+    /// <param name="nextNode"><see cref="SubCommandNode"/> or <see cref="VariableNode"/></param>
     /// <returns>This node self</returns>
     /// <example>
     /// <code>
     /// </code>
     /// </example>
-    public ICommandNode Then(ICommandNode nextNode)
+    public CommandNode.CommandNode Then(CommandNode.CommandNode nextNode)
     {
         return RootNode.Then(nextNode);
     }
 
-    internal CommandProperties ExportToCommandProperties()
-    {
-        return new CommandProperties
-        {
-            Name = Name,
-            Attrib = (int)CommandAttrib,
-            IsHidden = CommandAttrib.HasFlag(CommandAttribFlags.Hidden),
-            CommandDescription = CommandDescription,
-            CommandShortDescription = CommandShortDescription,
-            CommandAlias = CommandAlias,
-            CommandExample = CommandExample,
-            CommandUsage = CommandUsage
-        };
-    }
+    #endregion
+
+    #region InternalUsage
 
     internal string GetFullHelpText(CommandInformation information)
     {
@@ -228,58 +251,24 @@ public sealed class CommandInstance : IDisposable
             JsonSerializer.Serialize(CommandAlias)
         );
     }
+
     internal string GetShortHelpText(CommandInformation information)
     {
         return $"{information.CommandPrefix}{Name} - {CommandShortDescription ?? "NULL"}\n";
     }
+
     internal bool IsHidden()
     {
         return CommandAttrib.HasFlag(CommandAttribFlags.Hidden);
     }
 
-    internal bool IsTargetCommandLiteral(CommandInformation information,string commandName)
-    {
-        switch (information.SubType)
-        {
-            case MessageSubType.Friend when !CommandAttrib.HasFlag(CommandAttribFlags.ActiveInFriend):
-            case MessageSubType.Group when !CommandAttrib.HasFlag(CommandAttribFlags.ActiveInGroup):
-            case MessageSubType.Guild when !CommandAttrib.HasFlag(CommandAttribFlags.ActiveInGuild):
-                return false;
-        }
-
-        StringComparison comparison = CommandAttrib.HasFlag(CommandAttribFlags.IgnoreCase)
-            ? StringComparison.OrdinalIgnoreCase
-            : StringComparison.Ordinal;
-        bool allowAlias = CommandAttrib.HasFlag(CommandAttribFlags.AllowAlias);
-        return Name.Equals(commandName, comparison) ||
-               (allowAlias && CommandAlias.FindIndex(x => x.Equals(commandName, comparison)) != -1);
-    }
+    #endregion
 
     public void Dispose()
     {
         CommandAlias.Clear();
         Cache.Dispose();
         RootNode.Dispose();
-    }
-}
-
-public readonly struct CommandProperties()
-{
-    public string Name { get; init; } = "";
-    public bool IsHidden { get; init; }
-    public int Attrib { get; init; }
-
-    public List<string> CommandAlias { get; init; } = [];
-
-    //public string CommandPrefix { get; init; } = "";
-    public string? CommandDescription { get; init; }
-    public string? CommandShortDescription { get; init; }
-    public string? CommandUsage { get; init; }
-    public string? CommandExample { get; init; }
-
-    public bool IsValid()
-    {
-        return !string.IsNullOrEmpty(Name);
     }
 }
 

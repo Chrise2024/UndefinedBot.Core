@@ -6,7 +6,7 @@ using UndefinedBot.Core.Command.Arguments;
 using UndefinedBot.Core.Plugin.BasicMessage;
 using UndefinedBot.Core.Utils.Logging;
 
-namespace UndefinedBot.Core.Command;
+namespace UndefinedBot.Core.Command.CommandUtils;
 
 /// <summary>
 /// Context of command,containing apis, calling info and arguments

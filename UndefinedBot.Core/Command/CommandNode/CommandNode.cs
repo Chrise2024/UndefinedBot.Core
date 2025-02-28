@@ -1,95 +1,86 @@
-﻿using UndefinedBot.Core.Command.CommandResult;
+﻿using System.Diagnostics.CodeAnalysis;
 using UndefinedBot.Core.Command.Arguments;
 using UndefinedBot.Core.Command.Arguments.ArgumentType;
-using UndefinedBot.Core.Command.Arguments.TokenContentType;
+using UndefinedBot.Core.Command.CommandException;
+using UndefinedBot.Core.Command.CommandResult;
 using UndefinedBot.Core.Command.CommandSource;
+using UndefinedBot.Core.Command.CommandUtils;
 using UndefinedBot.Core.Utils;
 
-namespace UndefinedBot.Core.Command.CommandNodes;
+namespace UndefinedBot.Core.Command.CommandNode;
 
-public sealed class SubCommandNode(string name) : ICommandNode
+public abstract class CommandNode(string name, IArgumentType argumentType) : IDisposable
 {
-    public string NodeName => name;
-    public CommandAttribFlags CommandAttrib { get; private set; } = CommandInstance.DefaultCommandAttrib;
-    public IArgumentType ArgumentType => new StringArgument();
-    public ICommandNode? Parent { get; private set; }
-    public List<ICommandNode> Child { get; } = [];
-    public Func<CommandContext, BaseCommandSource, Task>? NodeAction { get; private set; }
-    public Func<CommandInformation, BaseCommandSource, bool>? NodeRequire { get; private set; }
-
-    public void SetAction(Func<CommandContext, BaseCommandSource, Task> action)
+    protected string NodeName { get; } = name;
+    protected IArgumentType ArgumentType { get; } = argumentType;
+    protected CommandAttribFlags CommandAttrib { get; private set; } = CommandInstance.DefaultCommandAttrib;
+    protected CommandNode? Parent { get; private set; }
+    protected List<CommandNode> Child { get; } = [];
+    protected Func<CommandContext, BaseCommandSource, Task>? NodeAction { get; private set; }
+    protected Func<CommandInformation,BaseCommandSource,bool>? NodeRequire { get; private set; }
+    internal void SetAction(Func<CommandContext, BaseCommandSource, Task> action)
     {
         NodeAction = action;
     }
 
-    public void SetParent(ICommandNode parentNode)
+    internal void SetParent(CommandNode parentNode)
     {
         Parent = parentNode;
     }
-
-    public void SetCommandAttrib(CommandAttribFlags attr)
+    internal void SetCommandAttrib(CommandAttribFlags attr)
     {
         CommandAttrib = attr;
     }
-
     /// <summary>
     /// Add child node to this node
     /// </summary>
-    /// <param name="nextNode"><see cref="UndefinedBot.Core.Command.CommandNodes.SubCommandNode"/> or <see cref="UndefinedBot.Core.Command.CommandNodes.VariableNode"/></param>
+    /// <param name="nextNode"><see cref="SubCommandNode"/> or <see cref="VariableNode"/></param>
     /// <returns>This node self</returns>
     /// <example>
     /// <code>
-    ///     Node.Then(new SubCommandNode("foo",new StringArgument()))
     /// </code>
     /// </example>
-    public ICommandNode Then(ICommandNode nextNode)
+    public CommandNode Then(CommandNode nextNode)
     {
         nextNode.SetParent(this);
         nextNode.SetCommandAttrib(CommandAttrib);
         Child.Add(nextNode);
         return this;
     }
-
-    public ICommandNode Require(Func<CommandInformation, BaseCommandSource, bool> predicate)
+    public CommandNode Require(Func<CommandInformation, BaseCommandSource, bool> predicate)
     {
         NodeRequire = predicate;
         return this;
     }
-
     /// <summary>
     /// Set node's action
     /// </summary>
     /// <param name="action"><see cref="System.Func{CommandContext, BaseCommandSource, Task}"/></param>
     /// <example>
-    /// <code lang="CSharp">
+    /// <code>
     ///     Node.Execute(async (ctx,source) => {
     ///         ...
     ///     });
     /// </code>
     /// </example>
     /// <returns>This node self</returns>
-    public ICommandNode Execute(Func<CommandContext, BaseCommandSource, Task> action)
+    public CommandNode Execute(Func<CommandContext, BaseCommandSource, Task> action)
     {
         NodeAction = action;
         return this;
     }
+    
+    internal abstract bool IsTokenValid(CommandContext ctx,ref ParsedToken[] tokens,[NotNullWhen(false)]out ICommandResult? result);
 
     public async Task<ICommandResult> ExecuteSelfAsyncAsync(CommandContext ctx, BaseCommandSource source,
         ParsedToken[] tokens)
     {
-        if (tokens.Length == 0)
+        if (!IsTokenValid(ctx,ref tokens, out ICommandResult? tempResult))
         {
-            return new TooLessArgument([GetArgumentRequire()]);
+            return tempResult;
         }
-
-        // if (tokens[0].TokenType != ParsedTokenTypes.Normal || (tokens[0].Content is TextContent text &&
-        //                                                        text.Text != NodeName))
-        if (tokens[0] is not {TokenType:ParsedTokenTypes.Text, Content:TextTokenContent text} || text.Text != NodeName)
-        {
-            return new InvalidArgumentCommandResult(tokens[0].TokenType.ToString(), [GetArgumentRequire()]);
-        }
-
-        if (NodeAction is not null && (tokens.Length == 1 || Child.Count == 0))
+        
+        if (NodeAction is not null && (tokens.Length == 0 || Child.Count == 0))
         {
             //无后续token或无子节点 且 定义了节点Action，执行自身
             try
@@ -115,27 +106,27 @@ public sealed class SubCommandNode(string name) : ICommandNode
         //有子节点
         List<ICommandResult> result = [];
         //Ignore Nodes that Not Hits NodeRequire
-        foreach (ICommandNode node in Child.Where(node =>
-                     node.NodeRequire is null || node.NodeRequire(ctx.Information, source)))
+        foreach (CommandNode node in Child.Where(node => node.NodeRequire is null || node.NodeRequire(ctx.Information, source)))
         {
-            ICommandResult res = await node.ExecuteSelfAsyncAsync(ctx, source, tokens[1..]);
+            ICommandResult res = await node.ExecuteSelfAsyncAsync(ctx, source, tokens);
             if (res is CommandSuccess)
             {
                 //有一个子节点可以执行
-                return new CommandSuccess();
+                return res;
             }
 
             result.Add(res);
         }
 
         //无可执行子节点，对应token异常
-        if (tokens.Length == 1)
+        if (tokens.Length == 0)
         {
             return new TooLessArgument(
                 result.OfType<TooLessArgument>().SelectMany(item => item.RequiredType).ToList()
             );
         }
 
+        //传递
         List<InvalidArgumentCommandResult> il = result.OfType<InvalidArgumentCommandResult>().ToList();
         return new InvalidArgumentCommandResult(
             il.Count == 0 ? "" : il[0].ErrorToken,
@@ -143,18 +134,13 @@ public sealed class SubCommandNode(string name) : ICommandNode
         );
     }
 
-    public string GetArgumentRequire()
-    {
-        return $"<{NodeName}>";
-    }
-
+    public abstract string GetArgumentRequire();
     public void Dispose()
     {
         foreach (var child in Child)
         {
             child.Dispose();
         }
-
         Child.Clear();
         NodeAction = null;
         NodeRequire = null;
