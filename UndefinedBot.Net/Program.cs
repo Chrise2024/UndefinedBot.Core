@@ -12,6 +12,10 @@ namespace UndefinedBot.Net;
 
 internal class Program
 {
+    //Todo: Split plugin sdk and adapter sdk
+    //Todo: Extract abstract class and interface into independent package
+    //Todo: Full IoC container use
+    //Todo: Main program managed inter-plugin-adapter communication
     private static readonly string _programRoot = Environment.CurrentDirectory;
 
     private static readonly string _programCache = Path.Join(_programRoot, "Cache");
