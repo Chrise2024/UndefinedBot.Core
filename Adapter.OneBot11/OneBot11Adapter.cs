@@ -1,4 +1,5 @@
-﻿using System.Text.Json;
+﻿using System.Diagnostics.CodeAnalysis;
+using System.Text.Json;
 using UndefinedBot.Core.Adapter;
 using UndefinedBot.Core.Adapter.ActionParam;
 using UndefinedBot.Core.Plugin.BasicMessage;
@@ -11,10 +12,11 @@ public sealed class OneBot11Adapter : BaseAdapter
     public override string Name => "OneBot11Adapter";
     public override string Platform => "QQ";
     public override string Protocol => "OneBot11";
-    private Task MainLoopInstance { get; set; }
+    [AllowNull]private Task MainLoopInstance { get; set; }
     private HttpApi HApi => new(AdapterConfig,Logger);
     private CancellationTokenSource Cts { get; } = new();
-    public OneBot11Adapter()
+    
+    public override void Initialize()
     {
         HttpServer hs = new(AdapterConfig, SubmitCommandEvent,Logger);
         MainLoopInstance = hs.ExecuteAsync(Cts.Token);

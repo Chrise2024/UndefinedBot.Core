@@ -1,4 +1,6 @@
-﻿namespace UndefinedBot.Core.Utils.Logging;
+﻿using UndefinedBot.Core.Utils.Logging;
+
+namespace UndefinedBot.Net.Utils.Logging;
 
 public sealed class CommandLogger : BaseLogger
 {
@@ -8,11 +10,13 @@ public sealed class CommandLogger : BaseLogger
     private readonly string _pluginName;
     
     private readonly string _commandName;
+    protected override Microsoft.Extensions.Logging.ILogger<CommandLogger> RootLogger { get; }
     
-    internal CommandLogger(string pluginName, string commandName,IEnumerable<string> tags)
+    internal CommandLogger(Microsoft.Extensions.Logging.ILogger<CommandLogger> rootLogger,string pluginName, string commandName,IEnumerable<string> tags)
     {
         _pluginName = pluginName;
         _commandName = commandName;
+        RootLogger = rootLogger;
         Tags = tags.ToArray();
         string extendTemplate = "";
         for (int i = 0; i < Tags.Length; i++)
@@ -23,20 +27,21 @@ public sealed class CommandLogger : BaseLogger
         Template = "[{Time}] [Command] " + $"[{_pluginName}/{_commandName}] {extendTemplate} " + "[{LogLevel}] {Message}";
     }
     
-    internal CommandLogger(string pluginName, string commandName)
+    internal CommandLogger(Microsoft.Extensions.Logging.ILogger<CommandLogger> rootLogger,string pluginName, string commandName)
     {
         _pluginName = pluginName;
         _commandName = commandName;
+        RootLogger = rootLogger;
         Tags = [];
         Template = "[{Time}] [Command] " + $"[{_pluginName}/{_commandName}]" + "[{LogLevel}] {Message}";
     }
     
-    public CommandLogger Extend(string subSpace)
+    public override ILogger Extend(string subSpace)
     {
-        return new CommandLogger(_pluginName,_commandName,[..Tags, subSpace]);
+        return new CommandLogger(RootLogger,_pluginName,_commandName,[..Tags, subSpace]);
     }
-    public CommandLogger Extend(IEnumerable<string> subSpace)
+    public override ILogger Extend(IEnumerable<string> subSpace)
     {
-        return new CommandLogger(_pluginName,_commandName,[..Tags, ..subSpace]);
+        return new CommandLogger(RootLogger,_pluginName,_commandName,[..Tags, ..subSpace]);
     }
 }

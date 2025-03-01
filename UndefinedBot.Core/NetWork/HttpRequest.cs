@@ -6,13 +6,15 @@ using UndefinedBot.Core.Utils.Logging;
 
 namespace UndefinedBot.Core.NetWork;
 
-public sealed class HttpRequest(string pluginName) : IDisposable
+public sealed class HttpRequest(string pluginName,ILogger logger) : IDisposable
 {
     private readonly HttpClient _httpClient = new()
     {
         Timeout = DefaultTimeout,
         MaxResponseContentBufferSize = MaxBufferSize
     };
+
+    private readonly ILogger _logger = logger.Extend("HttpRequest");
     private static TimeSpan DefaultTimeout { get; set; } = TimeSpan.FromSeconds(10);
     private static long MaxBufferSize { get; set; } = 0x10000000;
     
@@ -27,8 +29,6 @@ public sealed class HttpRequest(string pluginName) : IDisposable
             MaxBufferSize = maxBufferSize;
         }
     }
-
-    private readonly InternalLogger _logger = new (["Network",pluginName]);
 
     public async Task<string> PostAsync([StringSyntax("Uri")] string url, object? content = null)
     {

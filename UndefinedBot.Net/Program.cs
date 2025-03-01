@@ -39,7 +39,6 @@ internal class Program
         undefinedAppBuilder.Configuration.AddEnvironmentVariables();
         undefinedAppBuilder.Services.AddSingleton<AdapterLoadService>();
         undefinedAppBuilder.Services.AddSingleton<PluginLoadService>();
-        undefinedAppBuilder.Services.AddHostedService<LogService>();
         UndefinedApp undefinedApp = new(undefinedAppBuilder.Build());
         undefinedApp.Start();
         

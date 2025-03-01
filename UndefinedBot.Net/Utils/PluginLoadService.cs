@@ -1,10 +1,12 @@
 ﻿using System.Reflection;
 using System.Text.Json;
 using System.Text.Json.Nodes;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using UndefinedBot.Core.Utils;
 using UndefinedBot.Core.Command;
 using UndefinedBot.Core.Plugin;
+using UndefinedBot.Net.Utils.Logging;
 
 namespace UndefinedBot.Net.Utils;
 
@@ -17,10 +19,13 @@ internal sealed class PluginLoadService : IDisposable
     private readonly List<IPluginInstance> _pluginInstanceList = [];
     private readonly List<CommandInstance> _commandInstanceList = [];
     private readonly Dictionary<string, List<CommandInstance>> _commandIndex = [];
+    
+    private readonly IServiceProvider _provider;
 
-    public PluginLoadService(ILogger<PluginLoadService> logger)
+    public PluginLoadService(IServiceProvider provider)//(ILogger<PluginLoadService> logger)
     {
-        Logger = logger;
+        _provider = provider;
+        Logger = provider.GetRequiredService<ILogger<PluginLoadService>>();
         LoadPlugin();
     }
 
@@ -118,6 +123,7 @@ internal sealed class PluginLoadService : IDisposable
             if (Activator.CreateInstance(targetClass) is IPluginInstance targetPluginInstance)
             {
                 Logger.LogTrace("Adapter instance created: {targetAdapterInstance}", targetPluginInstance.Id);
+                targetPluginInstance.ImplementLogger(new PluginLogger(_provider.GetRequiredService<ILogger<PluginLogger>>(), targetPluginInstance.Name));
                 targetPluginInstance.Initialize();
                 return targetPluginInstance;
             }

@@ -3,7 +3,6 @@ using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
 using UndefinedBot.Core.Adapter;
-using UndefinedBot.Core.Utils;
 using UndefinedBot.Core.Utils.Logging;
 
 namespace Adapter.OneBot11;
@@ -11,9 +10,9 @@ namespace Adapter.OneBot11;
 public sealed class HttpApi
 {
     private string HttpPostUrl { get; }
-    private AdapterLogger HttpApiLogger { get; }
+    private ILogger HttpApiLogger { get; }
 
-    public HttpApi(AdapterConfigData adapterConfig,AdapterLogger parentLogger)
+    public HttpApi(AdapterConfigData adapterConfig,ILogger parentLogger)
     {
         HttpServiceOptions? postConfig = adapterConfig.OriginalConfig["Post"]?.Deserialize<HttpServiceOptions>();
         if (postConfig is null)

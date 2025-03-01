@@ -53,7 +53,7 @@ public sealed class UndefinedApp : IHost
         _logger.LogInformation("Test Command");
         _adapterLoadService.ExternalInvokeCommand(
             CommandInformation
-                .Group("help", "0", "0", "0", 114514191)
+                .Group("test", "0", "0", "0", 114514191)
                 .Implement(
                     "OneBot11Adapter",
                     "",
@@ -61,7 +61,11 @@ public sealed class UndefinedApp : IHost
                     [
                         new ParsedToken(
                             ParsedTokenTypes.Text,
-                            new TextTokenContent { Text = "test" }
+                            new TextTokenContent { Text = "123" }
+                        ),
+                        new ParsedToken(
+                            ParsedTokenTypes.Text,
+                            new TextTokenContent { Text = "456" }
                         ),
                         //new ParsedToken(ParsedTokenTypes.Normal, Encoding.UTF8.GetBytes("233"))
                     ],

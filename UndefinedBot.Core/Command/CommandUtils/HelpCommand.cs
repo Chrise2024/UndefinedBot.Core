@@ -2,18 +2,23 @@
 using UndefinedBot.Core.Command.Arguments.ArgumentType;
 using UndefinedBot.Core.Command.CommandNode;
 using UndefinedBot.Core.Command.CommandSource;
+using UndefinedBot.Core.Utils.Logging;
 
 namespace UndefinedBot.Core.Command.CommandUtils;
 
 internal sealed class HelpCommand : IDisposable
 {
     private readonly List<CommandInstance> _commandInstances;
-    private readonly CommandInstance _instance = new("help", "core", ["all"]);
+    private readonly CommandInstance _instance;
     private readonly IActionManager _actionManager;
-    public HelpCommand(List<CommandInstance> commandInstances,IActionManager actionManager)
+    private readonly ILogger _logger;
+
+    public HelpCommand(List<CommandInstance> commandInstances,IActionManager actionManager,ILogger logger)
     {
         _commandInstances = commandInstances;
         _actionManager = actionManager;
+        _logger = logger;
+        _instance = new("help", "core", ["all"],logger);
         _instance.Execute(async (ctx, _,_) =>
             {
                 await ctx.SendFeedbackAsync(GenerateGeneralHelpText(ctx.Information));

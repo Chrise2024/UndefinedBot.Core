@@ -20,13 +20,15 @@ public interface IAdapterInstance : IDisposable
     public long[] GroupId { get; }
     public string CommandPrefix { get; }
     internal void MountCommands(ICommandManager commandManager);
-    internal AdapterLogger AcquireLogger();
+    internal ILogger AcquireLogger();
+    internal void ImplementLogger(ILogger logger);
     internal void ExternalInvokeCommand(CommandInformation information, BaseCommandSource source);
 
     /// <summary>
     /// Handle default action invoked by command
     /// </summary>
     Task<byte[]?> HandleActionAsync(ActionType action, string? target = null,IActionParam? parameter = null);
+    void Initialize();
 }
 
 public abstract class BaseAdapter : IAdapterInstance
@@ -58,7 +60,7 @@ public abstract class BaseAdapter : IAdapterInstance
     /// </summary>
     public string CommandPrefix { get; }
 
-    protected AdapterLogger Logger => new(Name);
+    [AllowNull]protected ILogger Logger { get; private set; }
     protected AdapterConfigData AdapterConfig { get; }
 
     /// <summary>
@@ -70,7 +72,9 @@ public abstract class BaseAdapter : IAdapterInstance
     
     void IAdapterInstance.MountCommands(ICommandManager commandManager) =>  CommandManager = commandManager;
     
-    AdapterLogger IAdapterInstance.AcquireLogger() => Logger;
+    ILogger IAdapterInstance.AcquireLogger() => Logger;
+    
+    void IAdapterInstance.ImplementLogger(ILogger logger) => Logger = logger;
 
     protected BaseAdapter()
     {
@@ -119,11 +123,11 @@ public abstract class BaseAdapter : IAdapterInstance
     /// <returns></returns>
     public abstract Task<byte[]?> HandleActionAsync(ActionType action, string? target = null,
         IActionParam? parameter = null);
+    public abstract void Initialize();
 
     public virtual void Dispose()
     {
         CommandManager.Dispose();
-        Logger.Dispose();
         Array.Clear(GroupId);
         GC.SuppressFinalize(this);
     }

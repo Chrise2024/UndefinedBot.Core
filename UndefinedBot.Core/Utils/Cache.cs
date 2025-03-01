@@ -3,12 +3,12 @@ using UndefinedBot.Core.Utils.Logging;
 
 namespace UndefinedBot.Core.Utils;
 
-public sealed class CacheManager(string pluginName,string commandName) : IDisposable
+public sealed class CacheManager(string pluginName,ILogger logger) : IDisposable
 {
     private readonly Dictionary<string, StorageCacheWrapper> _storageCache = [];
     private readonly Dictionary<string, FileCacheWrapper> _fileCache = [];
-    private readonly CommandLogger _cacheLogger = new(pluginName,commandName,["Cache"]);
     private readonly string _cacheRootPath = Path.Join(Environment.CurrentDirectory, "Cache", pluginName);
+    private readonly ILogger _logger = logger.Extend("Cache");
 
     public void UpdateCache()
     {
@@ -38,7 +38,7 @@ public sealed class CacheManager(string pluginName,string commandName) : IDispos
         }
         catch (Exception ex)
         {
-            _cacheLogger.Error(ex, "Cache Create Failed");
+            _logger.Error(ex, "Cache Create Failed");
             return "";
         }
     }
@@ -53,7 +53,7 @@ public sealed class CacheManager(string pluginName,string commandName) : IDispos
         }
         catch (Exception ex)
         {
-            _cacheLogger.Error(ex, "Cache Create Failed");
+            _logger.Error(ex, "Cache Create Failed");
             return false;
         }
     }
@@ -68,7 +68,7 @@ public sealed class CacheManager(string pluginName,string commandName) : IDispos
         }
         catch (Exception ex)
         {
-            _cacheLogger.Error(ex, "Cache Modify Failed");
+            _logger.Error(ex, "Cache Modify Failed");
             return default;
         }
     }
@@ -88,7 +88,6 @@ public sealed class CacheManager(string pluginName,string commandName) : IDispos
     {
         _fileCache.Clear();
         _storageCache.Clear();
-        _cacheLogger.Dispose();
     }
 }
 

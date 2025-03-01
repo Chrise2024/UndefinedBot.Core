@@ -5,6 +5,7 @@ using UndefinedBot.Core.Command.CommandNode;
 using UndefinedBot.Core.Command.CommandSource;
 using UndefinedBot.Core.Command.CommandUtils;
 using UndefinedBot.Core.Utils;
+using UndefinedBot.Core.Utils.Logging;
 
 namespace UndefinedBot.Core.Command;
 
@@ -20,13 +21,16 @@ public sealed class CommandInstance : IDisposable
     internal string PluginId { get; }
     internal string Name { get; }
     private RootCommandNode RootNode { get; }
-    internal CacheManager Cache => new(PluginId, Name);
+    internal CacheManager Cache { get; }
+    private ILogger Logger { get; }
 
-    internal CommandInstance(string commandName, string pluginId, string[] targetAdapterId)
+    internal CommandInstance(string commandName, string pluginId, string[] targetAdapterId,ILogger logger)
     {
         TargetAdapterId = targetAdapterId;
         PluginId = pluginId;
         Name = commandName;
+        Logger = logger;
+        Cache = new(pluginId, logger);
         RootNode = new RootCommandNode(commandName);
         RootNode.SetCommandAttrib(CommandAttrib);
     }
@@ -261,6 +265,8 @@ public sealed class CommandInstance : IDisposable
     {
         return CommandAttrib.HasFlag(CommandAttribFlags.Hidden);
     }
+    
+    internal ILogger AcquireLogger() => Logger;
 
     #endregion
 

@@ -1,4 +1,5 @@
-﻿using System.Text.Json;
+﻿using System.Diagnostics.CodeAnalysis;
+using System.Text.Json;
 using System.Text.Json.Nodes;
 using UndefinedBot.Core.Command;
 using UndefinedBot.Core.NetWork;
@@ -14,6 +15,7 @@ public interface IPluginInstance : IDisposable
     string[] TargetAdapter { get; }
     long[] GroupId { get; }
     internal List<CommandInstance> GetCommandInstance();
+    internal void ImplementLogger(ILogger logger);
     void Initialize();
 }
 
@@ -30,12 +32,17 @@ public abstract class BasePlugin : IPluginInstance
     public abstract string[] TargetAdapter { get; }
     public long[] GroupId { get; }
     public abstract void Initialize();
-    protected PluginLogger Logger => new (Name);
-    protected HttpRequest Request => new(Name);
+    [AllowNull]protected ILogger Logger { get; private set; }
+    protected HttpRequest Request => new(Name,Logger.Extend("HttpRequest"));
     protected PluginConfigData PluginConfig { get; }
     protected string PluginPath => Path.GetDirectoryName(GetType().Assembly.Location) ?? "/";
     private List<CommandInstance> CommandInstances { get; } = [];
     List<CommandInstance> IPluginInstance.GetCommandInstance() => CommandInstances;
+    
+    void IPluginInstance.ImplementLogger(ILogger logger)
+    {
+        Logger = logger;
+    }
     protected BasePlugin()
     {
         PluginConfig = GetPluginConfig();
@@ -66,7 +73,7 @@ public abstract class BasePlugin : IPluginInstance
     /// </returns>
     protected CommandInstance RegisterCommand(string commandName)
     {
-        CommandInstance ci = new(commandName, Id, TargetAdapter);
+        CommandInstance ci = new(commandName, Id, TargetAdapter,Logger.Extend(commandName));
         CommandInstances.Add(ci);
         return ci;
     }
@@ -80,7 +87,6 @@ public abstract class BasePlugin : IPluginInstance
         }
         CommandInstances.Clear();
         Request.Dispose();
-        Logger.Dispose();
         GC.SuppressFinalize(this);
     }
 }

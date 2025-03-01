@@ -11,9 +11,9 @@ using UndefinedBot.Core.Command.Arguments.TokenContentType;
 
 namespace Adapter.OneBot11;
 
-internal sealed partial class MsgHandler(AdapterConfigData adapterConfig, AdapterLogger parentLogger)
+internal sealed partial class MsgHandler(AdapterConfigData adapterConfig, ILogger parentLogger)
 {
-    private readonly AdapterLogger _logger = parentLogger.Extend("MsgHandler");
+    private readonly ILogger _logger = parentLogger.Extend("MsgHandler");
     private AdapterConfigData AdapterConfig => adapterConfig;
 
     public (CommandInformation?, BaseCommandSource?, ParsedToken[]?) HandleMsg(JsonNode msgJson)

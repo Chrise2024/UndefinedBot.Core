@@ -38,13 +38,13 @@ public sealed class HttpServiceOptions(string host, uint port, string? accessTok
 internal sealed class HttpServer(
     AdapterConfigData adapterConfig,
     Action<CommandInformation, BaseCommandSource, ParsedToken[]> submitter,
-    AdapterLogger parentLogger
+    ILogger parentLogger
     )
 {
     private readonly HttpListener _httpListener = new();
     private readonly HttpServiceOptions _options = HttpServiceOptions.CreateFromConfig(adapterConfig);
     private readonly MsgHandler _handler = new(adapterConfig,parentLogger);
-    private readonly AdapterLogger _logger = parentLogger.Extend("HttpServer");
+    private readonly ILogger _logger = parentLogger.Extend("HttpServer");
     private Action<CommandInformation, BaseCommandSource, ParsedToken[]> Submitter => submitter;
 
     public async Task ExecuteAsync(CancellationToken token)

@@ -1,4 +1,5 @@
 ﻿using System.Text.Json;
+using Microsoft.Extensions.DependencyInjection;
 using UndefinedBot.Core.Adapter;
 using UndefinedBot.Core.Command;
 using UndefinedBot.Core.Command.Arguments;
@@ -8,6 +9,7 @@ using UndefinedBot.Core.Command.CommandSource;
 using UndefinedBot.Core.Command.CommandUtils;
 using UndefinedBot.Core.Plugin;
 using UndefinedBot.Core.Utils.Logging;
+using UndefinedBot.Net.Utils.Logging;
 
 namespace UndefinedBot.Net.Utils;
 
@@ -17,13 +19,13 @@ internal sealed class CommandManager : ICommandManager
 
     private readonly HelpCommand _helpCommand;
 
-    private readonly AdapterLogger _logger;
+    private readonly ILogger _logger;
     
     private readonly IAdapterInstance _parentAdapter;
-    public CommandManager(PluginLoadService pluginLoadService, IAdapterInstance parentAdapter)
+    public CommandManager(IServiceProvider provider, IAdapterInstance parentAdapter)
     {
-        _commandInstances = pluginLoadService.AcquireCommandInstance(parentAdapter.Id);
-        _helpCommand = new(_commandInstances, new ActionManager(parentAdapter));
+        _commandInstances = provider.GetRequiredService<PluginLoadService>().AcquireCommandInstance(parentAdapter.Id);
+        _helpCommand = new(_commandInstances, new ActionManager(parentAdapter),new CommandLogger(provider.GetRequiredService<Microsoft.Extensions.Logging.ILogger<CommandLogger>>(),"Core","Help"));
         _logger = parentAdapter.AcquireLogger().Extend("CommandManager");
         _parentAdapter = parentAdapter;
     }
@@ -95,7 +97,6 @@ internal sealed class CommandManager : ICommandManager
     public void Dispose()
     {
         _helpCommand.Dispose();
-        _logger.Dispose();
         _commandInstances.Clear();
     }
 }
