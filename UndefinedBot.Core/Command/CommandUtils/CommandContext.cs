@@ -4,7 +4,6 @@ using UndefinedBot.Core.NetWork;
 using UndefinedBot.Core.Utils;
 using UndefinedBot.Core.Command.Arguments;
 using UndefinedBot.Core.Plugin.BasicMessage;
-using UndefinedBot.Core.Utils.Logging;
 
 namespace UndefinedBot.Core.Command.CommandUtils;
 

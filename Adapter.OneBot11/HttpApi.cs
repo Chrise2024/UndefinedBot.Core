@@ -3,7 +3,7 @@ using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
 using UndefinedBot.Core.Adapter;
-using UndefinedBot.Core.Utils.Logging;
+using UndefinedBot.Core.Utils;
 
 namespace Adapter.OneBot11;
 

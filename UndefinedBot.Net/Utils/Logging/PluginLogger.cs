@@ -1,4 +1,4 @@
-﻿using UndefinedBot.Core.Utils.Logging;
+﻿using UndefinedBot.Core.Utils;
 
 namespace UndefinedBot.Net.Utils.Logging;
 

@@ -6,8 +6,8 @@ using UndefinedBot.Core.Adapter;
 using UndefinedBot.Core.Command;
 using UndefinedBot.Core.Command.Arguments;
 using UndefinedBot.Core.Command.CommandSource;
-using UndefinedBot.Core.Utils.Logging;
 using UndefinedBot.Core.Command.Arguments.TokenContentType;
+using UndefinedBot.Core.Utils;
 
 namespace Adapter.OneBot11;
 

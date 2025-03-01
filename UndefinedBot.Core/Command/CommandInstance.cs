@@ -5,7 +5,6 @@ using UndefinedBot.Core.Command.CommandNode;
 using UndefinedBot.Core.Command.CommandSource;
 using UndefinedBot.Core.Command.CommandUtils;
 using UndefinedBot.Core.Utils;
-using UndefinedBot.Core.Utils.Logging;
 
 namespace UndefinedBot.Core.Command;
 

@@ -4,7 +4,6 @@ using System.Text.Json.Nodes;
 using UndefinedBot.Core.Command;
 using UndefinedBot.Core.NetWork;
 using UndefinedBot.Core.Utils;
-using UndefinedBot.Core.Utils.Logging;
 
 namespace UndefinedBot.Core.Plugin;
 

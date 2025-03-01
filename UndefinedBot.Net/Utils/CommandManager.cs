@@ -8,7 +8,7 @@ using UndefinedBot.Core.Command.CommandResult;
 using UndefinedBot.Core.Command.CommandSource;
 using UndefinedBot.Core.Command.CommandUtils;
 using UndefinedBot.Core.Plugin;
-using UndefinedBot.Core.Utils.Logging;
+using UndefinedBot.Core.Utils;
 using UndefinedBot.Net.Utils.Logging;
 
 namespace UndefinedBot.Net.Utils;

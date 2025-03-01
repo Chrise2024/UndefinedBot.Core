@@ -2,7 +2,6 @@
 using System.Text;
 using System.Text.Json;
 using UndefinedBot.Core.Utils;
-using UndefinedBot.Core.Utils.Logging;
 
 namespace UndefinedBot.Core.NetWork;
 

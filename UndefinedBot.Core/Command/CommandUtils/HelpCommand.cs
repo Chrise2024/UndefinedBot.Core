@@ -2,7 +2,7 @@
 using UndefinedBot.Core.Command.Arguments.ArgumentType;
 using UndefinedBot.Core.Command.CommandNode;
 using UndefinedBot.Core.Command.CommandSource;
-using UndefinedBot.Core.Utils.Logging;
+using UndefinedBot.Core.Utils;
 
 namespace UndefinedBot.Core.Command.CommandUtils;
 

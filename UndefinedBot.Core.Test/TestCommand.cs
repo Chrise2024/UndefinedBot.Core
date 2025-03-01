@@ -1,7 +1,6 @@
 ﻿using UndefinedBot.Core.Command.Arguments.ArgumentType;
 using UndefinedBot.Core.Command.CommandNode;
 using UndefinedBot.Core.Plugin;
-using UndefinedBot.Core.Utils.Logging;
 
 namespace UndefinedBot.Core.Test;
 
@@ -12,7 +11,6 @@ public sealed class TestCommand : BasePlugin
     public override string[] TargetAdapter => ["OneBot11Adapter"];
     public override void Initialize()
     {
-        Logger.Info("HHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHH");
         //Console.WriteLine(PluginPath);
         RegisterCommand("test")
             .Description("指令帮助文档")

@@ -1,6 +1,4 @@
 ﻿
-using UndefinedBot.Core.Utils.Logging;
-
 namespace UndefinedBot.Core.Utils;
 
 public sealed class CacheManager(string pluginName,ILogger logger) : IDisposable

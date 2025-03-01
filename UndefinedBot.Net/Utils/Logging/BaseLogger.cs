@@ -1,8 +1,9 @@
 ﻿using Microsoft.Extensions.Logging;
+using ILogger = UndefinedBot.Core.Utils.ILogger;
 
 namespace UndefinedBot.Net.Utils.Logging;
 
-public abstract class BaseLogger : UndefinedBot.Core.Utils.Logging.ILogger
+public abstract class BaseLogger : ILogger
 {
     protected abstract string Template { get; }
 
@@ -70,8 +71,8 @@ public abstract class BaseLogger : UndefinedBot.Core.Utils.Logging.ILogger
         RootLogger.LogTrace(ex, Template, [GetTimeString(), ..Tags, "Trace", message]);
     }
 
-    public abstract UndefinedBot.Core.Utils.Logging.ILogger Extend(string subSpace);
-    public abstract UndefinedBot.Core.Utils.Logging.ILogger Extend(IEnumerable<string> subSpace);
+    public abstract ILogger Extend(string subSpace);
+    public abstract ILogger Extend(IEnumerable<string> subSpace);
 
     private static string GetTimeString() => DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
 }
