@@ -18,7 +18,7 @@ public readonly struct NodeActionWrapper(Func<CommandContext, BaseCommandSource,
         {
             await nodeAction.Invoke(ctx, source,cts.Token).WaitAsync(timeout,cts.Token);
         }
-        catch (OperationCanceledException)
+        catch (TimeoutException)
         {
             await cts.CancelAsync();
         }
