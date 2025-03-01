@@ -1,43 +1,57 @@
 ﻿using System.Reflection;
+using System.Text.Json;
 using System.Text.Json.Nodes;
-using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using UndefinedBot.Core.Adapter;
+using UndefinedBot.Core.Command;
+using UndefinedBot.Core.Command.CommandSource;
 using UndefinedBot.Core.Utils;
 
 namespace UndefinedBot.Net.Utils;
 
-internal sealed class AdapterLoadService(ILogger<AdapterLoadService> logger) : IDisposable
+internal sealed class AdapterLoadService(ILogger<AdapterLoadService> logger, PluginLoadService pluginLoadService)
+    : IDisposable
 {
     private static string AdapterRoot => Path.Join(Environment.CurrentDirectory, "Adapters");
 
     private static string LibSuffix => GetLibSuffix();
 
-    //private static InternalLogger AdapterInitializeLogger => new(["Init","Load Adapter"]);
-    private ILogger<AdapterLoadService> Logger => logger;
+    private readonly List<IAdapterInstance> _adapterInstances = [];
+    private readonly PluginLoadService _pluginLoadService = pluginLoadService;
 
-    public List<IAdapterInstance> LoadAdapters()
+    internal void ExternalInvokeCommand(CommandInformation information, BaseCommandSource source)
     {
+        IAdapterInstance? targetAdapter = _adapterInstances.Find(t => t.Id == information.AdapterId);
+        if (targetAdapter is null)
+        {
+            logger.LogWarning("No such adapter: {AdapterId}",information.AdapterId);
+            return;
+        }
 
-        List<IAdapterInstance> adapterInstances = [];
-        Logger.LogInformation("Start loading adapters");
+        targetAdapter.ExternalInvokeCommand(information, source);
+    }
+
+    public void LoadAdapter()
+    {
+        Unload();
+        logger.LogInformation("Start loading adapters");
         if (!Directory.Exists(AdapterRoot))
         {
             Directory.CreateDirectory(AdapterRoot);
-            Logger.LogWarning("Adapters folder not fount, creating adapters folder.");
-            return [];
+            logger.LogWarning("Adapters folder not fount, creating adapters folder.");
+            return;
         }
 
         string[] adapterFolders = Directory.GetDirectories(AdapterRoot);
         foreach (string af in adapterFolders)
         {
             string adapterPropertiesFile = Path.Join(af, "adapter.json");
-            Logger.LogTrace("Adapter path: {af}", af);
+            logger.LogTrace("Adapter path: {af}", af);
             string sdkFile = Path.Join(af, $"UndefinedBot.Core.{LibSuffix}");
             FileIO.SafeDeleteFile(sdkFile);
             if (!File.Exists(adapterPropertiesFile))
             {
-                Logger.LogWarning("<{af}> not have adapter.json", af);
+                logger.LogWarning("<{af}> not have adapter.json", af);
                 continue;
             }
 
@@ -45,34 +59,34 @@ internal sealed class AdapterLoadService(ILogger<AdapterLoadService> logger) : I
             string? ef = originJson?["EntryFile"]?.GetValue<string>();
             if (originJson is null || ef is null)
             {
-                Logger.LogWarning("<{af}> has invalid adapter.json", af);
+                logger.LogWarning("<{af}> has invalid adapter.json", af);
                 continue;
             }
 
             string entryFile = $"{Path.Join(af, ef)}.{LibSuffix}";
             if (!File.Exists(entryFile))
             {
-                Logger.LogWarning("Binary entry file: <{entryFile}> not found", entryFile);
+                logger.LogWarning("Binary entry file: <{entryFile}> not found", entryFile);
                 continue;
             }
 
             IAdapterInstance? inst = CreateAdapterInstance(entryFile);
             if (inst is null)
             {
-                Logger.LogWarning("<{af}> failed to create instance", af);
+                logger.LogWarning("<{af}> failed to create instance", af);
                 continue;
             }
 
             //_adapterReferences[inst.Id] = adapterProperties;
-            adapterInstances.Add(inst);
-            Logger.LogInformation("Success Load Adapter: {Id}", inst.Id);
+            inst.MountCommands(new CommandManager(_pluginLoadService, inst));
+            _adapterInstances.Add(inst);
+            logger.LogInformation("Success Load Adapter: {Id}", inst.Id);
         }
 
-        //AssemblyLoadContext.Unload();
         GC.Collect();
-        //Mount AdapterInstances on ActionManager to Handle Plugin's Action
-        ActionManager.UpdateAdapterInstances(adapterInstances);
-        return adapterInstances;
+        string adapterListText = JsonSerializer.Serialize(_adapterInstances, UndefinedApp.SerializerOptions);
+        FileIO.WriteFile(Path.Join(Environment.CurrentDirectory, "loaded_adapters.json"), adapterListText);
+        logger.LogInformation("Loaded Adapters:{AdapterList}", adapterListText);
     }
 
     private IAdapterInstance? CreateAdapterInstance(string adapterLibPath)
@@ -87,23 +101,23 @@ internal sealed class AdapterLoadService(ILogger<AdapterLoadService> logger) : I
                 .Find(type => type.BaseType?.FullName == "UndefinedBot.Core.Adapter.BaseAdapter");
             if (targetClass is null)
             {
-                Logger.LogWarning("Entry point not found in assembly {adapterLibPath}", adapterLibPath);
+                logger.LogWarning("Entry point not found in assembly {adapterLibPath}", adapterLibPath);
                 return null;
             }
 
-            Logger.LogTrace("Adapter class: {targetClass}", targetClass.FullName);
+            logger.LogTrace("Adapter class: {targetClass}", targetClass.FullName);
             //Create Adapter Instance
             if (Activator.CreateInstance(targetClass) is IAdapterInstance targetAdapterInstance)
             {
-                Logger.LogTrace("Adapter instance created: {targetAdapterInstance}", targetAdapterInstance.Id);
+                logger.LogTrace("Adapter instance created: {targetAdapterInstance}", targetAdapterInstance.Id);
                 return targetAdapterInstance;
             }
 
-            Logger.LogWarning("Fail to create instance from {targetClass}", targetClass.FullName);
+            logger.LogWarning("Fail to create instance from {targetClass}", targetClass.FullName);
         }
         catch (Exception ex)
         {
-            Logger.LogWarning(ex, "Unable to Load Adapter From {adapterLibPath}", adapterLibPath);
+            logger.LogWarning(ex, "Unable to Load Adapter From {adapterLibPath}", adapterLibPath);
         }
 
         return null;
@@ -130,9 +144,17 @@ internal sealed class AdapterLoadService(ILogger<AdapterLoadService> logger) : I
             throw new PlatformNotSupportedException();
         }
     }*/
+    public void Unload()
+    {
+        foreach (var ai in _adapterInstances)
+        {
+            ai.Dispose();
+        }
+        _adapterInstances.Clear();
+    }
+
     public void Dispose()
     {
-        ActionManager.DisposeAdapterInstance();
-        GC.SuppressFinalize(this);
+        //NaN
     }
 }

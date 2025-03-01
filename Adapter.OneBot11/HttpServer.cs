@@ -44,7 +44,7 @@ internal sealed class HttpServer(
     private readonly HttpListener _httpListener = new();
     private readonly HttpServiceOptions _options = HttpServiceOptions.CreateFromConfig(adapterConfig);
     private readonly MsgHandler _handler = new(adapterConfig,parentLogger);
-    private AdapterLogger Logger => parentLogger.Extend("HttpServer");
+    private readonly AdapterLogger _logger = parentLogger.Extend("HttpServer");
     private Action<CommandInformation, BaseCommandSource, ParsedToken[]> Submitter => submitter;
 
     public async Task ExecuteAsync(CancellationToken token)
@@ -54,11 +54,11 @@ internal sealed class HttpServer(
         {
             _httpListener.Prefixes.Add(prefix);
             _httpListener.Start();
-            Logger.Info($"Http Server Started With Prefix: {prefix}");
+            _logger.Info($"Http Server Started With Prefix: {prefix}");
         }
         catch (Exception ex)
         {
-            Logger.Error("Http Server Start Failed");
+            _logger.Error("Http Server Start Failed");
             PrintExceptionInfo(ex);
         }
 
@@ -73,17 +73,17 @@ internal sealed class HttpServer(
             }
             catch (Exception ex)
             {
-                Logger.Error("Http Server Stop Failed");
+                _logger.Error("Http Server Stop Failed");
                 PrintExceptionInfo(ex);
                 return;
             }
         }
-        Logger.Info("Http Server Stopped");
+        _logger.Info("Http Server Stopped");
     }
 
     private async Task ReceiveLoop(CancellationToken token)
     {
-        Logger.Info("Http Server Receive Loop Started");
+        _logger.Info("Http Server Receive Loop Started");
         while (_httpListener.IsListening && !token.IsCancellationRequested)
         {
             try
@@ -100,7 +100,7 @@ internal sealed class HttpServer(
                 PrintExceptionInfo(ex);
             }
         }
-        Logger.Info("Http Server Receive Loop Ended");
+        _logger.Info("Http Server Receive Loop Ended");
     }
 
     private async Task HandleRequestAsync(HttpListenerContext context, CancellationToken token = default)
@@ -116,7 +116,7 @@ internal sealed class HttpServer(
                                         (query["access_token"] is { } accessToken ? $"Bearer {accessToken}" : null);
                 if (authorization is null)
                 {
-                    Logger.Error("Unauthorized Request");
+                    _logger.Error("Unauthorized Request");
                     response.StatusCode = (int)HttpStatusCode.Unauthorized;
                     response.Headers.Add("WWW-Authenticate", "Bearer");
                     response.Close();
@@ -125,7 +125,7 @@ internal sealed class HttpServer(
 
                 if (authorization != $"Bearer {_options.AccessToken}")
                 {
-                    Logger.Error("Authorization Failed");
+                    _logger.Error("Authorization Failed");
                     response.StatusCode = (int)HttpStatusCode.Forbidden;
                     response.Close();
                     return;
@@ -134,7 +134,7 @@ internal sealed class HttpServer(
 
             if (request.HttpMethod != "POST")
             {
-                Logger.Error("Invalid Http Method");
+                _logger.Error("Invalid Http Method");
                 response.StatusCode = (int)HttpStatusCode.NotAcceptable;
                 response.Close();
                 return;
@@ -142,7 +142,7 @@ internal sealed class HttpServer(
 
             if (!MediaTypeHeaderValue.TryParse(request.ContentType, out var mediaType))
             {
-                Logger.Error("Unknown Media Type");
+                _logger.Error("Unknown Media Type");
                 response.StatusCode = (int)HttpStatusCode.UnsupportedMediaType;
                 response.Close();
                 return;
@@ -150,7 +150,7 @@ internal sealed class HttpServer(
 
             if (mediaType.MediaType != "application/json")
             {
-                Logger.Error("Unsupported Content Type");
+                _logger.Error("Unsupported Content Type");
                 response.StatusCode = (int)HttpStatusCode.NotAcceptable;
                 response.Close();
                 return;
@@ -167,7 +167,7 @@ internal sealed class HttpServer(
             if (cip is not null && ucs is not null && tokens is not null)
             {
                 Submitter(cip, ucs, tokens);
-                Logger.Info("Handle Complete");
+                _logger.Info("Handle Complete");
             }
         }
         catch (Exception ex)
@@ -178,6 +178,6 @@ internal sealed class HttpServer(
 
     private void PrintExceptionInfo(Exception ex)
     {
-        Logger.Error(ex, "Error Occured, Error Information:");
+        _logger.Error(ex, "Error Occured, Error Information:");
     }
 }

@@ -1,5 +1,7 @@
-﻿using System.Text.Json;
+﻿using System.Diagnostics.CodeAnalysis;
+using System.Text.Json;
 using System.Text.Json.Nodes;
+using UndefinedBot.Core.Adapter.ActionParam;
 using UndefinedBot.Core.Command;
 using UndefinedBot.Core.Command.Arguments;
 using UndefinedBot.Core.Command.CommandSource;
@@ -17,16 +19,14 @@ public interface IAdapterInstance : IDisposable
     string Protocol { get; }
     public long[] GroupId { get; }
     public string CommandPrefix { get; }
-
-    /// <summary>
-    /// Handle custom action invoked by command
-    /// </summary>
-    Task<byte[]?> HandleCustomActionAsync(string action, CustomActionParameterWrapper? paras);
+    internal void MountCommands(ICommandManager commandManager);
+    internal AdapterLogger AcquireLogger();
+    internal void ExternalInvokeCommand(CommandInformation information, BaseCommandSource source);
 
     /// <summary>
     /// Handle default action invoked by command
     /// </summary>
-    Task<byte[]?> HandleDefaultActionAsync(DefaultActionType action, DefaultActionParameterWrapper? paras);
+    Task<byte[]?> HandleActionAsync(ActionType action, string? target = null,IActionParam? parameter = null);
 }
 
 public abstract class BaseAdapter : IAdapterInstance
@@ -64,7 +64,13 @@ public abstract class BaseAdapter : IAdapterInstance
     /// <summary>
     /// The location of the adapter folder
     /// </summary>
-    protected string AdapterPath => Path.GetDirectoryName(GetType().Assembly.Location) ?? "/";
+    protected string AdapterPath => Path.GetDirectoryName(GetType().Assembly.Location) ?? Path.Join();
+
+    [AllowNull]private ICommandManager CommandManager { get; set; }
+    
+    void IAdapterInstance.MountCommands(ICommandManager commandManager) =>  CommandManager = commandManager;
+    
+    AdapterLogger IAdapterInstance.AcquireLogger() => Logger;
 
     protected BaseAdapter()
     {
@@ -93,35 +99,32 @@ public abstract class BaseAdapter : IAdapterInstance
     /// <param name="information">Command's basic information</param>
     /// <param name="source">Command Source</param>
     /// <param name="tokens">Tokens, the body of the command</param>
-    protected async void SubmitCommandEventAsync(
+    protected void SubmitCommandEvent(
         CommandInformation information,
         BaseCommandSource source,
         ParsedToken[] tokens
     )
     {
-        await CommandEventBus.SendCommandEventAsync(information, source);
+        CommandManager.InvokeCommandAsync(information, source,tokens);
     }
+    void IAdapterInstance.ExternalInvokeCommand(CommandInformation information, BaseCommandSource source) => 
+        CommandManager.InvokeCommandAsync(information, source, information.Tokens);
 
     /// <summary>
     /// Handle Custom Action Invoked by Command
     /// </summary>
     /// <param name="action">Action Name</param>
-    /// <param name="paras">Parameters</param>
+    /// <param name="target">Target of action</param>
+    /// <param name="parameter">parameters</param>
     /// <returns></returns>
-    public abstract Task<byte[]?> HandleCustomActionAsync(string action, CustomActionParameterWrapper? paras);
-
-    /// <summary>
-    /// Handle Default Action Invoked by Command
-    /// </summary>
-    /// <param name="action">Action Type</param>
-    /// <param name="paras">Parameters</param>
-    /// <returns></returns>
-    public abstract Task<byte[]?> HandleDefaultActionAsync(DefaultActionType action, DefaultActionParameterWrapper? paras);
+    public abstract Task<byte[]?> HandleActionAsync(ActionType action, string? target = null,
+        IActionParam? parameter = null);
 
     public virtual void Dispose()
     {
-        Array.Clear(GroupId);
+        CommandManager.Dispose();
         Logger.Dispose();
+        Array.Clear(GroupId);
         GC.SuppressFinalize(this);
     }
 }

@@ -1,26 +1,15 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using UndefinedBot.Core.Utils.Logging;
 
 namespace UndefinedBot.Net.Utils;
 
-internal sealed class LogService(ILogger<LogService> logger) : IDisposable
+internal sealed class LogService(ILogger<LogService> logger) : BackgroundService,IDisposable
 {
     private Task? LoggerTask { get; set; }
     private readonly CancellationTokenSource _cancellationTokenSource = new();
 
-    public void StartLogging()
-    {
-        logger.LogInformation("Logging loop started");
-        LoggerTask = LoggingLoop(_cancellationTokenSource.Token);
-    }
-
-    public void StopLogging()
-    {
-        logger.LogInformation("Logging loop stopped");
-        _cancellationTokenSource.Cancel();
-    }
-
-    private async Task LoggingLoop(CancellationToken token)
+    protected override async Task ExecuteAsync(CancellationToken token)
     {
         while (!token.IsCancellationRequested)
         {

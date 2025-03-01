@@ -7,7 +7,7 @@ public sealed class AdapterLogger : BaseLogger
 
     private readonly string _adapterName;
     
-    private AdapterLogger(string adapterName,IEnumerable<string> tags)
+    internal AdapterLogger(string adapterName,IEnumerable<string> tags)
     {
         _adapterName = adapterName;
         Tags = tags.ToArray();

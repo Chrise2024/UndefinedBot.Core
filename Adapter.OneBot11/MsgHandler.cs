@@ -13,7 +13,7 @@ namespace Adapter.OneBot11;
 
 internal sealed partial class MsgHandler(AdapterConfigData adapterConfig, AdapterLogger parentLogger)
 {
-    private AdapterLogger Logger => parentLogger.Extend("MsgHandler");
+    private readonly AdapterLogger _logger = parentLogger.Extend("MsgHandler");
     private AdapterConfigData AdapterConfig => adapterConfig;
 
     public (CommandInformation?, BaseCommandSource?, ParsedToken[]?) HandleMsg(JsonNode msgJson)
@@ -51,7 +51,7 @@ internal sealed partial class MsgHandler(AdapterConfigData adapterConfig, Adapte
     /// <returns>tokens</returns>
     private (string?, List<ParsedToken>) Tokenize(string msgString)
     {
-        Logger.Info($"Processing: {msgString}");
+        _logger.Info($"Processing: {msgString}");
         List<ParsedToken> unsortedTokens = SplitRawCqMessage(msgString);
         int commandTokenIndex = unsortedTokens.FindIndex(item =>
             item is { TokenType: ParsedTokenTypes.Text, Content: TextTokenContent text } &&

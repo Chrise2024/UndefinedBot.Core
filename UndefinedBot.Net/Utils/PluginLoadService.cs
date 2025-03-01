@@ -1,4 +1,5 @@
 ﻿using System.Reflection;
+using System.Text.Json;
 using System.Text.Json.Nodes;
 using Microsoft.Extensions.Logging;
 using UndefinedBot.Core.Utils;
@@ -7,23 +8,34 @@ using UndefinedBot.Core.Plugin;
 
 namespace UndefinedBot.Net.Utils;
 
-internal sealed class PluginLoadService(ILogger<PluginLoadService> logger) : IDisposable
+internal sealed class PluginLoadService : IDisposable
 {
     private static string PluginRoot => Path.Join(Program.GetProgramRoot(), "Plugins");
     private static string LibSuffix => GetLibSuffix();
     private readonly List<IPluginInstance> _pluginInstanceList = [];
-    private ILogger<PluginLoadService> Logger => logger;
+    private readonly List<CommandInstance> _commandInstanceList = [];
+    private readonly Dictionary<string, List<CommandInstance>> _commandIndex = [];
 
-    public (List<IPluginInstance>,List<CommandInstance>) LoadPlugins()
+    public PluginLoadService(ILogger<PluginLoadService> logger)
     {
+        Logger = logger;
+        LoadPlugin();
+    }
 
-        List<CommandInstance> commandInstanceList = [];
+    private ILogger<PluginLoadService> Logger { get; }
+
+    public List<CommandInstance> AcquireCommandInstance(string adapterId) =>
+        _commandIndex.TryGetValue(adapterId, out List<CommandInstance>? v) ? v : [];
+
+    public void LoadPlugin()
+    {
+        Unload();
         Logger.LogInformation("Start loading plugins");
         if (!Directory.Exists(PluginRoot))
         {
             Directory.CreateDirectory(PluginRoot);
             Logger.LogWarning("Plugins folder not fount, creating Plugins folder.");
-            return ([],[]);
+            return;
         }
 
         string[] pluginFolders = Directory.GetDirectories(PluginRoot);
@@ -61,7 +73,7 @@ internal sealed class PluginLoadService(ILogger<PluginLoadService> logger) : IDi
                 continue;
             }
 
-            commandInstanceList.AddRange(pluginInstance.GetCommandInstance());
+            _commandInstanceList.AddRange(pluginInstance.GetCommandInstance());
 
             string pluginCachePath = Path.Join(Program.GetProgramCache(), pluginInstance.Id);
             FileIO.EnsurePath(pluginCachePath);
@@ -70,9 +82,16 @@ internal sealed class PluginLoadService(ILogger<PluginLoadService> logger) : IDi
                 //Clear Remaining Cache
                 FileIO.SafeDeleteFile(cf);
             }
+
             _pluginInstanceList.Add(pluginInstance);
         }
-        return (_pluginInstanceList,commandInstanceList);
+
+        string pluginListText = JsonSerializer.Serialize(_pluginInstanceList, UndefinedApp.SerializerOptions);
+        string commandListText = JsonSerializer.Serialize(_commandInstanceList.Select(c => $"{c.PluginId}/{c.Name} - {JsonSerializer.Serialize(c.TargetAdapterId)}"), UndefinedApp.SerializerOptions);
+        FileIO.WriteFile(Path.Join(Environment.CurrentDirectory, "loaded_plugins.json"), pluginListText);
+        Logger.LogInformation("Loaded Plugins:{PluginList}", pluginListText);
+        Logger.LogInformation("Loaded Commands:{PluginList}", commandListText);
+        IndexCommand();
     }
 
     private IPluginInstance? CreatePluginInstance(string pluginLibPath)
@@ -130,19 +149,46 @@ internal sealed class PluginLoadService(ILogger<PluginLoadService> logger) : IDi
             throw new PlatformNotSupportedException();
         }
     }*/
-    //for Help command
+    private void IndexCommand()
+    {
+        foreach (var ci in _commandInstanceList)
+        {
+            foreach (string tai in ci.TargetAdapterId)
+            {
+                if (_commandIndex.TryAdd(tai, [ci]))
+                {
+                    continue;
+                }
+
+                _commandIndex[tai].Add(ci);
+            }
+        }
+    }
+
     public void Unload()
     {
         foreach (var pi in _pluginInstanceList)
         {
             pi.Dispose();
         }
+
+        foreach (var ci in _commandInstanceList)
+        {
+            ci.Dispose();
+        }
+
         _pluginInstanceList.Clear();
+        _commandInstanceList.Clear();
+        _commandIndex.Clear();
     }
 
     public void Dispose()
     {
-        Unload();
+        foreach (var pi in _pluginInstanceList)
+        {
+            pi.Dispose();
+        }
+
         _pluginInstanceList.Clear();
     }
 }

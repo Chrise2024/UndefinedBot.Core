@@ -13,6 +13,8 @@ namespace UndefinedBot.Core.Command;
 /// </remarks>
 public sealed class CommandInformation : IDisposable
 {
+    #region BasicInformation
+
     /// <summary>
     /// Command name
     /// </summary>
@@ -42,6 +44,11 @@ public sealed class CommandInformation : IDisposable
     /// Unix time samp,Command's message send time
     /// </summary>
     public readonly long TimeStamp;
+
+    #endregion
+
+    #region EnvironmentCheck
+
     /// <summary>
     /// Check if the command is from group
     /// </summary>
@@ -62,33 +69,14 @@ public sealed class CommandInformation : IDisposable
     /// </summary>
     /// <returns></returns>
     public bool IsValid() => SubType != MessageSubType.Other;
-    //Below properties will be filled by program
-    
+
+    #endregion
+
+    #region Constructor
+
     /// <summary>
     /// Id of the adapter that submit the command
     /// </summary>
-    public string AdapterId { get; private set; } = "";
-    /// <summary>
-    /// Platform of the adapter that submit the command
-    /// </summary>
-    public string Platform { get; private set; } = "";
-    /// <summary>
-    /// Protocol of the adapter that submit the command
-    /// </summary>
-    public string Protocol { get; private set; } = "";
-    /// <summary>
-    /// Command's original prefix
-    /// </summary>
-    public string CommandPrefix { get; private set; } = "";
-    /// <summary>
-    /// Command's tokens
-    /// </summary>
-    public ParsedToken[] Tokens { get; private set; } = [];
-    /// <summary>
-    /// Environment Information
-    /// </summary>
-    /// <returns></returns>
-    public string GetEnvironmentInfo() => $"[{AdapterId}]{Platform}:{Protocol}";
 
     private CommandInformation(string calledCommandName, string sourceId,string senderId, string msgId, MessageSubType subType, long timeStamp)
     {
@@ -137,6 +125,33 @@ public sealed class CommandInformation : IDisposable
     {
         return new CommandInformation(command, sourceId,senderId, msgId, MessageSubType.Guild, time);
     }
+
+    #endregion
+
+    #region AutoImplement
+
+    public string AdapterId { get; private set; } = "";
+    /// <summary>
+    /// Platform of the adapter that submit the command
+    /// </summary>
+    public string Platform { get; private set; } = "";
+    /// <summary>
+    /// Protocol of the adapter that submit the command
+    /// </summary>
+    public string Protocol { get; private set; } = "";
+    /// <summary>
+    /// Command's original prefix
+    /// </summary>
+    public string CommandPrefix { get; private set; } = "";
+    /// <summary>
+    /// Command's tokens
+    /// </summary>
+    public ParsedToken[] Tokens { get; private set; } = [];
+    /// <summary>
+    /// Environment Information
+    /// </summary>
+    /// <returns></returns>
+    public string GetEnvironmentInfo() => $"[{AdapterId}]{Platform}:{Protocol}";
     internal CommandInformation Implement(string adapterId, string platform, string protocol,
         ParsedToken[] tokens, string prefix)
     {
@@ -147,6 +162,8 @@ public sealed class CommandInformation : IDisposable
         CommandPrefix = prefix;
         return this;
     }
+
+    #endregion
     public void Dispose()
     {
         Tokens = [];

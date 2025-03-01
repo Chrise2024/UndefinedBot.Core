@@ -28,7 +28,7 @@ public sealed class HttpRequest(string pluginName) : IDisposable
         }
     }
 
-    private InternalLogger HttpRequestLogger => new (["Network",pluginName]);
+    private readonly InternalLogger _logger = new (["Network",pluginName]);
 
     public async Task<string> PostAsync([StringSyntax("Uri")] string url, object? content = null)
     {
@@ -47,7 +47,7 @@ public sealed class HttpRequest(string pluginName) : IDisposable
         }
         catch (TaskCanceledException)
         {
-            HttpRequestLogger.Error("Task Canceled: ");
+            _logger.Error("Task Canceled: ");
             return "";
         }
         catch (Exception ex)
@@ -66,7 +66,7 @@ public sealed class HttpRequest(string pluginName) : IDisposable
         }
         catch (TaskCanceledException)
         {
-            HttpRequestLogger.Error("Http request timeout");
+            _logger.Error("Http request timeout");
         }
         catch (Exception ex)
         {
@@ -85,7 +85,7 @@ public sealed class HttpRequest(string pluginName) : IDisposable
         }
         catch (TaskCanceledException)
         {
-            HttpRequestLogger.Error("Http request timeout");
+            _logger.Error("Http request timeout");
             return [];
         }
         catch (Exception ex)
@@ -97,7 +97,7 @@ public sealed class HttpRequest(string pluginName) : IDisposable
 
     private void PrintExceptionInfo(Exception ex)
     {
-        HttpRequestLogger.Error(ex, "Error Occured, Error Information:");
+        _logger.Error(ex, "Error Occured, Error Information:");
     }
     public void Dispose()
     {

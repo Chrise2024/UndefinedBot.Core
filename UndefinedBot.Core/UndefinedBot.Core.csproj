@@ -24,4 +24,8 @@
         <Content Include="Readme.md"/>
     </ItemGroup>
 
+    <ItemGroup>
+      <Folder Include="Service\" />
+    </ItemGroup>
+
 </Project>

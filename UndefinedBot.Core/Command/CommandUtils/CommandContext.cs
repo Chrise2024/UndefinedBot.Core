@@ -21,25 +21,26 @@ public sealed class CommandContext : IDisposable
     public readonly CommandLogger Logger;
     public readonly CacheManager Cache;
     public readonly HttpRequest Request;
-    public readonly ActionManager Action;
+    public readonly IActionManager Action;
     public readonly MessageBuilder MessageBuilder;
     internal readonly Dictionary<string, ParsedToken> ArgumentReference = [];
+
     public async Task SendFeedbackAsync(string message)
     {
         //ActionInvoke.InvokeDefaultAction();
-        await Action.InvokeDefaultAction(
+        await Action.InvokeAction(
             Information.SubType == MessageSubType.Group
-                ? DefaultActionType.SendGroupMsg
-                : DefaultActionType.SendPrivateMsg,
-            DefaultActionParameterWrapper.Common(Information.SourceId,
-                new SendGroupMgsParam
-                {
-                    MessageChain = [new TextMessageNode{Text = message}]
-                })
-            );
+                ? ActionType.SendGroupMsg
+                : ActionType.SendPrivateMsg,
+            Information.SourceId,
+            new SendGroupMgsParam
+            {
+                MessageChain = [new TextMessageNode { Text = message }]
+            }
+        );
     }
 
-    internal CommandContext(CommandInstance commandInstance, CommandInformation ip)
+    internal CommandContext(CommandInstance commandInstance, CommandInformation ip, IActionManager actionManager)
     {
         PluginName = commandInstance.PluginId;
         CommandName = commandInstance.Name;
@@ -48,7 +49,7 @@ public sealed class CommandContext : IDisposable
         Logger = new(commandInstance.PluginId, commandInstance.Name);
         Cache = commandInstance.Cache;
         Request = new HttpRequest(commandInstance.PluginId);
-        Action = new(ip, Logger);
+        Action = actionManager;
         MessageBuilder = new();
     }
 
@@ -56,16 +57,6 @@ public sealed class CommandContext : IDisposable
     {
         Logger.Dispose();
         Request.Dispose();
-        Action.Dispose();
         ArgumentReference.Clear();
     }
-}
-
-/// <summary>
-/// For help command
-/// </summary>
-internal class HelpCommandContext(CommandInformation ip)
-{
-    public CommandLogger Logger => new("Help","Help");
-    public ActionManager Action => new(ip, Logger);
 }

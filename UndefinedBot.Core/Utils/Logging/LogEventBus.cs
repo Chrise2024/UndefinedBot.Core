@@ -4,11 +4,16 @@ namespace UndefinedBot.Core.Utils.Logging;
 
 internal static class LogEventBus
 {
-    private static readonly Channel<LogMessage> _logMessageChannel = Channel.CreateBounded<LogMessage>(new BoundedChannelOptions(128)
+    private static readonly Channel<LogMessage> _logMessageChannel;
+    static LogEventBus()
     {
-        FullMode = BoundedChannelFullMode.DropOldest,
-        SingleReader = true
-    });
+        int cap = Core.RootConfig["BusCacheCapacity"]?["Logging"]?.GetValue<int>() ?? 128;
+        _logMessageChannel = Channel.CreateBounded<LogMessage>(new BoundedChannelOptions(cap)
+        {
+            FullMode = BoundedChannelFullMode.DropOldest,
+            SingleReader = true
+        });
+    }
 
     public static void SendLogMessage(UndefinedLogLevel undefinedLogLevel,
         string message,

@@ -1,3 +1,3 @@
 ﻿namespace UndefinedBot.Core.Adapter.ActionParam;
 
-public interface IDefaultActionParam;
+public interface IActionParam;

@@ -1,6 +1,6 @@
 ﻿namespace UndefinedBot.Core.Adapter.ActionParam;
 
-public sealed class GetGroupMemberInfoParam : IDefaultActionParam
+public sealed class GetGroupMemberInfoParam : IActionParam
 {
     public required string UserId;
 }
