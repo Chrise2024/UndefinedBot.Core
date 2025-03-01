@@ -25,7 +25,7 @@ internal sealed class AdapterLoadService(IServiceProvider provider) : IDisposabl
         IAdapterInstance? targetAdapter = _adapterInstances.Find(t => t.Id == information.AdapterId);
         if (targetAdapter is null)
         {
-            _logger.LogWarning("No such adapter: {AdapterId}",information.AdapterId);
+            _logger.LogWarning("No such adapter: {AdapterId}", information.AdapterId);
             return;
         }
 
@@ -79,7 +79,7 @@ internal sealed class AdapterLoadService(IServiceProvider provider) : IDisposabl
             }
 
             //_adapterReferences[inst.Id] = adapterProperties;
-            inst.MountCommands(new CommandManager(provider,inst));
+            inst.MountCommands(new CommandManager(provider, inst));
             _adapterInstances.Add(inst);
             _logger.LogInformation("Success Load Adapter: {Id}", inst.Id);
         }
@@ -111,7 +111,9 @@ internal sealed class AdapterLoadService(IServiceProvider provider) : IDisposabl
             if (Activator.CreateInstance(targetClass) is IAdapterInstance targetAdapterInstance)
             {
                 _logger.LogTrace("Adapter instance created: {targetAdapterInstance}", targetAdapterInstance.Id);
-                targetAdapterInstance.ImplementLogger(new AdapterLogger(provider.GetRequiredService<ILogger<AdapterLogger>>(), targetAdapterInstance.Name));
+                targetAdapterInstance.ImplementLogger(
+                    new AdapterLogger(provider.GetRequiredService<ILogger<AdapterLogger>>(),
+                        targetAdapterInstance.Name));
                 targetAdapterInstance.Initialize();
                 return targetAdapterInstance;
             }
@@ -126,7 +128,10 @@ internal sealed class AdapterLoadService(IServiceProvider provider) : IDisposabl
         return null;
     }
 
-    private static string GetLibSuffix() => "dll";
+    private static string GetLibSuffix()
+    {
+        return "dll";
+    }
 
     // .Net dll on Unix is still .dll extension(?
     /*{
@@ -149,10 +154,7 @@ internal sealed class AdapterLoadService(IServiceProvider provider) : IDisposabl
     }*/
     public void Unload()
     {
-        foreach (var ai in _adapterInstances)
-        {
-            ai.Dispose();
-        }
+        foreach (IAdapterInstance ai in _adapterInstances) ai.Dispose();
         _adapterInstances.Clear();
     }
 

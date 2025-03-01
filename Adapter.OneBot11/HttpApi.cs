@@ -12,18 +12,15 @@ public sealed class HttpApi
     private string HttpPostUrl { get; }
     private ILogger HttpApiLogger { get; }
 
-    public HttpApi(AdapterConfigData adapterConfig,ILogger parentLogger)
+    public HttpApi(AdapterConfigData adapterConfig, ILogger parentLogger)
     {
         HttpServiceOptions? postConfig = adapterConfig.OriginalConfig["Post"]?.Deserialize<HttpServiceOptions>();
-        if (postConfig is null)
-        {
-            throw new Exception("Server Properties Not Implemented");
-        }
+        if (postConfig is null) throw new Exception("Server Properties Not Implemented");
 
         HttpClient.DefaultRequestHeaders.Add("Authorization", postConfig.AccessToken);
         HttpPostUrl = $"http://{postConfig.Host}:{postConfig.Port}";
 
-        HttpApiLogger  = parentLogger.Extend("Http Api");
+        HttpApiLogger = parentLogger.Extend("Http Api");
     }
 
     private static HttpClient HttpClient => new()

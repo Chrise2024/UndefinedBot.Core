@@ -10,5 +10,5 @@ public enum ArgumentTypes
     User = 5,
     Reply = 6,
     Image = 7,
-    File = 8,
+    File = 8
 }

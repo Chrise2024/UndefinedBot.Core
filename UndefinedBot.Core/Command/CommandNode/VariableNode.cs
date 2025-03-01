@@ -8,8 +8,8 @@ namespace UndefinedBot.Core.Command.CommandNode;
 
 public sealed class VariableNode(string name, IArgumentType argumentType) : CommandNode(name, argumentType)
 {
-    
-    internal override bool IsTokenValid(CommandContext ctx,ref ParsedToken[] tokens, [NotNullWhen(false)] out ICommandResult? result)
+    internal override bool IsTokenValid(CommandContext ctx, ref ParsedToken[] tokens,
+        [NotNullWhen(false)] out ICommandResult? result)
     {
         if (tokens.Length == 0)
         {
@@ -22,8 +22,9 @@ public sealed class VariableNode(string name, IArgumentType argumentType) : Comm
             result = new InvalidArgumentCommandResult(tokens[0].TokenType.ToString(), [GetArgumentRequire()]);
             return false;
         }
+
         ctx.ArgumentReference[NodeName] = tokens[0];
-        
+
         tokens = tokens[1..];
         result = null;
         return true;

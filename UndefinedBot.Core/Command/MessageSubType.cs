@@ -5,5 +5,5 @@ public enum MessageSubType
     Friend = 0,
     Group = 1,
     Guild = 2,
-    Other = 3,
+    Other = 3
 }

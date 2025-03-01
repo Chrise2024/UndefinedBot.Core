@@ -5,7 +5,7 @@ using UndefinedBot.Core.Utils;
 
 namespace UndefinedBot.Core.NetWork;
 
-public sealed class HttpRequest(string pluginName,ILogger logger) : IDisposable
+public sealed class HttpRequest(string pluginName, ILogger logger) : IDisposable
 {
     private readonly HttpClient _httpClient = new()
     {
@@ -16,17 +16,11 @@ public sealed class HttpRequest(string pluginName,ILogger logger) : IDisposable
     private readonly ILogger _logger = logger.Extend("HttpRequest");
     private static TimeSpan DefaultTimeout { get; set; } = TimeSpan.FromSeconds(10);
     private static long MaxBufferSize { get; set; } = 0x10000000;
-    
-    internal static void SetConfig(string? timeoutString,string? maxBufferSizeString)
+
+    internal static void SetConfig(string? timeoutString, string? maxBufferSizeString)
     {
-        if (int.TryParse(timeoutString, out int timeoutMs))
-        {
-            DefaultTimeout = TimeSpan.FromMicroseconds(timeoutMs);
-        }
-        if (int.TryParse(maxBufferSizeString, out int maxBufferSize))
-        {
-            MaxBufferSize = maxBufferSize;
-        }
+        if (int.TryParse(timeoutString, out int timeoutMs)) DefaultTimeout = TimeSpan.FromMicroseconds(timeoutMs);
+        if (int.TryParse(maxBufferSizeString, out int maxBufferSize)) MaxBufferSize = maxBufferSize;
     }
 
     public async Task<string> PostAsync([StringSyntax("Uri")] string url, object? content = null)
@@ -40,8 +34,8 @@ public sealed class HttpRequest(string pluginName,ILogger logger) : IDisposable
                         JsonSerializer.Serialize(content),
                         Encoding.UTF8,
                         "application/json"
-                        )
-                );
+                    )
+            );
             return response.IsSuccessStatusCode ? await response.Content.ReadAsStringAsync() : "";
         }
         catch (TaskCanceledException)
@@ -98,6 +92,7 @@ public sealed class HttpRequest(string pluginName,ILogger logger) : IDisposable
     {
         _logger.Error(ex, "Error Occured, Error Information:");
     }
+
     public void Dispose()
     {
         _httpClient.Dispose();

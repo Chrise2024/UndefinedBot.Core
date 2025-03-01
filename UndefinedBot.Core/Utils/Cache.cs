@@ -1,7 +1,6 @@
-﻿
-namespace UndefinedBot.Core.Utils;
+﻿namespace UndefinedBot.Core.Utils;
 
-public sealed class CacheManager(string pluginName,ILogger logger) : IDisposable
+public sealed class CacheManager(string pluginName, ILogger logger) : IDisposable
 {
     private readonly Dictionary<string, StorageCacheWrapper> _storageCache = [];
     private readonly Dictionary<string, FileCacheWrapper> _fileCache = [];
@@ -11,20 +10,22 @@ public sealed class CacheManager(string pluginName,ILogger logger) : IDisposable
     public void UpdateCache()
     {
         DateTime curTime = DateTime.Now;
-        foreach (var pair in _storageCache.Where(pair => pair.Value.ExpiredTime < curTime))
-        {
-            _storageCache.Remove(pair.Key);
-        }
+        foreach (KeyValuePair<string, StorageCacheWrapper> pair in _storageCache.Where(pair =>
+                     pair.Value.ExpiredTime < curTime)) _storageCache.Remove(pair.Key);
 
-        foreach (var pair in _fileCache.Where(pair => pair.Value.ExpiredTime < curTime))
+        foreach (KeyValuePair<string, FileCacheWrapper> pair in _fileCache.Where(pair =>
+                     pair.Value.ExpiredTime < curTime))
         {
             FileIO.SafeDeleteFile(pair.Value.FilePath);
             _fileCache.Remove(pair.Key);
         }
     }
 
-    public string AddFile(string cacheName, string cachePath, long cacheDuration) =>
-        AddFile(cacheName, cachePath, TimeSpan.FromSeconds(cacheDuration));
+    public string AddFile(string cacheName, string cachePath, long cacheDuration)
+    {
+        return AddFile(cacheName, cachePath, TimeSpan.FromSeconds(cacheDuration));
+    }
+
     public string AddFile(string cacheName, string cachePath, TimeSpan cacheDuration)
     {
         try
@@ -40,8 +41,12 @@ public sealed class CacheManager(string pluginName,ILogger logger) : IDisposable
             return "";
         }
     }
-    public bool AddStorage(string cacheName, object cacheContent, long cacheDuration)=>
-        AddStorage(cacheName, cacheContent, TimeSpan.FromSeconds(cacheDuration));
+
+    public bool AddStorage(string cacheName, object cacheContent, long cacheDuration)
+    {
+        return AddStorage(cacheName, cacheContent, TimeSpan.FromSeconds(cacheDuration));
+    }
+
     public bool AddStorage(string cacheName, object cacheContent, TimeSpan cacheDuration)
     {
         try

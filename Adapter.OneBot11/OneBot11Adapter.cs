@@ -12,17 +12,18 @@ public sealed class OneBot11Adapter : BaseAdapter
     public override string Name => "OneBot11Adapter";
     public override string Platform => "QQ";
     public override string Protocol => "OneBot11";
-    [AllowNull]private Task MainLoopInstance { get; set; }
-    private HttpApi HApi => new(AdapterConfig,Logger);
+    [AllowNull] private Task MainLoopInstance { get; set; }
+    private HttpApi HApi => new(AdapterConfig, Logger);
     private CancellationTokenSource Cts { get; } = new();
-    
+
     public override void Initialize()
     {
-        HttpServer hs = new(AdapterConfig, SubmitCommandEvent,Logger);
+        HttpServer hs = new(AdapterConfig, SubmitCommandEvent, Logger);
         MainLoopInstance = hs.ExecuteAsync(Cts.Token);
     }
 
-    public override async Task<byte[]?> HandleActionAsync(ActionType action, string? target = null,IActionParam? parameter = null)
+    public override async Task<byte[]?> HandleActionAsync(ActionType action, string? target = null,
+        IActionParam? parameter = null)
     {
         Console.WriteLine(parameter?.GetType());
 
@@ -35,6 +36,7 @@ public sealed class OneBot11Adapter : BaseAdapter
                 Console.WriteLine(spmp);
                 break;
         }
+
         //None
         return null;
     }

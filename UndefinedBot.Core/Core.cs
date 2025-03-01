@@ -11,11 +11,14 @@ namespace UndefinedBot.Core;
 internal static class Core
 {
     public static readonly JsonNode RootConfig;
+
     static Core()
     {
-        RootConfig = FileIO.ReadAsJson(Path.Join(Environment.CurrentDirectory,"appsettings.json")) ?? throw new FileNotFoundException();
+        RootConfig = FileIO.ReadAsJson(Path.Join(Environment.CurrentDirectory, "appsettings.json")) ??
+                     throw new FileNotFoundException();
     }
 }
+
 public sealed class ProgramEnvironmentIfo
 {
     public static ProgramEnvironmentIfo Instance => new();

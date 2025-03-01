@@ -24,24 +24,32 @@ public abstract class BasePlugin : IPluginInstance
     /// Plugin's identifier,must be unique
     /// </summary>
     public abstract string Id { get; }
+
     public abstract string Name { get; }
+
     /// <summary>
     /// Adapter's identifier that plugin will docker on
     /// </summary>
     public abstract string[] TargetAdapter { get; }
+
     public long[] GroupId { get; }
     public abstract void Initialize();
-    [AllowNull]protected ILogger Logger { get; private set; }
-    protected HttpRequest Request => new(Name,Logger.Extend("HttpRequest"));
+    [AllowNull] protected ILogger Logger { get; private set; }
+    protected HttpRequest Request => new(Name, Logger.Extend("HttpRequest"));
     protected PluginConfigData PluginConfig { get; }
     protected string PluginPath => Path.GetDirectoryName(GetType().Assembly.Location) ?? "/";
     private List<CommandInstance> CommandInstances { get; } = [];
-    List<CommandInstance> IPluginInstance.GetCommandInstance() => CommandInstances;
-    
+
+    List<CommandInstance> IPluginInstance.GetCommandInstance()
+    {
+        return CommandInstances;
+    }
+
     void IPluginInstance.ImplementLogger(ILogger logger)
     {
         Logger = logger;
     }
+
     protected BasePlugin()
     {
         PluginConfig = GetPluginConfig();
@@ -54,9 +62,8 @@ public abstract class BasePlugin : IPluginInstance
                               throw new PluginLoadFailedException("Config File Not Exist");
         PluginConfigData? pluginConfigData = originJson.Deserialize<PluginConfigData>();
         if (pluginConfigData is null || !pluginConfigData.IsValid())
-        {
             throw new PluginLoadFailedException("Invalid Config File");
-        }
+
         pluginConfigData.Implement(originJson);
         return pluginConfigData;
     }
@@ -72,7 +79,7 @@ public abstract class BasePlugin : IPluginInstance
     /// </returns>
     protected CommandInstance RegisterCommand(string commandName)
     {
-        CommandInstance ci = new(commandName, Id, TargetAdapter,Logger.Extend(commandName));
+        CommandInstance ci = new(commandName, Id, TargetAdapter, Logger.Extend(commandName));
         CommandInstances.Add(ci);
         return ci;
     }
@@ -80,10 +87,8 @@ public abstract class BasePlugin : IPluginInstance
     public virtual void Dispose()
     {
         Array.Clear(GroupId);
-        foreach (var ci in CommandInstances)
-        {
-            ci.Dispose();
-        }
+        foreach (CommandInstance ci in CommandInstances) ci.Dispose();
+
         CommandInstances.Clear();
         Request.Dispose();
         GC.SuppressFinalize(this);
@@ -111,4 +116,5 @@ public sealed class PluginConfigData
         return !string.IsNullOrEmpty(EntryFile);
     }
 }
+
 internal class PluginLoadFailedException(string? message) : Exception(message);

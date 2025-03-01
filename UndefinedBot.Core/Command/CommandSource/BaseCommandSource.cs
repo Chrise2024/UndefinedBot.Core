@@ -13,6 +13,7 @@ public abstract class BaseCommandSource
     public abstract bool HasAuthorityLevel(CommandSourceAuthority authorityLevel);
     public abstract bool IsFrom(CommandSourceType sourceType);
     internal CommandAttribFlags CurrentCommandAttrib { get; private set; } = CommandInstance.DefaultCommandAttrib;
+
     internal void SetCurrentCommandAttrib(CommandAttribFlags attr)
     {
         CurrentCommandAttrib = attr;
@@ -23,7 +24,7 @@ public enum CommandSourceType
 {
     User = 0,
     Console = 1,
-    Redirect = 2,
+    Redirect = 2
 }
 
 public enum CommandSourceAuthority
@@ -33,5 +34,5 @@ public enum CommandSourceAuthority
     PowerUser = 2,
     Admin = 3,
     Operator = 4,
-    Console = 5,
+    Console = 5
 }

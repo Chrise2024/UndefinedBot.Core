@@ -20,5 +20,5 @@ public enum ParsedTokenTypes
     Reply = 2,
     Image = 3,
     File = 4,
-    Custom = 5,
+    Custom = 5
 }

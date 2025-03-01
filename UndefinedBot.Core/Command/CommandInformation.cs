@@ -53,22 +53,37 @@ public sealed class CommandInformation : IDisposable
     /// Check if the command is from group
     /// </summary>
     /// <returns></returns>
-    public bool IsGroup() => SubType == MessageSubType.Group;
+    public bool IsGroup()
+    {
+        return SubType == MessageSubType.Group;
+    }
+
     /// <summary>
     /// Check if the command is from friend
     /// </summary>
     /// <returns></returns>
-    public bool IsFriend() => SubType == MessageSubType.Friend;
+    public bool IsFriend()
+    {
+        return SubType == MessageSubType.Friend;
+    }
+
     /// <summary>
     /// Check if the command is from guild
     /// </summary>
     /// <returns></returns>
-    public bool IsGuild() => SubType == MessageSubType.Guild;
+    public bool IsGuild()
+    {
+        return SubType == MessageSubType.Guild;
+    }
+
     /// <summary>
     /// Check if the command is valid
     /// </summary>
     /// <returns></returns>
-    public bool IsValid() => SubType != MessageSubType.Other;
+    public bool IsValid()
+    {
+        return SubType != MessageSubType.Other;
+    }
 
     #endregion
 
@@ -77,8 +92,8 @@ public sealed class CommandInformation : IDisposable
     /// <summary>
     /// Id of the adapter that submit the command
     /// </summary>
-
-    private CommandInformation(string calledCommandName, string sourceId,string senderId, string msgId, MessageSubType subType, long timeStamp)
+    private CommandInformation(string calledCommandName, string sourceId, string senderId, string msgId,
+        MessageSubType subType, long timeStamp)
     {
         CalledCommandName = calledCommandName;
         SourceId = sourceId;
@@ -87,6 +102,7 @@ public sealed class CommandInformation : IDisposable
         SubType = subType;
         TimeStamp = timeStamp;
     }
+
     /// <summary>
     /// Create Group Message Event's Meta Data
     /// </summary>
@@ -96,10 +112,11 @@ public sealed class CommandInformation : IDisposable
     /// <param name="msgId">Message Id of Message</param>
     /// <param name="time">Message Send Time</param>
     /// <returns></returns>
-    public static CommandInformation Group(string command, string sourceId,string senderId, string msgId, long time)
+    public static CommandInformation Group(string command, string sourceId, string senderId, string msgId, long time)
     {
-        return new CommandInformation(command, sourceId,senderId, msgId, MessageSubType.Group, time);
+        return new CommandInformation(command, sourceId, senderId, msgId, MessageSubType.Group, time);
     }
+
     /// <summary>
     /// Create Friend Message Event's Meta Data
     /// </summary>
@@ -110,8 +127,9 @@ public sealed class CommandInformation : IDisposable
     /// <returns></returns>
     public static CommandInformation Friend(string command, string sourceId, string msgId, long time)
     {
-        return new CommandInformation(command, sourceId,sourceId, msgId, MessageSubType.Friend, time);
+        return new CommandInformation(command, sourceId, sourceId, msgId, MessageSubType.Friend, time);
     }
+
     /// <summary>
     /// Create Guild Message Event's Meta Data
     /// </summary>
@@ -121,9 +139,9 @@ public sealed class CommandInformation : IDisposable
     /// <param name="msgId">Message Id of Message</param>
     /// <param name="time">Message Send Time</param>
     /// <returns></returns>
-    public static CommandInformation Guild(string command, string sourceId,string senderId, string msgId, long time)
+    public static CommandInformation Guild(string command, string sourceId, string senderId, string msgId, long time)
     {
-        return new CommandInformation(command, sourceId,senderId, msgId, MessageSubType.Guild, time);
+        return new CommandInformation(command, sourceId, senderId, msgId, MessageSubType.Guild, time);
     }
 
     #endregion
@@ -131,27 +149,36 @@ public sealed class CommandInformation : IDisposable
     #region AutoImplement
 
     public string AdapterId { get; private set; } = "";
+
     /// <summary>
     /// Platform of the adapter that submit the command
     /// </summary>
     public string Platform { get; private set; } = "";
+
     /// <summary>
     /// Protocol of the adapter that submit the command
     /// </summary>
     public string Protocol { get; private set; } = "";
+
     /// <summary>
     /// Command's original prefix
     /// </summary>
     public string CommandPrefix { get; private set; } = "";
+
     /// <summary>
     /// Command's tokens
     /// </summary>
     public ParsedToken[] Tokens { get; private set; } = [];
+
     /// <summary>
     /// Environment Information
     /// </summary>
     /// <returns></returns>
-    public string GetEnvironmentInfo() => $"[{AdapterId}]{Platform}:{Protocol}";
+    public string GetEnvironmentInfo()
+    {
+        return $"[{AdapterId}]{Platform}:{Protocol}";
+    }
+
     internal CommandInformation Implement(string adapterId, string platform, string protocol,
         ParsedToken[] tokens, string prefix)
     {
@@ -164,9 +191,9 @@ public sealed class CommandInformation : IDisposable
     }
 
     #endregion
+
     public void Dispose()
     {
         Tokens = [];
-        
     }
 }

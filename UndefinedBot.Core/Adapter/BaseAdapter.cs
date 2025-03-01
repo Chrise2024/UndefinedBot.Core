@@ -26,7 +26,8 @@ public interface IAdapterInstance : IDisposable
     /// <summary>
     /// Handle default action invoked by command
     /// </summary>
-    Task<byte[]?> HandleActionAsync(ActionType action, string? target = null,IActionParam? parameter = null);
+    Task<byte[]?> HandleActionAsync(ActionType action, string? target = null, IActionParam? parameter = null);
+
     void Initialize();
 }
 
@@ -59,7 +60,7 @@ public abstract class BaseAdapter : IAdapterInstance
     /// </summary>
     public string CommandPrefix { get; }
 
-    [AllowNull]protected ILogger Logger { get; private set; }
+    [AllowNull] protected ILogger Logger { get; private set; }
     protected AdapterConfigData AdapterConfig { get; }
 
     /// <summary>
@@ -67,13 +68,22 @@ public abstract class BaseAdapter : IAdapterInstance
     /// </summary>
     protected string AdapterPath => Path.GetDirectoryName(GetType().Assembly.Location) ?? Path.Join();
 
-    [AllowNull]private ICommandManager CommandManager { get; set; }
-    
-    void IAdapterInstance.MountCommands(ICommandManager commandManager) =>  CommandManager = commandManager;
-    
-    ILogger IAdapterInstance.AcquireLogger() => Logger;
-    
-    void IAdapterInstance.ImplementLogger(ILogger logger) => Logger = logger;
+    [AllowNull] private ICommandManager CommandManager { get; set; }
+
+    void IAdapterInstance.MountCommands(ICommandManager commandManager)
+    {
+        CommandManager = commandManager;
+    }
+
+    ILogger IAdapterInstance.AcquireLogger()
+    {
+        return Logger;
+    }
+
+    void IAdapterInstance.ImplementLogger(ILogger logger)
+    {
+        Logger = logger;
+    }
 
     protected BaseAdapter()
     {
@@ -88,9 +98,7 @@ public abstract class BaseAdapter : IAdapterInstance
                               throw new AdapterLoadFailedException("Config File Not Exist");
         AdapterConfigData? adapterConfigData = originJson.Deserialize<AdapterConfigData>();
         if (adapterConfigData is null || !adapterConfigData.IsValid())
-        {
             throw new AdapterLoadFailedException("Invalid Config File");
-        }
 
         adapterConfigData.Implement(originJson);
         return adapterConfigData;
@@ -108,10 +116,13 @@ public abstract class BaseAdapter : IAdapterInstance
         ParsedToken[] tokens
     )
     {
-        CommandManager.InvokeCommandAsync(information, source,tokens);
+        CommandManager.InvokeCommandAsync(information, source, tokens);
     }
-    void IAdapterInstance.ExternalInvokeCommand(CommandInformation information, BaseCommandSource source) => 
+
+    void IAdapterInstance.ExternalInvokeCommand(CommandInformation information, BaseCommandSource source)
+    {
         CommandManager.InvokeCommandAsync(information, source, information.Tokens);
+    }
 
     /// <summary>
     /// Handle Custom Action Invoked by Command
@@ -122,6 +133,7 @@ public abstract class BaseAdapter : IAdapterInstance
     /// <returns></returns>
     public abstract Task<byte[]?> HandleActionAsync(ActionType action, string? target = null,
         IActionParam? parameter = null);
+
     public abstract void Initialize();
 
     public virtual void Dispose()

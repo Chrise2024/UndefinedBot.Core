@@ -74,5 +74,8 @@ public abstract class BaseLogger : ILogger
     public abstract ILogger Extend(string subSpace);
     public abstract ILogger Extend(IEnumerable<string> subSpace);
 
-    private static string GetTimeString() => DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
+    private static string GetTimeString()
+    {
+        return DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
+    }
 }

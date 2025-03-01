@@ -17,10 +17,7 @@ public sealed class HttpServiceOptions(string host, uint port, string? accessTok
     public static HttpServiceOptions CreateFromConfig(AdapterConfigData adapterConfig)
     {
         JsonNode? serverConfig = adapterConfig.OriginalConfig["Server"];
-        if (serverConfig is null)
-        {
-            throw new Exception("Server Properties Not Implemented");
-        }
+        if (serverConfig is null) throw new Exception("Server Properties Not Implemented");
 
         return serverConfig.Deserialize<HttpServiceOptions>() ?? throw new Exception("Invalid Server Properties");
     }
@@ -39,11 +36,11 @@ internal sealed class HttpServer(
     AdapterConfigData adapterConfig,
     Action<CommandInformation, BaseCommandSource, ParsedToken[]> submitter,
     ILogger parentLogger
-    )
+)
 {
     private readonly HttpListener _httpListener = new();
     private readonly HttpServiceOptions _options = HttpServiceOptions.CreateFromConfig(adapterConfig);
-    private readonly MsgHandler _handler = new(adapterConfig,parentLogger);
+    private readonly MsgHandler _handler = new(adapterConfig, parentLogger);
     private readonly ILogger _logger = parentLogger.Extend("HttpServer");
     private Action<CommandInformation, BaseCommandSource, ParsedToken[]> Submitter => submitter;
 
@@ -65,7 +62,6 @@ internal sealed class HttpServer(
         await ReceiveLoop(token);
 
         if (_httpListener.IsListening)
-        {
             try
             {
                 _httpListener.Stop();
@@ -77,7 +73,7 @@ internal sealed class HttpServer(
                 PrintExceptionInfo(ex);
                 return;
             }
-        }
+
         _logger.Info("Http Server Stopped");
     }
 
@@ -85,10 +81,9 @@ internal sealed class HttpServer(
     {
         _logger.Info("Http Server Receive Loop Started");
         while (_httpListener.IsListening && !token.IsCancellationRequested)
-        {
             try
             {
-                var context = await _httpListener.GetContextAsync().WaitAsync(token);
+                HttpListenerContext context = await _httpListener.GetContextAsync().WaitAsync(token);
                 _ = HandleRequestAsync(context, token);
             }
             catch (OperationCanceledException) when (token.IsCancellationRequested)
@@ -99,7 +94,7 @@ internal sealed class HttpServer(
             {
                 PrintExceptionInfo(ex);
             }
-        }
+
         _logger.Info("Http Server Receive Loop Ended");
     }
 
@@ -140,7 +135,7 @@ internal sealed class HttpServer(
                 return;
             }
 
-            if (!MediaTypeHeaderValue.TryParse(request.ContentType, out var mediaType))
+            if (!MediaTypeHeaderValue.TryParse(request.ContentType, out MediaTypeHeaderValue? mediaType))
             {
                 _logger.Error("Unknown Media Type");
                 response.StatusCode = (int)HttpStatusCode.UnsupportedMediaType;

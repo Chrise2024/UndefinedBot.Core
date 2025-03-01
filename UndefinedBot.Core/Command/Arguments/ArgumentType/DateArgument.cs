@@ -12,25 +12,25 @@ public sealed class DateArgument(IArgumentRange? range = null) : IArgumentType
 
     public bool IsValid(ParsedToken token)
     {
-        return token is { TokenType: ParsedTokenTypes.Text, Content: TextTokenContent content } && 
+        return token is { TokenType: ParsedTokenTypes.Text, Content: TextTokenContent content } &&
                DateTime.TryParse(content.Text, out DateTime _);
     }
 
-    public object GetValue(ParsedToken token) => GetExactTypeValue(token);
+    public object GetValue(ParsedToken token)
+    {
+        return GetExactTypeValue(token);
+    }
 
     public static DateTime GetDate(string key, CommandContext ctx)
     {
-        if (ctx.ArgumentReference.TryGetValue(key, out ParsedToken token))
-        {
-            return GetExactTypeValue(token);
-        }
+        if (ctx.ArgumentReference.TryGetValue(key, out ParsedToken token)) return GetExactTypeValue(token);
 
         throw new ArgumentInvalidException($"Undefined Argument: {key}");
     }
 
     private static DateTime GetExactTypeValue(ParsedToken token)
     {
-        return token is { TokenType: ParsedTokenTypes.Text, Content: TextTokenContent content } && 
+        return token is { TokenType: ParsedTokenTypes.Text, Content: TextTokenContent content } &&
                DateTime.TryParse(content.Text, out DateTime val)
             ? val
             : throw new ArgumentInvalidException($"{token} Is Not Valid Positive Integer");

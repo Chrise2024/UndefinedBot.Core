@@ -18,30 +18,26 @@ internal sealed partial class MsgHandler(AdapterConfigData adapterConfig, ILogge
 
     public (CommandInformation?, BaseCommandSource?, ParsedToken[]?) HandleMsg(JsonNode msgJson)
     {
-        if (!IsGroupMessageToHandle(msgJson))
-        {
-            return (null, null, null);
-        }
+        if (!IsGroupMessageToHandle(msgJson)) return (null, null, null);
 
         MsgBody? msgBody = msgJson.Deserialize<MsgBody>();
         (string? cmdName, List<ParsedToken> tokens) = Tokenize(msgBody?.RawMessage ?? "");
-        if (msgBody is null || cmdName is null)
-        {
-            return (null, null, null);
-        }
+        if (msgBody is null || cmdName is null) return (null, null, null);
 
         CommandInformation cip =
-            CommandInformation.Group(cmdName,msgBody.GroupId.ToString(), msgBody.UserId.ToString(), msgBody.MessageId.ToString(), msgBody.Time);
-        UserCommandSource ucs = UserCommandSource.Group(msgBody.UserId.ToString(), msgBody.GroupId.ToString(), msgBody.Sender.Nickname, 0);
+            CommandInformation.Group(cmdName, msgBody.GroupId.ToString(), msgBody.UserId.ToString(),
+                msgBody.MessageId.ToString(), msgBody.Time);
+        UserCommandSource ucs = UserCommandSource.Group(msgBody.UserId.ToString(), msgBody.GroupId.ToString(),
+            msgBody.Sender.Nickname, 0);
         return (cip, ucs, tokens.ToArray());
     }
 
     private bool IsGroupMessageToHandle(JsonNode msgJson)
     {
         long gid = msgJson["group_id"]?.GetValue<long>() ?? 0;
-        return gid != 0 && (msgJson["post_type"]?.GetValue<string>() == "message" &&
-                            msgJson["message_type"]?.GetValue<string>() == "group" &&
-                            AdapterConfig.GroupId.Contains(gid));
+        return gid != 0 && msgJson["post_type"]?.GetValue<string>() == "message" &&
+               msgJson["message_type"]?.GetValue<string>() == "group" &&
+               AdapterConfig.GroupId.Contains(gid);
     }
 
     /// <summary>
@@ -57,22 +53,17 @@ internal sealed partial class MsgHandler(AdapterConfigData adapterConfig, ILogge
             item is { TokenType: ParsedTokenTypes.Text, Content: TextTokenContent text } &&
             text.Text.StartsWith(AdapterConfig.CommandPrefix)
         );
-        if (commandTokenIndex is -1 or > 1)
-        {
-            return (null, []);
-        }
+        if (commandTokenIndex is -1 or > 1) return (null, []);
 
         unsortedTokens.RemoveAt(commandTokenIndex);
-        return (((TextTokenContent)unsortedTokens[commandTokenIndex].Content).Text[AdapterConfig.CommandPrefix.Length..],
+        return (
+            ((TextTokenContent)unsortedTokens[commandTokenIndex].Content).Text[AdapterConfig.CommandPrefix.Length..],
             unsortedTokens);
     }
 
     private List<ParsedToken> SplitRawCqMessage(string cqString)
     {
-        if (cqString.Length == 0)
-        {
-            return [];
-        }
+        if (cqString.Length == 0) return [];
 
         return GetCommandTokenRegex()
             .Matches(GetCqEntityRegex().Replace(cqString, match => $" \r0CQ{match.Value} "))
@@ -81,7 +72,7 @@ internal sealed partial class MsgHandler(AdapterConfigData adapterConfig, ILogge
                 string tmp = m.Value.Trim('"');
                 return tmp.StartsWith("\r0CQ[")
                     ? DecodeCqEntity(tmp[4..])
-                    : new ParsedToken(ParsedTokenTypes.Text, new TextTokenContent{Text = tmp});
+                    : new ParsedToken(ParsedTokenTypes.Text, new TextTokenContent { Text = tmp });
             })
             .OfType<ParsedToken>()
             .ToList();
@@ -103,10 +94,17 @@ internal sealed partial class MsgHandler(AdapterConfigData adapterConfig, ILogge
             .ToDictionary(item => item[0], item => item[1]);
         return cqType switch
         {
-            "at" => new ParsedToken(ParsedTokenTypes.User, new UserTokenContent{UserId = cqContent["qq"]}),
-            "reply" => new ParsedToken(ParsedTokenTypes.Reply, new ReplyTokenContent{ReplyToId = cqContent["id"]}),
-            "image" => new ParsedToken(ParsedTokenTypes.Image, new ImageTokenContent{ImageUrl = cqContent.TryGetValue("url", out string? u) ? u : cqContent["file"]}),
-            "file" => new ParsedToken(ParsedTokenTypes.File,new FileTokenContent{FileUrl = cqContent["url"],FileUnique = cqContent["file_unique"],Size = uint.Parse(cqContent["file_size"])}),
+            "at" => new ParsedToken(ParsedTokenTypes.User, new UserTokenContent { UserId = cqContent["qq"] }),
+            "reply" => new ParsedToken(ParsedTokenTypes.Reply, new ReplyTokenContent { ReplyToId = cqContent["id"] }),
+            "image" => new ParsedToken(ParsedTokenTypes.Image,
+                new ImageTokenContent
+                    { ImageUrl = cqContent.TryGetValue("url", out string? u) ? u : cqContent["file"] }),
+            "file" => new ParsedToken(ParsedTokenTypes.File,
+                new FileTokenContent
+                {
+                    FileUrl = cqContent["url"], FileUnique = cqContent["file_unique"],
+                    Size = uint.Parse(cqContent["file_size"])
+                }),
             _ => null
         };
     }

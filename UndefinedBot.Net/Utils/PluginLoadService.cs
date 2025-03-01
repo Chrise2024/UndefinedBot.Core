@@ -19,10 +19,10 @@ internal sealed class PluginLoadService : IDisposable
     private readonly List<IPluginInstance> _pluginInstanceList = [];
     private readonly List<CommandInstance> _commandInstanceList = [];
     private readonly Dictionary<string, List<CommandInstance>> _commandIndex = [];
-    
+
     private readonly IServiceProvider _provider;
 
-    public PluginLoadService(IServiceProvider provider)//(ILogger<PluginLoadService> logger)
+    public PluginLoadService(IServiceProvider provider) //(ILogger<PluginLoadService> logger)
     {
         _provider = provider;
         Logger = provider.GetRequiredService<ILogger<PluginLoadService>>();
@@ -31,8 +31,10 @@ internal sealed class PluginLoadService : IDisposable
 
     private ILogger<PluginLoadService> Logger { get; }
 
-    public List<CommandInstance> AcquireCommandInstance(string adapterId) =>
-        _commandIndex.TryGetValue(adapterId, out List<CommandInstance>? v) ? v : [];
+    public List<CommandInstance> AcquireCommandInstance(string adapterId)
+    {
+        return _commandIndex.TryGetValue(adapterId, out List<CommandInstance>? v) ? v : [];
+    }
 
     public void LoadPlugin()
     {
@@ -75,20 +77,15 @@ internal sealed class PluginLoadService : IDisposable
             }
 
             IPluginInstance? pluginInstance = CreatePluginInstance(entryFile);
-            if (pluginInstance is null)
-            {
-                continue;
-            }
+            if (pluginInstance is null) continue;
 
             _commandInstanceList.AddRange(pluginInstance.GetCommandInstance());
 
             string pluginCachePath = Path.Join(Program.GetProgramCache(), pluginInstance.Id);
             FileIO.EnsurePath(pluginCachePath);
             foreach (string cf in Directory.GetFiles(pluginCachePath))
-            {
                 //Clear Remaining Cache
                 FileIO.SafeDeleteFile(cf);
-            }
 
             _pluginInstanceList.Add(pluginInstance);
         }
@@ -123,7 +120,8 @@ internal sealed class PluginLoadService : IDisposable
             if (Activator.CreateInstance(targetClass) is IPluginInstance targetPluginInstance)
             {
                 Logger.LogTrace("Adapter instance created: {targetAdapterInstance}", targetPluginInstance.Id);
-                targetPluginInstance.ImplementLogger(new PluginLogger(_provider.GetRequiredService<ILogger<PluginLogger>>(), targetPluginInstance.Name));
+                targetPluginInstance.ImplementLogger(
+                    new PluginLogger(_provider.GetRequiredService<ILogger<PluginLogger>>(), targetPluginInstance.Name));
                 targetPluginInstance.Initialize();
                 return targetPluginInstance;
             }
@@ -138,7 +136,10 @@ internal sealed class PluginLoadService : IDisposable
         return null;
     }
 
-    private static string GetLibSuffix() => "dll";
+    private static string GetLibSuffix()
+    {
+        return "dll";
+    }
 
     // .Net dll on Unix is still .dll extension(?
     /*{
@@ -161,31 +162,20 @@ internal sealed class PluginLoadService : IDisposable
     }*/
     private void IndexCommand()
     {
-        foreach (var ci in _commandInstanceList)
+        foreach (CommandInstance ci in _commandInstanceList)
+        foreach (string tai in ci.TargetAdapterId)
         {
-            foreach (string tai in ci.TargetAdapterId)
-            {
-                if (_commandIndex.TryAdd(tai, [ci]))
-                {
-                    continue;
-                }
+            if (_commandIndex.TryAdd(tai, [ci])) continue;
 
-                _commandIndex[tai].Add(ci);
-            }
+            _commandIndex[tai].Add(ci);
         }
     }
 
     public void Unload()
     {
-        foreach (var pi in _pluginInstanceList)
-        {
-            pi.Dispose();
-        }
+        foreach (IPluginInstance pi in _pluginInstanceList) pi.Dispose();
 
-        foreach (var ci in _commandInstanceList)
-        {
-            ci.Dispose();
-        }
+        foreach (CommandInstance ci in _commandInstanceList) ci.Dispose();
 
         _pluginInstanceList.Clear();
         _commandInstanceList.Clear();
@@ -194,10 +184,7 @@ internal sealed class PluginLoadService : IDisposable
 
     public void Dispose()
     {
-        foreach (var pi in _pluginInstanceList)
-        {
-            pi.Dispose();
-        }
+        foreach (IPluginInstance pi in _pluginInstanceList) pi.Dispose();
 
         _pluginInstanceList.Clear();
     }

@@ -20,12 +20,15 @@ internal sealed class CommandManager : ICommandManager
     private readonly HelpCommand _helpCommand;
 
     private readonly ILogger _logger;
-    
+
     private readonly IAdapterInstance _parentAdapter;
+
     public CommandManager(IServiceProvider provider, IAdapterInstance parentAdapter)
     {
         _commandInstances = provider.GetRequiredService<PluginLoadService>().AcquireCommandInstance(parentAdapter.Id);
-        _helpCommand = new(_commandInstances, new ActionManager(parentAdapter),new CommandLogger(provider.GetRequiredService<Microsoft.Extensions.Logging.ILogger<CommandLogger>>(),"Core","Help"));
+        _helpCommand = new HelpCommand(_commandInstances, new ActionManager(parentAdapter),
+            new CommandLogger(provider.GetRequiredService<Microsoft.Extensions.Logging.ILogger<CommandLogger>>(),
+                "Core", "Help"));
         _logger = parentAdapter.AcquireLogger().Extend("CommandManager");
         _parentAdapter = parentAdapter;
     }
@@ -36,29 +39,28 @@ internal sealed class CommandManager : ICommandManager
         ParsedToken[] tokens
     )
     {
-        
         if (information.CalledCommandName.Equals("help", StringComparison.OrdinalIgnoreCase))
         {
             _helpCommand.InvokeHelpCommandAsync(information, source);
             return;
         }
-        
-        CommandInstance? targetCommand = _commandInstances.Find(t => t.IsTargetCommand(information,source));
+
+        CommandInstance? targetCommand = _commandInstances.Find(t => t.IsTargetCommand(information, source));
         if (targetCommand is null)
         {
             _logger.Warn($"No such command: {information.CalledCommandName}");
             return;
         }
-        
+
         if (targetCommand.IsReachRateLimit(information))
         {
             _logger.Warn($"Command: {information.CalledCommandName} reached rate limit.");
             return;
         }
-        
-        CommandContext ctx = new(targetCommand, information,new ActionManager(_parentAdapter));
+
+        CommandContext ctx = new(targetCommand, information, new ActionManager(_parentAdapter));
         ctx.Logger.Info("Command triggered");
-        
+
         try
         {
             ICommandResult result = await targetCommand.RunAsync(ctx, source, information.Tokens);

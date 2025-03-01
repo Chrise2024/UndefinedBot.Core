@@ -15,14 +15,14 @@ public sealed class ReplyArgument(IArgumentRange? range = null) : IArgumentType
         return token.TokenType == ParsedTokenTypes.Reply;
     }
 
-    public object GetValue(ParsedToken token) => GetExactTypeValue(token);
+    public object GetValue(ParsedToken token)
+    {
+        return GetExactTypeValue(token);
+    }
 
     public static ReplyTokenContent GetReply(string key, CommandContext ctx)
     {
-        if (ctx.ArgumentReference.TryGetValue(key, out ParsedToken token))
-        {
-            return GetExactTypeValue(token);
-        }
+        if (ctx.ArgumentReference.TryGetValue(key, out ParsedToken token)) return GetExactTypeValue(token);
 
         throw new ArgumentInvalidException($"Undefined Argument: {key}");
     }

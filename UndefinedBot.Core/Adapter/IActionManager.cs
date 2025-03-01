@@ -4,7 +4,7 @@ namespace UndefinedBot.Core.Adapter;
 
 public interface IActionManager
 {
-    Task<byte[]?> InvokeAction(ActionType action, string? target = null,IActionParam? parameter = null);
+    Task<byte[]?> InvokeAction(ActionType action, string? target = null, IActionParam? parameter = null);
 }
 
 public enum ActionType
@@ -17,5 +17,5 @@ public enum ActionType
     GetGroupMemberList = 5,
     GroupMute = 6,
     GroupKick = 7,
-    Custom = 8,
+    Custom = 8
 }

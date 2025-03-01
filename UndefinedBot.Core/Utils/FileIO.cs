@@ -9,15 +9,9 @@ internal static class FileIO
 
     public static bool EnsurePath(string? tPath)
     {
-        if (tPath is null)
-        {
-            return false;
-        }
+        if (tPath is null) return false;
 
-        if (Path.Exists(tPath))
-        {
-            return true;
-        }
+        if (Path.Exists(tPath)) return true;
 
         Directory.CreateDirectory(tPath);
         return false;
@@ -25,10 +19,7 @@ internal static class FileIO
 
     public static bool EnsureFile(string tPath, string initData = "")
     {
-        if (File.Exists(tPath))
-        {
-            return true;
-        }
+        if (File.Exists(tPath)) return true;
 
         EnsurePath(Path.GetDirectoryName(tPath));
         File.Create(tPath).Close();
@@ -40,10 +31,7 @@ internal static class FileIO
     {
         try
         {
-            if (File.Exists(tPath))
-            {
-                File.Delete(tPath);
-            }
+            if (File.Exists(tPath)) File.Delete(tPath);
         }
         catch
         {
@@ -55,10 +43,7 @@ internal static class FileIO
     {
         try
         {
-            if (Path.Exists(tPath))
-            {
-                Directory.Delete(tPath);
-            }
+            if (Path.Exists(tPath)) Directory.Delete(tPath);
         }
         catch
         {
@@ -70,10 +55,7 @@ internal static class FileIO
     {
         try
         {
-            if (File.Exists(tPath))
-            {
-                return File.ReadAllText(tPath);
-            }
+            if (File.Exists(tPath)) return File.ReadAllText(tPath);
         }
         catch
         {
@@ -101,14 +83,8 @@ internal static class FileIO
         try
         {
             string? content = ReadFile(tPath);
-            if (content is null)
-            {
-                return null;
-            }
-            if (content.Length != 0)
-            {
-                return JsonNode.Parse(content);
-            }
+            if (content is null) return null;
+            if (content.Length != 0) return JsonNode.Parse(content);
         }
         catch
         {
@@ -123,14 +99,8 @@ internal static class FileIO
         try
         {
             string? content = ReadFile(tPath);
-            if (content is null)
-            {
-                return default;
-            }
-            if (content.Length != 0)
-            {
-                return JsonSerializer.Deserialize<T>(content);
-            }
+            if (content is null) return default;
+            if (content.Length != 0) return JsonSerializer.Deserialize<T>(content);
         }
         catch
         {

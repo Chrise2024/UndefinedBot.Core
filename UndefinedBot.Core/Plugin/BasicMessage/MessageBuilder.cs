@@ -6,25 +6,25 @@ public sealed class MessageBuilder
 
     public MessageBuilder Text(string text)
     {
-        _msgChain.Add(new TextMessageNode{Text = text});
+        _msgChain.Add(new TextMessageNode { Text = text });
         return this;
     }
 
     public MessageBuilder Image(string imageUrl)
     {
-        _msgChain.Add(new ImageMessageNode{Url = imageUrl});
+        _msgChain.Add(new ImageMessageNode { Url = imageUrl });
         return this;
     }
 
     public MessageBuilder At(string atUid)
     {
-        _msgChain.Add(new AtMessageNode{UserId = atUid});
+        _msgChain.Add(new AtMessageNode { UserId = atUid });
         return this;
     }
 
     public MessageBuilder Reply(string rid)
     {
-        _msgChain.Add(new ReplyMessageNode{ReplyToId = rid});
+        _msgChain.Add(new ReplyMessageNode { ReplyToId = rid });
         return this;
     }
 

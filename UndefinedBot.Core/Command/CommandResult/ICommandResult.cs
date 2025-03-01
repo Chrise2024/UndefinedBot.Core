@@ -7,7 +7,7 @@ public enum ExecuteStatus
     PermissionDenied = 2,
     InvalidArgument = 3,
     NullArgument = 4,
-    InvalidSyntax = 5,
+    InvalidSyntax = 5
 }
 
 public interface ICommandResult

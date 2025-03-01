@@ -15,7 +15,7 @@ internal class Program
 
     private static readonly string _programCache = Path.Join(_programRoot, "Cache");
 
-    static async Task Main(string[] args)
+    private static async Task Main(string[] args)
     {
         Console.OutputEncoding = Encoding.UTF8;
         Console.InputEncoding = Encoding.UTF8;
@@ -41,7 +41,7 @@ internal class Program
         undefinedAppBuilder.Services.AddSingleton<PluginLoadService>();
         UndefinedApp undefinedApp = new(undefinedAppBuilder.Build());
         undefinedApp.Start();
-        
+
         await undefinedApp.StopAsync();
     }
 

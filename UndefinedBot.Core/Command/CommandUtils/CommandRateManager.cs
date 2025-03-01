@@ -55,8 +55,10 @@ internal sealed class CommandRateManager : IDisposable
                         LastExecuteGuild[information.SourceId] = nowTime;
                         break;
                 }
+
                 break;
         }
+
         LastExecuteGlobal = nowTime;
     }
 
@@ -64,30 +66,21 @@ internal sealed class CommandRateManager : IDisposable
 
     private bool IsReachFriendRateLimit(string userId)
     {
-        if (!LastExecuteFriend.TryGetValue(userId, out DateTime lastExecute))
-        {
-            return false;
-        }
+        if (!LastExecuteFriend.TryGetValue(userId, out DateTime lastExecute)) return false;
 
         return DateTime.Now - lastExecute < RateLimit;
     }
 
     private bool IsReachGroupRateLimit(string groupId)
     {
-        if (!LastExecuteGroup.TryGetValue(groupId, out DateTime lastExecute))
-        {
-            return false;
-        }
+        if (!LastExecuteGroup.TryGetValue(groupId, out DateTime lastExecute)) return false;
 
         return DateTime.Now - lastExecute < RateLimit;
     }
 
     private bool IsReachGuildRateLimit(string guildId)
     {
-        if (!LastExecuteGuild.TryGetValue(guildId, out DateTime lastExecute))
-        {
-            return false;
-        }
+        if (!LastExecuteGuild.TryGetValue(guildId, out DateTime lastExecute)) return false;
 
         return DateTime.Now - lastExecute < RateLimit;
     }

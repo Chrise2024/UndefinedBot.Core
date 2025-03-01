@@ -17,14 +17,14 @@ public sealed class PositiveIntegerArgument(IArgumentRange? range = null) : IArg
                (Range?.InRange(val) ?? true);
     }
 
-    public object GetValue(ParsedToken token) => GetExactTypeValue(token);
+    public object GetValue(ParsedToken token)
+    {
+        return GetExactTypeValue(token);
+    }
 
     public static ulong GetPositiveInteger(string key, CommandContext ctx)
     {
-        if (ctx.ArgumentReference.TryGetValue(key, out ParsedToken token))
-        {
-            return GetExactTypeValue(token);
-        }
+        if (ctx.ArgumentReference.TryGetValue(key, out ParsedToken token)) return GetExactTypeValue(token);
 
         throw new ArgumentInvalidException($"Undefined Argument: {key}");
     }

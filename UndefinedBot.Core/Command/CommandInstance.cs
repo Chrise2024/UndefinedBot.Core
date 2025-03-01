@@ -23,13 +23,13 @@ public sealed class CommandInstance : IDisposable
     internal CacheManager Cache { get; }
     private ILogger Logger { get; }
 
-    internal CommandInstance(string commandName, string pluginId, string[] targetAdapterId,ILogger logger)
+    internal CommandInstance(string commandName, string pluginId, string[] targetAdapterId, ILogger logger)
     {
         TargetAdapterId = targetAdapterId;
         PluginId = pluginId;
         Name = commandName;
         Logger = logger;
-        Cache = new(pluginId, logger);
+        Cache = new CacheManager(pluginId, logger);
         RootNode = new RootCommandNode(commandName);
         RootNode.SetCommandAttrib(CommandAttrib);
     }
@@ -73,7 +73,10 @@ public sealed class CommandInstance : IDisposable
                !CommandRequire(cip, source);
     }
 
-    private bool IsNameMatch(CommandInformation cip) => IsNameMatch(cip.CalledCommandName);
+    private bool IsNameMatch(CommandInformation cip)
+    {
+        return IsNameMatch(cip.CalledCommandName);
+    }
 
     private bool IsNameMatch(string commandName)
     {
@@ -88,7 +91,7 @@ public sealed class CommandInstance : IDisposable
     #endregion
 
     #region Properties
-    
+
     private List<string> CommandAlias { get; } = [];
     private string? CommandDescription { get; set; }
     private string? CommandShortDescription { get; set; }
@@ -152,7 +155,7 @@ public sealed class CommandInstance : IDisposable
         CommandExample = example;
         return this;
     }
-    
+
     /// <summary>
     /// Add command attrib
     /// </summary>
@@ -160,10 +163,7 @@ public sealed class CommandInstance : IDisposable
     /// <returns>self</returns>
     public CommandInstance Attrib(CommandAttribFlags attr)
     {
-        if (attr.HasFlag(CommandAttribFlags.RateLimit))
-        {
-            RateManager.SetMode(CommandRateManagerMode.Individual);
-        }
+        if (attr.HasFlag(CommandAttribFlags.RateLimit)) RateManager.SetMode(CommandRateManagerMode.Individual);
         RateManager.SetMode(CommandRateManagerMode.Disable);
         CommandAttrib = attr;
         return this;
@@ -172,23 +172,26 @@ public sealed class CommandInstance : IDisposable
     #endregion
 
     #region RateLimit
-    
+
     private CommandRateManager RateManager { get; } = new();
-    
+
     /// <summary>
     /// Add command example
     /// </summary>
     /// <param name="limit">Rate Limit</param>
     /// <param name="global">Rate limit will be operated global or environment individual</param>
     /// <returns>self</returns>
-    public CommandInstance RateLimit(TimeSpan limit,bool global = false)
+    public CommandInstance RateLimit(TimeSpan limit, bool global = false)
     {
         RateManager.SetMode(global ? CommandRateManagerMode.Global : CommandRateManagerMode.Individual);
         RateManager.SetRateLimit(limit);
         return this;
     }
 
-    internal bool IsReachRateLimit(CommandInformation information) => RateManager.IsReachRateLimit(information);
+    internal bool IsReachRateLimit(CommandInformation information)
+    {
+        return RateManager.IsReachRateLimit(information);
+    }
 
     #endregion
 
@@ -264,8 +267,11 @@ public sealed class CommandInstance : IDisposable
     {
         return CommandAttrib.HasFlag(CommandAttribFlags.Hidden);
     }
-    
-    internal ILogger AcquireLogger() => Logger;
+
+    internal ILogger AcquireLogger()
+    {
+        return Logger;
+    }
 
     #endregion
 
@@ -321,5 +327,5 @@ public enum CommandAttribFlags
     /// <summary>
     /// Allow using alias to trigger the command
     /// </summary>
-    AllowAlias = 0b_0000_0000_1000_0000,
+    AllowAlias = 0b_0000_0000_1000_0000
 }

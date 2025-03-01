@@ -47,9 +47,9 @@ public sealed class CommandContext : IDisposable
         Information = ip;
         Logger = commandInstance.AcquireLogger();
         Cache = commandInstance.Cache;
-        Request = new HttpRequest(commandInstance.PluginId,Logger);
+        Request = new HttpRequest(commandInstance.PluginId, Logger);
         Action = actionManager;
-        MessageBuilder = new();
+        MessageBuilder = new MessageBuilder();
     }
 
     public void Dispose()
