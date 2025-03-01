@@ -167,5 +167,6 @@ public sealed class CommandInformation : IDisposable
     public void Dispose()
     {
         Tokens = [];
+        
     }
 }

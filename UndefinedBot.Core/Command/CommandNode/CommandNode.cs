@@ -16,9 +16,9 @@ public abstract class CommandNode(string name, IArgumentType argumentType) : IDi
     protected CommandAttribFlags CommandAttrib { get; private set; } = CommandInstance.DefaultCommandAttrib;
     protected CommandNode? Parent { get; private set; }
     protected List<CommandNode> Child { get; } = [];
-    protected Func<CommandContext, BaseCommandSource, Task>? NodeAction { get; private set; }
+    protected Func<CommandContext, BaseCommandSource, CancellationToken, Task>? NodeAction { get; private set; }
     protected Func<CommandInformation,BaseCommandSource,bool>? NodeRequire { get; private set; }
-    internal void SetAction(Func<CommandContext, BaseCommandSource, Task> action)
+    internal void SetAction(Func<CommandContext, BaseCommandSource, CancellationToken, Task> action)
     {
         NodeAction = action;
     }
@@ -64,7 +64,7 @@ public abstract class CommandNode(string name, IArgumentType argumentType) : IDi
     /// </code>
     /// </example>
     /// <returns>This node self</returns>
-    public CommandNode Execute(Func<CommandContext, BaseCommandSource, Task> action)
+    public CommandNode Execute(Func<CommandContext, BaseCommandSource, CancellationToken, Task> action)
     {
         NodeAction = action;
         return this;
@@ -86,8 +86,8 @@ public abstract class CommandNode(string name, IArgumentType argumentType) : IDi
             try
             {
                 //await Task.WhenAny(NodeAction(ctx, source), Task.Delay(TimeSpan.FromSeconds(20)));
-                await NodeAction(ctx, source).InterruptAfter(TimeSpan.FromSeconds(20),
-                    callbackTimeout: () => ctx.Logger.Error("Node execute timeout"));
+                await NodeAction.TimeoutAfter(TimeSpan.FromSeconds(20)).Invoke(ctx, source);//(ctx, source).TimeoutAfter(TimeSpan.FromSeconds(20),
+                    //callbackTimeout: () => ctx.Logger.Error("Node execute timeout"));
                 return new CommandSuccess();
             }
             catch (Exception ex)

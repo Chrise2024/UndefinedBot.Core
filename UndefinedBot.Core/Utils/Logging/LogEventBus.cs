@@ -5,6 +5,7 @@ namespace UndefinedBot.Core.Utils.Logging;
 internal static class LogEventBus
 {
     private static readonly Channel<LogMessage> _logMessageChannel;
+
     static LogEventBus()
     {
         int cap = Core.RootConfig["BusCacheCapacity"]?["Logging"]?.GetValue<int>() ?? 128;
@@ -32,6 +33,7 @@ internal static class LogEventBus
             template, [GetTimeString(), ..tags, undefinedLogLevel, message], ex);
         _logMessageChannel.Writer.TryWrite(logMessage);
     }
+
     public static async Task<LogMessage> ReadLogMessageAsync(CancellationToken token)
     {
         return await _logMessageChannel.Reader.ReadAsync(token);

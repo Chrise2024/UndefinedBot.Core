@@ -11,7 +11,9 @@ namespace UndefinedBot.Net.Utils;
 internal sealed class PluginLoadService : IDisposable
 {
     private static string PluginRoot => Path.Join(Program.GetProgramRoot(), "Plugins");
+
     private static string LibSuffix => GetLibSuffix();
+
     private readonly List<IPluginInstance> _pluginInstanceList = [];
     private readonly List<CommandInstance> _commandInstanceList = [];
     private readonly Dictionary<string, List<CommandInstance>> _commandIndex = [];
@@ -87,7 +89,9 @@ internal sealed class PluginLoadService : IDisposable
         }
 
         string pluginListText = JsonSerializer.Serialize(_pluginInstanceList, UndefinedApp.SerializerOptions);
-        string commandListText = JsonSerializer.Serialize(_commandInstanceList.Select(c => $"{c.PluginId}/{c.Name} - {JsonSerializer.Serialize(c.TargetAdapterId)}"), UndefinedApp.SerializerOptions);
+        string commandListText = JsonSerializer.Serialize(
+            _commandInstanceList.Select(c => $"{c.PluginId}/{c.Name} - {JsonSerializer.Serialize(c.TargetAdapterId)}"),
+            UndefinedApp.SerializerOptions);
         FileIO.WriteFile(Path.Join(Environment.CurrentDirectory, "loaded_plugins.json"), pluginListText);
         Logger.LogInformation("Loaded Plugins:{PluginList}", pluginListText);
         Logger.LogInformation("Loaded Commands:{PluginList}", commandListText);

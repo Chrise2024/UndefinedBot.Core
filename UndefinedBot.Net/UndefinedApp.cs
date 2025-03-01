@@ -1,14 +1,14 @@
 ﻿using System.Text.Json;
-using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using UndefinedBot.Core.Command;
 using UndefinedBot.Core.Command.Arguments;
 using UndefinedBot.Core.Command.Arguments.TokenContentType;
 using UndefinedBot.Core.Command.CommandSource;
-using UndefinedBot.Net.Utils;
 using UndefinedBot.Core.NetWork;
+using UndefinedBot.Net.Utils;
 
 namespace UndefinedBot.Net;
 
@@ -16,13 +16,17 @@ public sealed class UndefinedApp : IHost
 {
     private readonly IHost _hostApp;
     public IServiceProvider Services => _hostApp.Services;
-    
+
     private readonly ILogger<UndefinedApp> _logger;
     private readonly IConfiguration _configuration;
     private readonly AdapterLoadService _adapterLoadService;
     private readonly PluginLoadService _pluginLoadService;
 
-    internal static readonly JsonSerializerOptions SerializerOptions = new() { WriteIndented = true, IndentSize = 4 };
+    internal static readonly JsonSerializerOptions SerializerOptions = new()
+    {
+        WriteIndented = true,
+        IndentSize = 4,
+    };
 
     public UndefinedApp(IHost host)
     {
@@ -35,7 +39,10 @@ public sealed class UndefinedApp : IHost
 
     public async Task StartAsync(CancellationToken cancellationToken = new())
     {
-        HttpRequest.SetConfig(_configuration["HttpRequest:TimeoutMS"],_configuration["HttpRequest:MaxBufferSizeByte"]);
+        HttpRequest.SetConfig(
+            _configuration["HttpRequest:TimeoutMS"],
+            _configuration["HttpRequest:MaxBufferSizeByte"]
+        );
         //Load Adapters
         _adapterLoadService.LoadAdapter();
 
@@ -45,18 +52,17 @@ public sealed class UndefinedApp : IHost
         //for test
         _logger.LogInformation("Test Command");
         _adapterLoadService.ExternalInvokeCommand(
-            CommandInformation.Group(
-                    "help",
-                    "0",
-                    "0",
-                    "0",
-                    114514191)
+            CommandInformation
+                .Group("help", "0", "0", "0", 114514191)
                 .Implement(
                     "OneBot11Adapter",
                     "",
                     "",
                     [
-                        new ParsedToken(ParsedTokenTypes.Text, new TextTokenContent{Text = "test"}),
+                        new ParsedToken(
+                            ParsedTokenTypes.Text,
+                            new TextTokenContent { Text = "test" }
+                        ),
                         //new ParsedToken(ParsedTokenTypes.Normal, Encoding.UTF8.GetBytes("233"))
                     ],
                     "$$"
@@ -76,7 +82,10 @@ public sealed class UndefinedApp : IHost
             {
                 _adapterLoadService.Unload();
                 _pluginLoadService.Unload();
-                HttpRequest.SetConfig(_configuration["HttpRequest:TimeoutMS"],_configuration["HttpRequest:MaxBufferSizeByte"]);
+                HttpRequest.SetConfig(
+                    _configuration["HttpRequest:TimeoutMS"],
+                    _configuration["HttpRequest:MaxBufferSizeByte"]
+                );
                 //Load Plugins
                 _pluginLoadService.LoadPlugin();
                 //Load Adapters

@@ -14,12 +14,12 @@ internal sealed class HelpCommand : IDisposable
     {
         _commandInstances = commandInstances;
         _actionManager = actionManager;
-        _instance.Execute(async (ctx, _) =>
+        _instance.Execute(async (ctx, _,_) =>
             {
                 await ctx.SendFeedbackAsync(GenerateGeneralHelpText(ctx.Information));
             })
             .Then(new VariableNode("cmd", new StringArgument())
-                .Execute(async (ctx, _) =>
+                .Execute(async (ctx, _,_) =>
                 {
                     string cmd = StringArgument.GetString("cmd", ctx);
                     string? text = GenerateHelpText(ctx.Information, cmd);

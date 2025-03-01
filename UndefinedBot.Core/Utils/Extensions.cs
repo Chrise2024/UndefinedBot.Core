@@ -1,49 +1,26 @@
-﻿namespace UndefinedBot.Core.Utils;
+﻿using UndefinedBot.Core.Command.CommandSource;
+using UndefinedBot.Core.Command.CommandUtils;
 
-public static class TaskExtensions
+namespace UndefinedBot.Core.Utils;
+
+public static class ActionExtensions
 {
-    public static async Task<T?> InterruptAfter<T>(this Task<T> task, TimeSpan timeout, Action? callbackSuccess = null,
-        Action? callbackTimeout = null) where T : notnull
+    public static NodeActionWrapper TimeoutAfter(this Func<CommandContext, BaseCommandSource, CancellationToken, Task> nodeAction,
+        TimeSpan timeout) => new(nodeAction, timeout);
+}
+
+public readonly struct NodeActionWrapper(Func<CommandContext, BaseCommandSource, CancellationToken, Task> nodeAction,TimeSpan timeout)
+{
+    public async Task Invoke(CommandContext ctx, BaseCommandSource source)
     {
         CancellationTokenSource cts = new(timeout);
         try
         {
-            T result = await task.WaitAsync(timeout, cts.Token);
-            callbackSuccess?.Invoke();
-            cts.Dispose();
-            return result;
+            await nodeAction.Invoke(ctx, source,cts.Token).WaitAsync(timeout,cts.Token);
         }
         catch (OperationCanceledException)
         {
             await cts.CancelAsync();
-            callbackTimeout?.Invoke();
-            cts.Dispose();
-            return default;
-        }
-        finally
-        {
-            cts.Dispose();
-        }
-    }
-
-    public static async Task InterruptAfter(this Task task, TimeSpan timeout, Action? callbackSuccess = null,
-        Action? callbackTimeout = null)
-    {
-        CancellationTokenSource cts = new();
-        try
-        {
-            await task.WaitAsync(timeout, cts.Token);
-            callbackSuccess?.Invoke();
-        }
-        catch (OperationCanceledException)
-        {
-            await cts.CancelAsync();
-            callbackTimeout?.Invoke();
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine(ex.ToString());
-            cts.Dispose();
         }
         finally
         {

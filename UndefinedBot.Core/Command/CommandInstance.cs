@@ -217,7 +217,7 @@ public sealed class CommandInstance : IDisposable
     /// </example>
     /// <remarks>While action added,control flow will goto command tree building.</remarks>
     /// <returns>self</returns>
-    public CommandNode.CommandNode Execute(Func<CommandContext, BaseCommandSource, Task> action)
+    public CommandNode.CommandNode Execute(Func<CommandContext, BaseCommandSource, CancellationToken, Task> action)
     {
         //RootNode.SetAction(action);
         return RootNode.Execute(action);
