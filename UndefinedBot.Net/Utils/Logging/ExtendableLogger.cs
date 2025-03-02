@@ -1,5 +1,6 @@
-﻿using ILogger = UndefinedBot.Core.Utils.ILogger;
-using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.Logging;
+using MsILogger = Microsoft.Extensions.Logging.ILogger;
+using InternalILogger = UndefinedBot.Core.Utils.ILogger;
 
 namespace UndefinedBot.Net.Utils.Logging;
 
@@ -7,7 +8,7 @@ public sealed class ExtendableLogger : BaseLogger
 {
     protected override string Template { get; }
     protected override string[] Tags { get; } = [];
-    protected override Microsoft.Extensions.Logging.ILogger RootLogger { get; }
+    protected override MsILogger RootLogger { get; }
     private ILoggerFactory LoggerFactory { get; }
     private Type CategoryType { get; }
 
@@ -56,12 +57,12 @@ public sealed class ExtendableLogger : BaseLogger
         return new ExtendableLogger(loggerFactory, subSpace, type);
     }
 
-    public override ILogger Extend(string subSpace)
+    public override InternalILogger Extend(string subSpace)
     {
         return new ExtendableLogger(LoggerFactory, [..Tags,subSpace], CategoryType);
     }
 
-    public override ILogger Extend(string[] subSpace)
+    public override InternalILogger Extend(string[] subSpace)
     {
         return new ExtendableLogger(LoggerFactory, [..Tags,..subSpace], CategoryType);
     }

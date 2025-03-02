@@ -1,14 +1,16 @@
 ﻿using Microsoft.Extensions.Logging;
+using MsILogger = Microsoft.Extensions.Logging.ILogger;
+using InternalILogger = UndefinedBot.Core.Utils.ILogger;
 
 namespace UndefinedBot.Net.Utils.Logging;
 
-public abstract class BaseLogger : UndefinedBot.Core.Utils.ILogger
+public abstract class BaseLogger : InternalILogger
 {
     protected abstract string Template { get; }
 
     protected abstract string[] Tags { get; }
 
-    protected abstract ILogger RootLogger { get; }
+    protected abstract MsILogger RootLogger { get; }
 
     public void Critical(string message)
     {
@@ -70,8 +72,8 @@ public abstract class BaseLogger : UndefinedBot.Core.Utils.ILogger
         RootLogger.LogTrace(ex, Template, [GetTimeString(), "Trace", ..Tags, message]);
     }
 
-    public abstract UndefinedBot.Core.Utils.ILogger Extend(string subSpace);
-    public abstract UndefinedBot.Core.Utils.ILogger Extend(string[] subSpace);
+    public abstract InternalILogger Extend(string subSpace);
+    public abstract InternalILogger Extend(string[] subSpace);
 
     private static string GetTimeString()
     {

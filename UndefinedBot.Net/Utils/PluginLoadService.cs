@@ -6,13 +6,14 @@ using Microsoft.Extensions.Logging;
 using UndefinedBot.Core.Utils;
 using UndefinedBot.Core.Command;
 using UndefinedBot.Core.Plugin;
-using ILoggerFactory = UndefinedBot.Core.Utils.ILoggerFactory;
+using InternalILoggerFactory = UndefinedBot.Core.Utils.ILoggerFactory;
 
 namespace UndefinedBot.Net.Utils;
 
 internal sealed class PluginLoadService : IDisposable
 {
-    private static string PluginRoot => Path.Join(Program.GetProgramRoot(), "Plugins");
+    private static readonly string _pluginRoot = Path.Join(Environment.CurrentDirectory, "Plugins");
+    private static readonly string _programCache = Path.Join(Environment.CurrentDirectory, "Cache");
 
     private static string LibSuffix => GetLibSuffix();
 
@@ -38,14 +39,14 @@ internal sealed class PluginLoadService : IDisposable
     {
         Unload();
         _logger.LogInformation("Start loading plugins");
-        if (!Directory.Exists(PluginRoot))
+        if (!Directory.Exists(_pluginRoot))
         {
-            Directory.CreateDirectory(PluginRoot);
+            Directory.CreateDirectory(_pluginRoot);
             _logger.LogWarning("Plugins folder not fount, creating Plugins folder.");
             return;
         }
 
-        string[] pluginFolders = Directory.GetDirectories(PluginRoot);
+        string[] pluginFolders = Directory.GetDirectories(_pluginRoot);
         foreach (string pf in pluginFolders)
         {
             string pluginPropertiesFile = Path.Join(pf, "plugin.json");
@@ -80,12 +81,12 @@ internal sealed class PluginLoadService : IDisposable
                 _logger.LogWarning("<{pf}> failed to create instance", pf);
                 continue;
             }
-            
-            pluginInstance.SetUp(_provider.GetRequiredService<ILoggerFactory>());
+
+            pluginInstance.SetUp(_provider.GetRequiredService<InternalILoggerFactory>());
             _commandInstanceList.AddRange(pluginInstance.GetCommandInstance());
             _pluginInstanceList.Add(pluginInstance);
 
-            string pluginCachePath = Path.Join(Program.GetProgramCache(), pluginInstance.Id);
+            string pluginCachePath = Path.Join(_programCache, pluginInstance.Id);
             FileIO.EnsurePath(pluginCachePath);
             foreach (string cf in Directory.GetFiles(pluginCachePath))
             {

@@ -7,14 +7,13 @@ using UndefinedBot.Core.Adapter;
 using UndefinedBot.Core.Command;
 using UndefinedBot.Core.Command.CommandSource;
 using UndefinedBot.Core.Utils;
-using ILoggerFactory = UndefinedBot.Core.Utils.ILoggerFactory;
+using InternalILoggerFactory = UndefinedBot.Core.Utils.ILoggerFactory;
 
 namespace UndefinedBot.Net.Utils;
 
 internal sealed class AdapterLoadService : IDisposable
 {
     private static string AdapterRoot => Path.Join(Environment.CurrentDirectory, "Adapters");
-
     private static string LibSuffix => GetLibSuffix();
 
     private readonly List<IAdapterInstance> _adapterInstances = [];
@@ -86,7 +85,7 @@ internal sealed class AdapterLoadService : IDisposable
             }
 
             //_adapterReferences[inst.Id] = adapterProperties;
-            inst.SetUp(_provider.GetRequiredService<ILoggerFactory>(),new CommandManager(_provider, inst));
+            inst.SetUp(_provider.GetRequiredService<InternalILoggerFactory>(),new CommandManager(_provider, inst));
             _adapterInstances.Add(inst);
             _logger.LogInformation("Success Load Adapter: {Id}", inst.Id);
         }
