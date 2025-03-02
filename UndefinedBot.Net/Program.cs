@@ -6,6 +6,7 @@ using UndefinedBot.Core.Utils;
 using System.Runtime;
 using Microsoft.Extensions.DependencyInjection;
 using UndefinedBot.Net.Utils;
+using UndefinedBot.Net.Utils.Logging;
 
 namespace UndefinedBot.Net;
 
@@ -39,6 +40,8 @@ internal class Program
         undefinedAppBuilder.Configuration.AddEnvironmentVariables();
         undefinedAppBuilder.Services.AddSingleton<AdapterLoadService>();
         undefinedAppBuilder.Services.AddSingleton<PluginLoadService>();
+        undefinedAppBuilder.Services.AddSingleton<ILoggerFactory,LoggerFactory>();
+        undefinedAppBuilder.Services.AddSingleton<Microsoft.Extensions.Logging.ILoggerFactory,Microsoft.Extensions.Logging.LoggerFactory>();
         UndefinedApp undefinedApp = new(undefinedAppBuilder.Build());
         undefinedApp.Start();
 

@@ -14,7 +14,7 @@ public interface IPluginInstance : IDisposable
     string[] TargetAdapter { get; }
     long[] GroupId { get; }
     internal List<CommandInstance> GetCommandInstance();
-    internal void ImplementLogger(ILogger logger);
+    internal void SetUp(ILoggerFactory loggerFactory);
     void Initialize();
 }
 
@@ -40,14 +40,18 @@ public abstract class BasePlugin : IPluginInstance
     protected string PluginPath => Path.GetDirectoryName(GetType().Assembly.Location) ?? "/";
     private List<CommandInstance> CommandInstances { get; } = [];
 
+    [AllowNull] private ILoggerFactory LoggerFactory { get; set; }
+
     List<CommandInstance> IPluginInstance.GetCommandInstance()
     {
         return CommandInstances;
     }
 
-    void IPluginInstance.ImplementLogger(ILogger logger)
+    void IPluginInstance.SetUp(ILoggerFactory loggerFactory)
     {
-        Logger = logger;
+        LoggerFactory = loggerFactory;
+        Logger = LoggerFactory.CreateCategoryLogger(GetType());
+        Initialize();
     }
 
     protected BasePlugin()
@@ -79,7 +83,7 @@ public abstract class BasePlugin : IPluginInstance
     /// </returns>
     protected CommandInstance RegisterCommand(string commandName)
     {
-        CommandInstance ci = new(commandName, Id, TargetAdapter, Logger.Extend(commandName));
+        CommandInstance ci = new(commandName, Id, TargetAdapter, LoggerFactory);
         CommandInstances.Add(ci);
         return ci;
     }

@@ -7,18 +7,25 @@ using UndefinedBot.Core.Adapter;
 using UndefinedBot.Core.Command;
 using UndefinedBot.Core.Command.CommandSource;
 using UndefinedBot.Core.Utils;
-using UndefinedBot.Net.Utils.Logging;
+using ILoggerFactory = UndefinedBot.Core.Utils.ILoggerFactory;
 
 namespace UndefinedBot.Net.Utils;
 
-internal sealed class AdapterLoadService(IServiceProvider provider) : IDisposable
+internal sealed class AdapterLoadService : IDisposable
 {
     private static string AdapterRoot => Path.Join(Environment.CurrentDirectory, "Adapters");
 
     private static string LibSuffix => GetLibSuffix();
 
     private readonly List<IAdapterInstance> _adapterInstances = [];
-    private readonly ILogger<AdapterLoadService> _logger = provider.GetRequiredService<ILogger<AdapterLoadService>>();
+    private readonly ILogger<AdapterLoadService> _logger;
+    private readonly IServiceProvider _provider;
+
+    public AdapterLoadService(IServiceProvider provider)
+    {
+        _provider = provider;
+        _logger = provider.GetRequiredService<ILogger<AdapterLoadService>>();
+    }
 
     internal void ExternalInvokeCommand(CommandInformation information, BaseCommandSource source)
     {
@@ -79,7 +86,7 @@ internal sealed class AdapterLoadService(IServiceProvider provider) : IDisposabl
             }
 
             //_adapterReferences[inst.Id] = adapterProperties;
-            inst.MountCommands(new CommandManager(provider, inst));
+            inst.SetUp(_provider.GetRequiredService<ILoggerFactory>(),new CommandManager(_provider, inst));
             _adapterInstances.Add(inst);
             _logger.LogInformation("Success Load Adapter: {Id}", inst.Id);
         }
@@ -111,10 +118,6 @@ internal sealed class AdapterLoadService(IServiceProvider provider) : IDisposabl
             if (Activator.CreateInstance(targetClass) is IAdapterInstance targetAdapterInstance)
             {
                 _logger.LogTrace("Adapter instance created: {targetAdapterInstance}", targetAdapterInstance.Id);
-                targetAdapterInstance.ImplementLogger(
-                    new AdapterLogger(provider.GetRequiredService<ILogger<AdapterLogger>>(),
-                        targetAdapterInstance.Name));
-                targetAdapterInstance.Initialize();
                 return targetAdapterInstance;
             }
 

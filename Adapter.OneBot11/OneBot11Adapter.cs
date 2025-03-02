@@ -12,7 +12,7 @@ public sealed class OneBot11Adapter : BaseAdapter
     public override string Name => "OneBot11Adapter";
     public override string Platform => "QQ";
     public override string Protocol => "OneBot11";
-    [AllowNull] private Task MainLoopInstance { get; set; }
+    private Task? MainLoopInstance { get; set; }
     private HttpApi HApi => new(AdapterConfig, Logger);
     private CancellationTokenSource Cts { get; } = new();
 
@@ -45,7 +45,7 @@ public sealed class OneBot11Adapter : BaseAdapter
     {
         Cts.Cancel();
         Cts.Dispose();
-        MainLoopInstance.Dispose();
+        MainLoopInstance?.Dispose();
         base.Dispose();
     }
 }

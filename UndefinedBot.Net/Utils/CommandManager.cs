@@ -9,7 +9,6 @@ using UndefinedBot.Core.Command.CommandSource;
 using UndefinedBot.Core.Command.CommandUtils;
 using UndefinedBot.Core.Plugin;
 using UndefinedBot.Core.Utils;
-using UndefinedBot.Net.Utils.Logging;
 
 namespace UndefinedBot.Net.Utils;
 
@@ -26,11 +25,14 @@ internal sealed class CommandManager : ICommandManager
     public CommandManager(IServiceProvider provider, IAdapterInstance parentAdapter)
     {
         _commandInstances = provider.GetRequiredService<PluginLoadService>().AcquireCommandInstance(parentAdapter.Id);
-        _helpCommand = new HelpCommand(_commandInstances, new ActionManager(parentAdapter),
-            new CommandLogger(provider.GetRequiredService<Microsoft.Extensions.Logging.ILogger<CommandLogger>>(),
-                "Core", "Help"));
-        _logger = parentAdapter.AcquireLogger().Extend("CommandManager");
+        ILoggerFactory loggerFactory = provider.GetRequiredService<ILoggerFactory>();
+        _logger = loggerFactory.CreateCategoryLogger<CommandManager>([parentAdapter.Name]);
         _parentAdapter = parentAdapter;
+        _helpCommand = new HelpCommand(
+            _commandInstances,
+            new ActionManager(parentAdapter),
+            loggerFactory
+            );
     }
 
     public async void InvokeCommandAsync(

@@ -18,11 +18,9 @@ public interface IAdapterInstance : IDisposable
     string Protocol { get; }
     public long[] GroupId { get; }
     public string CommandPrefix { get; }
-    internal void MountCommands(ICommandManager commandManager);
     internal ILogger AcquireLogger();
-    internal void ImplementLogger(ILogger logger);
     internal void ExternalInvokeCommand(CommandInformation information, BaseCommandSource source);
-
+    internal void SetUp(ILoggerFactory loggerFactory,ICommandManager commandManager);
     /// <summary>
     /// Handle default action invoked by command
     /// </summary>
@@ -59,8 +57,8 @@ public abstract class BaseAdapter : IAdapterInstance
     /// Message prefix to be seen as command
     /// </summary>
     public string CommandPrefix { get; }
-
     [AllowNull] protected ILogger Logger { get; private set; }
+    [AllowNull] private ILoggerFactory LoggerFactory { get; set; }
     protected AdapterConfigData AdapterConfig { get; }
 
     /// <summary>
@@ -70,19 +68,17 @@ public abstract class BaseAdapter : IAdapterInstance
 
     [AllowNull] private ICommandManager CommandManager { get; set; }
 
-    void IAdapterInstance.MountCommands(ICommandManager commandManager)
-    {
-        CommandManager = commandManager;
-    }
-
     ILogger IAdapterInstance.AcquireLogger()
     {
         return Logger;
     }
 
-    void IAdapterInstance.ImplementLogger(ILogger logger)
+    void IAdapterInstance.SetUp(ILoggerFactory loggerFactory,ICommandManager commandManager)
     {
-        Logger = logger;
+        LoggerFactory = loggerFactory;
+        CommandManager = commandManager;
+        Logger = LoggerFactory.CreateCategoryLogger(GetType());
+        Initialize();
     }
 
     protected BaseAdapter()

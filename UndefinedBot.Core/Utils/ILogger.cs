@@ -15,5 +15,5 @@ public interface ILogger
     void Trace(string message);
     void Trace(Exception? ex, string message);
     ILogger Extend(string subSpace);
-    ILogger Extend(IEnumerable<string> subSpace);
+    ILogger Extend(string[] subSpace);
 }

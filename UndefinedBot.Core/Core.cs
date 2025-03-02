@@ -1,7 +1,5 @@
-﻿using System.Reflection;
-using System.Runtime.CompilerServices;
+﻿using System.Runtime.CompilerServices;
 using System.Text.Json.Nodes;
-using UndefinedBot.Core.NetWork;
 using UndefinedBot.Core.Utils;
 
 [assembly: InternalsVisibleTo("UndefinedBot.Net")]
@@ -18,6 +16,8 @@ internal static class Core
                      throw new FileNotFoundException();
     }
 }
+
+public abstract class Logging;
 
 public sealed class ProgramEnvironmentIfo
 {

@@ -6,7 +6,7 @@ using Microsoft.Extensions.Logging;
 using UndefinedBot.Core.Utils;
 using UndefinedBot.Core.Command;
 using UndefinedBot.Core.Plugin;
-using UndefinedBot.Net.Utils.Logging;
+using ILoggerFactory = UndefinedBot.Core.Utils.ILoggerFactory;
 
 namespace UndefinedBot.Net.Utils;
 
@@ -19,17 +19,15 @@ internal sealed class PluginLoadService : IDisposable
     private readonly List<IPluginInstance> _pluginInstanceList = [];
     private readonly List<CommandInstance> _commandInstanceList = [];
     private readonly Dictionary<string, List<CommandInstance>> _commandIndex = [];
-
+    private readonly ILogger<PluginLoadService> _logger;
     private readonly IServiceProvider _provider;
 
     public PluginLoadService(IServiceProvider provider) //(ILogger<PluginLoadService> logger)
     {
         _provider = provider;
-        Logger = provider.GetRequiredService<ILogger<PluginLoadService>>();
+        _logger = provider.GetRequiredService<ILogger<PluginLoadService>>();
         LoadPlugin();
     }
-
-    private ILogger<PluginLoadService> Logger { get; }
 
     public List<CommandInstance> AcquireCommandInstance(string adapterId)
     {
@@ -39,11 +37,11 @@ internal sealed class PluginLoadService : IDisposable
     public void LoadPlugin()
     {
         Unload();
-        Logger.LogInformation("Start loading plugins");
+        _logger.LogInformation("Start loading plugins");
         if (!Directory.Exists(PluginRoot))
         {
             Directory.CreateDirectory(PluginRoot);
-            Logger.LogWarning("Plugins folder not fount, creating Plugins folder.");
+            _logger.LogWarning("Plugins folder not fount, creating Plugins folder.");
             return;
         }
 
@@ -57,7 +55,7 @@ internal sealed class PluginLoadService : IDisposable
 
             if (!File.Exists(pluginPropertiesFile))
             {
-                Logger.LogWarning("<{pf}> not have plugin.json", pf);
+                _logger.LogWarning("<{pf}> not have plugin.json", pf);
                 continue;
             }
 
@@ -65,29 +63,34 @@ internal sealed class PluginLoadService : IDisposable
             string? ef = originJson?["EntryFile"]?.GetValue<string>();
             if (originJson is null || ef is null)
             {
-                Logger.LogWarning("<{pf}> has invalid plugin.json", pf);
+                _logger.LogWarning("<{pf}> has invalid plugin.json", pf);
                 continue;
             }
 
             string entryFile = $"{Path.Join(pf, ef)}.{LibSuffix}";
             if (!File.Exists(entryFile))
             {
-                Logger.LogWarning("Binary EntryFile: <{entryFile}> Not Found", entryFile);
+                _logger.LogWarning("Binary EntryFile: <{entryFile}> Not Found", entryFile);
                 continue;
             }
 
             IPluginInstance? pluginInstance = CreatePluginInstance(entryFile);
-            if (pluginInstance is null) continue;
-
+            if (pluginInstance is null)
+            {
+                _logger.LogWarning("<{pf}> failed to create instance", pf);
+                continue;
+            }
+            
+            pluginInstance.SetUp(_provider.GetRequiredService<ILoggerFactory>());
             _commandInstanceList.AddRange(pluginInstance.GetCommandInstance());
+            _pluginInstanceList.Add(pluginInstance);
 
             string pluginCachePath = Path.Join(Program.GetProgramCache(), pluginInstance.Id);
             FileIO.EnsurePath(pluginCachePath);
             foreach (string cf in Directory.GetFiles(pluginCachePath))
-                //Clear Remaining Cache
+            {
                 FileIO.SafeDeleteFile(cf);
-
-            _pluginInstanceList.Add(pluginInstance);
+            }
         }
 
         string pluginListText = JsonSerializer.Serialize(_pluginInstanceList, UndefinedApp.SerializerOptions);
@@ -95,8 +98,8 @@ internal sealed class PluginLoadService : IDisposable
             _commandInstanceList.Select(c => $"{c.PluginId}/{c.Name} - {JsonSerializer.Serialize(c.TargetAdapterId)}"),
             UndefinedApp.SerializerOptions);
         FileIO.WriteFile(Path.Join(Environment.CurrentDirectory, "loaded_plugins.json"), pluginListText);
-        Logger.LogInformation("Loaded Plugins:{PluginList}", pluginListText);
-        Logger.LogInformation("Loaded Commands:{PluginList}", commandListText);
+        _logger.LogInformation("Loaded Plugins:{PluginList}", pluginListText);
+        _logger.LogInformation("Loaded Commands:{PluginList}", commandListText);
         IndexCommand();
     }
 
@@ -112,25 +115,22 @@ internal sealed class PluginLoadService : IDisposable
                 .Find(type => type.BaseType?.FullName == "UndefinedBot.Core.Plugin.BasePlugin");
             if (targetClass is null)
             {
-                Logger.LogWarning("Entry point not found in assembly {pluginLibPath}", pluginLibPath);
+                _logger.LogWarning("Entry point not found in assembly {pluginLibPath}", pluginLibPath);
                 return null;
             }
 
             //Create Plugin Class Instance to Invoke Initialize Method
             if (Activator.CreateInstance(targetClass) is IPluginInstance targetPluginInstance)
             {
-                Logger.LogTrace("Adapter instance created: {targetAdapterInstance}", targetPluginInstance.Id);
-                targetPluginInstance.ImplementLogger(
-                    new PluginLogger(_provider.GetRequiredService<ILogger<PluginLogger>>(), targetPluginInstance.Name));
-                targetPluginInstance.Initialize();
+                _logger.LogTrace("Adapter instance created: {targetAdapterInstance}", targetPluginInstance.Id);
                 return targetPluginInstance;
             }
 
-            Logger.LogWarning("Fail to create instance from {targetClass}", targetClass.FullName);
+            _logger.LogWarning("Fail to create instance from {targetClass}", targetClass.FullName);
         }
         catch (Exception ex)
         {
-            Logger.LogError(ex, "Unable to Load Command From {pluginLibPath}", pluginLibPath);
+            _logger.LogError(ex, "Unable to Load Command From {pluginLibPath}", pluginLibPath);
         }
 
         return null;
