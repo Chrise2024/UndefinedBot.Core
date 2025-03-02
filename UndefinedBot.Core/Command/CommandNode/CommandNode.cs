@@ -75,7 +75,7 @@ public abstract class CommandNode(string name, IArgumentType argumentType) : IDi
         return this;
     }
 
-    internal abstract bool IsTokenValid(CommandContext ctx, ref ParsedToken[] tokens,
+    protected abstract bool IsTokenValid(CommandContext ctx, ref ParsedToken[] tokens,
         [NotNullWhen(false)] out ICommandResult? result);
 
     public async Task<ICommandResult> ExecuteSelfAsyncAsync(CommandContext ctx, BaseCommandSource source,
@@ -87,10 +87,8 @@ public abstract class CommandNode(string name, IArgumentType argumentType) : IDi
             //无后续token或无子节点 且 定义了节点Action，执行自身
             try
             {
-                //await Task.WhenAny(NodeAction(ctx, source), Task.Delay(TimeSpan.FromSeconds(20)));
                 await NodeAction.TimeoutAfter(TimeSpan.FromSeconds(20))
-                    .Invoke(ctx, source); //(ctx, source).TimeoutAfter(TimeSpan.FromSeconds(20),
-                //callbackTimeout: () => ctx.Logger.Error("Node execute timeout"));
+                    .Invoke(ctx, source);
                 return new CommandSuccess();
             }
             catch (Exception ex)
@@ -139,5 +137,6 @@ public abstract class CommandNode(string name, IArgumentType argumentType) : IDi
         Child.Clear();
         NodeAction = null;
         NodeRequire = null;
+        GC.SuppressFinalize(this);
     }
 }

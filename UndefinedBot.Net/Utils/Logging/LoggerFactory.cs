@@ -20,13 +20,14 @@ public sealed class LoggerFactory(IServiceProvider provider) : ILoggerFactory
             provider.GetRequiredService<MsILoggerFactory>(), tags
         );
     }
+
     public ILogger CreateCategoryLogger(Type type)
     {
         return ExtendableLogger.Create(provider.GetRequiredService<MsILoggerFactory>(), type);
     }
 
-    public ILogger CreateCategoryLogger(Type type,string[] tags)
+    public ILogger CreateCategoryLogger(Type type, string[] tags)
     {
-        return ExtendableLogger.Create(provider.GetRequiredService<MsILoggerFactory>(), tags,type);
+        return ExtendableLogger.Create(provider.GetRequiredService<MsILoggerFactory>(), tags, type);
     }
 }

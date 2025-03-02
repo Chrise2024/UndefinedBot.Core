@@ -90,7 +90,7 @@ public sealed class HttpRequest(string pluginName, ILogger logger) : IDisposable
 
     private void PrintExceptionInfo(Exception ex)
     {
-        _logger.Error(ex, "Error Occured, Error Information:");
+        _logger.Error(ex, "Error occured, error information:");
     }
 
     public void Dispose()

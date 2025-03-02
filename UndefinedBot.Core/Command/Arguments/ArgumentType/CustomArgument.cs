@@ -9,12 +9,17 @@ public abstract class CustomArgument : IArgumentType
     public ArgumentTypes ArgumentType => ArgumentTypes.Custom;
     public abstract string ArgumentTypeName { get; }
     public abstract IArgumentRange? Range { get; }
+
     public bool IsValid(ParsedToken token)
     {
-        return token is { TokenType: ParsedTokenTypes.Custom, Content: CustomTokenContent content } && ValidContent(content);
+        return token is { TokenType: ParsedTokenTypes.Custom, Content: CustomTokenContent content } &&
+               ValidContent(content);
     }
 
-    public object GetValue(ParsedToken token) => GetExactTypeValue(token);
+    public object GetValue(ParsedToken token)
+    {
+        return GetExactTypeValue(token);
+    }
 
     public object GetData(string key, CommandContext ctx)
     {
@@ -22,6 +27,7 @@ public abstract class CustomArgument : IArgumentType
 
         throw new ArgumentInvalidException($"Undefined Argument: {key}");
     }
+
     protected abstract bool ValidContent(CustomTokenContent content);
     protected abstract object GetExactTypeValue(ParsedToken token);
 }

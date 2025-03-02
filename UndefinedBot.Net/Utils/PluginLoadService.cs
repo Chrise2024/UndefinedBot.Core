@@ -71,7 +71,7 @@ internal sealed class PluginLoadService : IDisposable
             string entryFile = $"{Path.Join(pf, ef)}.{LibSuffix}";
             if (!File.Exists(entryFile))
             {
-                _logger.LogWarning("Binary EntryFile: <{entryFile}> Not Found", entryFile);
+                _logger.LogWarning("Binary entryFile: <{entryFile}> not found", entryFile);
                 continue;
             }
 
@@ -88,10 +88,7 @@ internal sealed class PluginLoadService : IDisposable
 
             string pluginCachePath = Path.Join(_programCache, pluginInstance.Id);
             FileIO.EnsurePath(pluginCachePath);
-            foreach (string cf in Directory.GetFiles(pluginCachePath))
-            {
-                FileIO.SafeDeleteFile(cf);
-            }
+            foreach (string cf in Directory.GetFiles(pluginCachePath)) FileIO.SafeDeleteFile(cf);
         }
 
         string pluginListText = JsonSerializer.Serialize(_pluginInstanceList, UndefinedApp.SerializerOptions);
@@ -99,8 +96,8 @@ internal sealed class PluginLoadService : IDisposable
             _commandInstanceList.Select(c => $"{c.PluginId}/{c.Name} - {JsonSerializer.Serialize(c.TargetAdapterId)}"),
             UndefinedApp.SerializerOptions);
         FileIO.WriteFile(Path.Join(Environment.CurrentDirectory, "loaded_plugins.json"), pluginListText);
-        _logger.LogInformation("Loaded Plugins:{PluginList}", pluginListText);
-        _logger.LogInformation("Loaded Commands:{PluginList}", commandListText);
+        _logger.LogInformation("Loaded plugins:{PluginList}", pluginListText);
+        _logger.LogInformation("Loaded commands:{PluginList}", commandListText);
         IndexCommand();
     }
 
@@ -120,10 +117,11 @@ internal sealed class PluginLoadService : IDisposable
                 return null;
             }
 
+            _logger.LogTrace("Plugin class: {targetClass}", targetClass.FullName);
             //Create Plugin Class Instance to Invoke Initialize Method
             if (Activator.CreateInstance(targetClass) is IPluginInstance targetPluginInstance)
             {
-                _logger.LogTrace("Adapter instance created: {targetAdapterInstance}", targetPluginInstance.Id);
+                _logger.LogTrace("Plugin instance created: {targetAdapterInstance}", targetPluginInstance.Id);
                 return targetPluginInstance;
             }
 
@@ -131,7 +129,7 @@ internal sealed class PluginLoadService : IDisposable
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Unable to Load Command From {pluginLibPath}", pluginLibPath);
+            _logger.LogError(ex, "Unable to load command from {pluginLibPath}", pluginLibPath);
         }
 
         return null;

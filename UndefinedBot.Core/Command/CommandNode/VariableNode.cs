@@ -8,7 +8,7 @@ namespace UndefinedBot.Core.Command.CommandNode;
 
 public sealed class VariableNode(string name, IArgumentType argumentType) : CommandNode(name, argumentType)
 {
-    internal override bool IsTokenValid(CommandContext ctx, ref ParsedToken[] tokens,
+    protected override bool IsTokenValid(CommandContext ctx, ref ParsedToken[] tokens,
         [NotNullWhen(false)] out ICommandResult? result)
     {
         if (tokens.Length == 0)

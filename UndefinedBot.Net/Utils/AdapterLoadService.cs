@@ -77,17 +77,17 @@ internal sealed class AdapterLoadService : IDisposable
                 continue;
             }
 
-            IAdapterInstance? inst = CreateAdapterInstance(entryFile);
-            if (inst is null)
+            IAdapterInstance? adapterInstance = CreateAdapterInstance(entryFile);
+            if (adapterInstance is null)
             {
                 _logger.LogWarning("<{af}> failed to create instance", af);
                 continue;
             }
 
             //_adapterReferences[inst.Id] = adapterProperties;
-            inst.SetUp(_provider.GetRequiredService<InternalILoggerFactory>(),new CommandManager(_provider, inst));
-            _adapterInstances.Add(inst);
-            _logger.LogInformation("Success Load Adapter: {Id}", inst.Id);
+            adapterInstance.SetUp(_provider.GetRequiredService<InternalILoggerFactory>(), new CommandManager(_provider, adapterInstance));
+            _adapterInstances.Add(adapterInstance);
+            _logger.LogInformation("Success load adapter: {Id}", adapterInstance.Id);
         }
 
         GC.Collect();
@@ -124,7 +124,7 @@ internal sealed class AdapterLoadService : IDisposable
         }
         catch (Exception ex)
         {
-            _logger.LogWarning(ex, "Unable to Load Adapter From {adapterLibPath}", adapterLibPath);
+            _logger.LogWarning(ex, "Unable to load adapter from {adapterLibPath}", adapterLibPath);
         }
 
         return null;

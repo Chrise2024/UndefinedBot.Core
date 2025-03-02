@@ -13,7 +13,8 @@ internal sealed class HelpCommand : IDisposable
     private readonly IActionManager _actionManager;
     private readonly ILogger _logger;
 
-    public HelpCommand(List<CommandInstance> commandInstances, IActionManager actionManager, ILoggerFactory loggerFactory)
+    public HelpCommand(List<CommandInstance> commandInstances, IActionManager actionManager,
+        ILoggerFactory loggerFactory)
     {
         _commandInstances = commandInstances;
         _actionManager = actionManager;
@@ -31,7 +32,7 @@ internal sealed class HelpCommand : IDisposable
                     if (text is null)
                     {
                         await ctx.SendFeedbackAsync("咦，没有这个指令");
-                        ctx.Logger.Warn($"Command Not Found: <{cmd}>");
+                        ctx.Logger.Warn($"Command not found: <{cmd}>");
                         return;
                     }
 

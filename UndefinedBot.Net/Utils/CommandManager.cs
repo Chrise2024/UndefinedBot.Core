@@ -32,7 +32,7 @@ internal sealed class CommandManager : ICommandManager
             _commandInstances,
             new ActionManager(parentAdapter),
             loggerFactory
-            );
+        );
     }
 
     public async void InvokeCommandAsync(
@@ -83,15 +83,15 @@ internal sealed class CommandManager : ICommandManager
         }
         catch (CommandAbortException)
         {
-            ctx.Logger.Error($"Command Execute Aborted");
+            ctx.Logger.Error("Command execute aborted");
         }
         catch (CommandSyntaxException cse)
         {
-            ctx.Logger.Error($"Node {cse.CurrentNode} Not Implemented");
+            ctx.Logger.Error($"Node {cse.CurrentNode} not implemented");
         }
         catch (Exception ex)
         {
-            ctx.Logger.Error(ex, "Command Failed");
+            ctx.Logger.Error(ex, "Command failed");
         }
 
         ctx.Dispose();

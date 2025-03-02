@@ -66,7 +66,7 @@ public abstract class BasePlugin : IPluginInstance
                               throw new PluginLoadFailedException("Config File Not Exist");
         PluginConfigData? pluginConfigData = originJson.Deserialize<PluginConfigData>();
         if (pluginConfigData is null || !pluginConfigData.IsValid())
-            throw new PluginLoadFailedException("Invalid Config File");
+            throw new PluginLoadFailedException("Invalid config file");
 
         pluginConfigData.Implement(originJson);
         return pluginConfigData;
@@ -83,6 +83,7 @@ public abstract class BasePlugin : IPluginInstance
     /// </returns>
     protected CommandInstance RegisterCommand(string commandName)
     {
+        Logger.Info($"Command {commandName} registered");
         CommandInstance ci = new(commandName, Id, TargetAdapter, LoggerFactory);
         CommandInstances.Add(ci);
         return ci;

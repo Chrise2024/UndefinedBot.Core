@@ -37,7 +37,7 @@ public sealed class CacheManager(string pluginName, ILogger logger) : IDisposabl
         }
         catch (Exception ex)
         {
-            _logger.Error(ex, "Cache Create Failed");
+            _logger.Error(ex, "Cache create failed");
             return "";
         }
     }
@@ -56,7 +56,7 @@ public sealed class CacheManager(string pluginName, ILogger logger) : IDisposabl
         }
         catch (Exception ex)
         {
-            _logger.Error(ex, "Cache Create Failed");
+            _logger.Error(ex, "cache create failed");
             return false;
         }
     }
@@ -71,7 +71,7 @@ public sealed class CacheManager(string pluginName, ILogger logger) : IDisposabl
         }
         catch (Exception ex)
         {
-            _logger.Error(ex, "Cache Modify Failed");
+            _logger.Error(ex, "Cache modify failed");
             return default;
         }
     }

@@ -23,12 +23,13 @@ public sealed class CommandInstance : IDisposable
     internal CacheManager Cache { get; }
     private ILogger Logger { get; }
 
-    internal CommandInstance(string commandName, string pluginId, string[] targetAdapterId, ILoggerFactory loggerFactory)
+    internal CommandInstance(string commandName, string pluginId, string[] targetAdapterId,
+        ILoggerFactory loggerFactory)
     {
         TargetAdapterId = targetAdapterId;
         PluginId = pluginId;
         Name = commandName;
-        Logger = loggerFactory.CreateCategoryLogger(GetType(),[$"{pluginId}/{commandName}"]);
+        Logger = loggerFactory.CreateCategoryLogger(GetType(), [$"{pluginId}/{commandName}"]);
         Cache = new CacheManager(pluginId, Logger);
         RootNode = new RootCommandNode(commandName);
         RootNode.SetCommandAttrib(CommandAttrib);
@@ -107,6 +108,7 @@ public sealed class CommandInstance : IDisposable
     public CommandInstance Alias(IEnumerable<string> alias)
     {
         CommandAlias.AddRange(alias.Where(item => !CommandAlias.Contains(item)));
+        Logger.Trace($"Added alias, current is [{string.Join(",", CommandAlias)}]");
         return this;
     }
 
@@ -119,6 +121,7 @@ public sealed class CommandInstance : IDisposable
     public CommandInstance Description(string description)
     {
         CommandDescription = description;
+        Logger.Trace($"Description set to {description}");
         return this;
     }
 
@@ -131,6 +134,7 @@ public sealed class CommandInstance : IDisposable
     public CommandInstance ShortDescription(string shortDescription)
     {
         CommandShortDescription = shortDescription;
+        Logger.Trace($"ShortDescription set to \"{shortDescription}\"");
         return this;
     }
 
@@ -142,6 +146,7 @@ public sealed class CommandInstance : IDisposable
     public CommandInstance Usage(string usage)
     {
         CommandUsage = usage;
+        Logger.Trace($"Usage set to \"{usage}\"");
         return this;
     }
 
@@ -153,6 +158,7 @@ public sealed class CommandInstance : IDisposable
     public CommandInstance Example(string example)
     {
         CommandExample = example;
+        Logger.Trace($"Example set to \"{example}\"");
         return this;
     }
 
@@ -166,6 +172,7 @@ public sealed class CommandInstance : IDisposable
         if (attr.HasFlag(CommandAttribFlags.RateLimit)) RateManager.SetMode(CommandRateManagerMode.Individual);
         RateManager.SetMode(CommandRateManagerMode.Disable);
         CommandAttrib = attr;
+        Logger.Trace($"Example set to \"{(int)attr}\"");
         return this;
     }
 
@@ -185,6 +192,7 @@ public sealed class CommandInstance : IDisposable
     {
         RateManager.SetMode(global ? CommandRateManagerMode.Global : CommandRateManagerMode.Individual);
         RateManager.SetRateLimit(limit);
+        Logger.Trace($"Rate limit set to {limit.TotalSeconds} seconds");
         return this;
     }
 

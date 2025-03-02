@@ -20,7 +20,8 @@ public interface IAdapterInstance : IDisposable
     public string CommandPrefix { get; }
     internal ILogger AcquireLogger();
     internal void ExternalInvokeCommand(CommandInformation information, BaseCommandSource source);
-    internal void SetUp(ILoggerFactory loggerFactory,ICommandManager commandManager);
+    internal void SetUp(ILoggerFactory loggerFactory, ICommandManager commandManager);
+
     /// <summary>
     /// Handle default action invoked by command
     /// </summary>
@@ -57,6 +58,7 @@ public abstract class BaseAdapter : IAdapterInstance
     /// Message prefix to be seen as command
     /// </summary>
     public string CommandPrefix { get; }
+
     [AllowNull] protected ILogger Logger { get; private set; }
     [AllowNull] private ILoggerFactory LoggerFactory { get; set; }
     protected AdapterConfigData AdapterConfig { get; }
@@ -73,7 +75,7 @@ public abstract class BaseAdapter : IAdapterInstance
         return Logger;
     }
 
-    void IAdapterInstance.SetUp(ILoggerFactory loggerFactory,ICommandManager commandManager)
+    void IAdapterInstance.SetUp(ILoggerFactory loggerFactory, ICommandManager commandManager)
     {
         LoggerFactory = loggerFactory;
         CommandManager = commandManager;
@@ -113,7 +115,8 @@ public abstract class BaseAdapter : IAdapterInstance
         ParsedToken[] tokens
     )
     {
-        Logger.Trace($"Command submitted, command {information.CalledCommandName} called by {information.SenderId} in {information.SubType.ToString()} {information.SourceId}");
+        Logger.Trace(
+            $"Command submitted, command {information.CalledCommandName} called by {information.SenderId} in {information.SubType.ToString()} {information.SourceId}");
         CommandManager.InvokeCommandAsync(information, source, tokens);
     }
 
