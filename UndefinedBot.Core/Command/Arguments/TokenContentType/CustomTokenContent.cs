@@ -2,6 +2,6 @@
 
 public sealed class CustomTokenContent : ITokenContent
 {
-    public required string Type { get; init; }
-    public required byte[] Content { get; init; }
+    public required string Type;
+    public required byte[] Content;
 }
