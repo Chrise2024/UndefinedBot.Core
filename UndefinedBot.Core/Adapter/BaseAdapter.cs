@@ -79,6 +79,7 @@ public abstract class BaseAdapter : IAdapterInstance
         CommandManager = commandManager;
         Logger = LoggerFactory.CreateCategoryLogger(GetType());
         Initialize();
+        Logger.Info("Adapter initialized");
     }
 
     protected BaseAdapter()
@@ -91,10 +92,10 @@ public abstract class BaseAdapter : IAdapterInstance
     private AdapterConfigData GetAdapterConfig()
     {
         JsonNode originJson = FileIO.ReadAsJson(Path.Join(AdapterPath, "adapter.json")) ??
-                              throw new AdapterLoadFailedException("Config File Not Exist");
+                              throw new AdapterLoadFailedException("Config file not exist");
         AdapterConfigData? adapterConfigData = originJson.Deserialize<AdapterConfigData>();
         if (adapterConfigData is null || !adapterConfigData.IsValid())
-            throw new AdapterLoadFailedException("Invalid Config File");
+            throw new AdapterLoadFailedException("Invalid config file");
 
         adapterConfigData.Implement(originJson);
         return adapterConfigData;
@@ -112,6 +113,7 @@ public abstract class BaseAdapter : IAdapterInstance
         ParsedToken[] tokens
     )
     {
+        Logger.Trace($"Command submitted, command {information.CalledCommandName} called by {information.SenderId} in {information.SubType.ToString()} {information.SourceId}");
         CommandManager.InvokeCommandAsync(information, source, tokens);
     }
 
