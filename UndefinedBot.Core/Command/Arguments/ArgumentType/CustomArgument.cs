@@ -19,5 +19,6 @@ public abstract class CustomArgument : IArgumentType
         return token is { TokenType: ParsedTokenTypes.Custom, Content: CustomTokenContent content } &&
                ValidContent(content);
     }
+
     protected abstract bool ValidContent(CustomTokenContent content);
 }

@@ -10,16 +10,13 @@ internal sealed class HelpCommand : IDisposable
 {
     private readonly List<CommandInstance> _commandInstances;
     private readonly CommandInstance _instance;
-    private readonly IActionManager _actionManager;
-    private readonly ILogger _logger;
+    private readonly ActionManager _actionManager;
 
-    public HelpCommand(List<CommandInstance> commandInstances, IActionManager actionManager,
-        ILoggerFactory loggerFactory)
+    public HelpCommand(List<CommandInstance> commandInstances, ActionManager actionManager)
     {
         _commandInstances = commandInstances;
         _actionManager = actionManager;
-        _logger = loggerFactory.CreateCategoryLogger<HelpCommand>();
-        _instance = new CommandInstance("help", "core", ["all"], loggerFactory);
+        _instance = new CommandInstance("help", "core", ["all"]);
         _instance.Execute(async (ctx, _, _) =>
             {
                 await ctx.SendFeedbackAsync(GenerateGeneralHelpText(ctx.Information));

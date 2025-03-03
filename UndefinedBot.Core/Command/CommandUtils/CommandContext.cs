@@ -1,5 +1,4 @@
-﻿using System.Diagnostics.CodeAnalysis;
-using UndefinedBot.Core.Adapter;
+﻿using UndefinedBot.Core.Adapter;
 using UndefinedBot.Core.Adapter.ActionParam;
 using UndefinedBot.Core.NetWork;
 using UndefinedBot.Core.Utils;
@@ -22,16 +21,20 @@ public sealed class CommandContext : IDisposable
     public readonly ILogger Logger;
     public readonly CacheManager Cache;
     public readonly HttpRequest Request;
-    public readonly IActionManager Action;
+    public readonly ActionManager Action;
 
     private readonly Dictionary<string, ParsedToken> _argumentReference = [];
+
     internal void AddArgumentReference(string key, ParsedToken token)
     {
         _argumentReference[key] = token;
     }
+
     public ParsedToken GetArgumentReference(string key)
     {
-        return _argumentReference.TryGetValue(key,out ParsedToken token) ? token : throw new ArgumentInvalidException($"Undefined Argument: {key}");
+        return _argumentReference.TryGetValue(key, out ParsedToken token)
+            ? token
+            : throw new ArgumentInvalidException($"Undefined Argument: {key}");
     }
 
     public async Task SendFeedbackAsync(string message)
@@ -49,7 +52,7 @@ public sealed class CommandContext : IDisposable
         );
     }
 
-    internal CommandContext(CommandInstance commandInstance, CommandInformation ip, IActionManager actionManager)
+    internal CommandContext(CommandInstance commandInstance, CommandInformation ip, ActionManager actionManager)
     {
         PluginName = commandInstance.PluginId;
         CommandName = commandInstance.Name;

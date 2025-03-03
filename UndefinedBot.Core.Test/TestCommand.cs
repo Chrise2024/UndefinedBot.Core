@@ -52,11 +52,12 @@ internal sealed class MyArgument : CustomArgument
     {
         return content is MyTokenContent { Text: { Length: > 0 } };
     }
+
     public static object GetObject(string key, CommandContext ctx)
     {
         return GetExactTypeValue(ctx.GetArgumentReference(key));
     }
-    
+
     private static object GetExactTypeValue(ParsedToken token)
     {
         return new object();

@@ -19,7 +19,8 @@ public sealed class IntegerArgument(IArgumentRange? range = null) : IArgumentTyp
 
     public static long GetInteger(string key, CommandContext ctx)
     {
-        return ctx.GetArgumentReference(key) is { TokenType: ParsedTokenTypes.Text, Content: TextTokenContent content } &&
+        return ctx.GetArgumentReference(key) is
+                   { TokenType: ParsedTokenTypes.Text, Content: TextTokenContent content } &&
                long.TryParse(content.Text, out long val)
             ? val
             : throw new ArgumentInvalidException("Token Is Not Integer");

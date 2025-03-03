@@ -25,7 +25,7 @@ public sealed class UndefinedApp : IHost
     internal static readonly JsonSerializerOptions SerializerOptions = new()
     {
         WriteIndented = true,
-        IndentSize = 4,
+        IndentSize = 4
     };
 
     public UndefinedApp(IHost host)
@@ -39,11 +39,14 @@ public sealed class UndefinedApp : IHost
 
     public async Task StartAsync(CancellationToken cancellationToken = new())
     {
+        Core.Shared.LoggerFactory = Services.GetRequiredService<UndefinedBot.Core.Utils.ILoggerFactory>();
+
         HttpRequest.SetConfig(
             _configuration["HttpRequest:TimeoutMS"],
             _configuration["HttpRequest:MaxBufferSizeByte"]
         );
         //Load Adapters
+        _pluginLoadService.LoadPlugin();
         _adapterLoadService.LoadAdapter();
 
         await _hostApp.StartAsync(cancellationToken);
@@ -66,7 +69,7 @@ public sealed class UndefinedApp : IHost
                         new ParsedToken(
                             ParsedTokenTypes.Text,
                             new TextTokenContent { Text = "456" }
-                        ),
+                        )
                         //new ParsedToken(ParsedTokenTypes.Normal, Encoding.UTF8.GetBytes("233"))
                     ],
                     "$$"

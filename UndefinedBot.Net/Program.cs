@@ -42,8 +42,9 @@ internal static class Program
         undefinedAppBuilder.Services.AddSingleton<InternalILoggerFactory, InternalLoggerFactory>();
         undefinedAppBuilder.Services.AddSingleton<MsILoggerFactory, MsLoggerFactory>();
         UndefinedApp undefinedApp = new(undefinedAppBuilder.Build());
-        undefinedApp.Start();
+        await undefinedApp.StartAsync();
 
         await undefinedApp.StopAsync();
+        undefinedApp.Dispose();
     }
 }

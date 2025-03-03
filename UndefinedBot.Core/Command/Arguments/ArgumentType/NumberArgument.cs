@@ -19,7 +19,8 @@ public sealed class NumberArgument(IArgumentRange? range = null) : IArgumentType
 
     public static double GetNumber(string key, CommandContext ctx)
     {
-        return ctx.GetArgumentReference(key) is { TokenType: ParsedTokenTypes.Text, Content: TextTokenContent content } &&
+        return ctx.GetArgumentReference(key) is
+                   { TokenType: ParsedTokenTypes.Text, Content: TextTokenContent content } &&
                double.TryParse(content.Text, out double val)
             ? val
             : throw new ArgumentInvalidException("Token Is Not Number");

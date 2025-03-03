@@ -1,20 +1,17 @@
 ﻿using System.Text.Json;
-using Microsoft.Extensions.DependencyInjection;
 using UndefinedBot.Core.Adapter;
-using UndefinedBot.Core.Command;
 using UndefinedBot.Core.Command.Arguments;
 using UndefinedBot.Core.Command.CommandException;
 using UndefinedBot.Core.Command.CommandResult;
 using UndefinedBot.Core.Command.CommandSource;
-using UndefinedBot.Core.Command.CommandUtils;
 using UndefinedBot.Core.Plugin;
 using UndefinedBot.Core.Utils;
 
-namespace UndefinedBot.Net.Utils;
+namespace UndefinedBot.Core.Command.CommandUtils;
 
-internal sealed class CommandManager : ICommandManager
+internal sealed class CommandManager
 {
-    private readonly List<CommandInstance> _commandInstances;
+    private readonly List<CommandInstance> _commandInstances = [];
 
     private readonly HelpCommand _helpCommand;
 
@@ -22,16 +19,14 @@ internal sealed class CommandManager : ICommandManager
 
     private readonly IAdapterInstance _parentAdapter;
 
-    public CommandManager(IServiceProvider provider, IAdapterInstance parentAdapter)
+    public CommandManager(IAdapterInstance parentAdapter, List<CommandInstance> commandInstances)
     {
-        _commandInstances = provider.GetRequiredService<PluginLoadService>().AcquireCommandInstance(parentAdapter.Id);
-        ILoggerFactory loggerFactory = provider.GetRequiredService<ILoggerFactory>();
-        _logger = loggerFactory.CreateCategoryLogger<CommandManager>([parentAdapter.Name]);
+        _logger = parentAdapter.AcquireLogger().Extend(nameof(CommandManager));
         _parentAdapter = parentAdapter;
+        _commandInstances = commandInstances;
         _helpCommand = new HelpCommand(
             _commandInstances,
-            new ActionManager(parentAdapter),
-            loggerFactory
+            new ActionManager(parentAdapter)
         );
     }
 

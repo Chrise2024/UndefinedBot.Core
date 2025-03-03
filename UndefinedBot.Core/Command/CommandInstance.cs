@@ -23,13 +23,12 @@ public sealed class CommandInstance : IDisposable
     internal CacheManager Cache { get; }
     private ILogger Logger { get; }
 
-    internal CommandInstance(string commandName, string pluginId, string[] targetAdapterId,
-        ILoggerFactory loggerFactory)
+    internal CommandInstance(string commandName, string pluginId, string[] targetAdapterId)
     {
         TargetAdapterId = targetAdapterId;
         PluginId = pluginId;
         Name = commandName;
-        Logger = loggerFactory.CreateCategoryLogger(GetType(), [$"{pluginId}/{commandName}"]);
+        Logger = Shared.LoggerFactory.CreateCategoryLogger(GetType(), [$"{pluginId}/{commandName}"]);
         Cache = new CacheManager(pluginId, Logger);
         RootNode = new RootCommandNode(commandName);
         RootNode.SetCommandAttrib(CommandAttrib);

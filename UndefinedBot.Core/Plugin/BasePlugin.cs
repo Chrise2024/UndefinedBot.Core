@@ -14,7 +14,6 @@ public interface IPluginInstance : IDisposable
     string[] TargetAdapter { get; }
     long[] GroupId { get; }
     internal List<CommandInstance> GetCommandInstance();
-    internal void SetUp(ILoggerFactory loggerFactory);
     void Initialize();
 }
 
@@ -34,30 +33,22 @@ public abstract class BasePlugin : IPluginInstance
 
     public long[] GroupId { get; }
     public abstract void Initialize();
-    [AllowNull] protected ILogger Logger { get; private set; }
+    protected ILogger Logger { get; }
     protected HttpRequest Request => new(Name, Logger.Extend("HttpRequest"));
     protected PluginConfigData PluginConfig { get; }
     protected string PluginPath => Path.GetDirectoryName(GetType().Assembly.Location) ?? "/";
     private List<CommandInstance> CommandInstances { get; } = [];
-
-    [AllowNull] private ILoggerFactory LoggerFactory { get; set; }
 
     List<CommandInstance> IPluginInstance.GetCommandInstance()
     {
         return CommandInstances;
     }
 
-    void IPluginInstance.SetUp(ILoggerFactory loggerFactory)
-    {
-        LoggerFactory = loggerFactory;
-        Logger = LoggerFactory.CreateCategoryLogger(GetType());
-        Initialize();
-    }
-
     protected BasePlugin()
     {
         PluginConfig = GetPluginConfig();
         GroupId = PluginConfig.GroupId;
+        Logger = Shared.LoggerFactory.CreateCategoryLogger(GetType());
     }
 
     private PluginConfigData GetPluginConfig()
@@ -84,7 +75,7 @@ public abstract class BasePlugin : IPluginInstance
     protected CommandInstance RegisterCommand(string commandName)
     {
         Logger.Info($"Command {commandName} registered");
-        CommandInstance ci = new(commandName, Id, TargetAdapter, LoggerFactory);
+        CommandInstance ci = new(commandName, Id, TargetAdapter);
         CommandInstances.Add(ci);
         return ci;
     }

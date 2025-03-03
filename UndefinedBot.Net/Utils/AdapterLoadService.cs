@@ -7,24 +7,16 @@ using UndefinedBot.Core.Adapter;
 using UndefinedBot.Core.Command;
 using UndefinedBot.Core.Command.CommandSource;
 using UndefinedBot.Core.Utils;
-using InternalILoggerFactory = UndefinedBot.Core.Utils.ILoggerFactory;
 
 namespace UndefinedBot.Net.Utils;
 
-internal sealed class AdapterLoadService : IDisposable
+internal sealed class AdapterLoadService(IServiceProvider provider) : IDisposable
 {
     private static string AdapterRoot => Path.Join(Environment.CurrentDirectory, "Adapters");
     private static string LibSuffix => GetLibSuffix();
 
     private readonly List<IAdapterInstance> _adapterInstances = [];
-    private readonly ILogger<AdapterLoadService> _logger;
-    private readonly IServiceProvider _provider;
-
-    public AdapterLoadService(IServiceProvider provider)
-    {
-        _provider = provider;
-        _logger = provider.GetRequiredService<ILogger<AdapterLoadService>>();
-    }
+    private readonly ILogger<AdapterLoadService> _logger = provider.GetRequiredService<ILogger<AdapterLoadService>>();
 
     internal void ExternalInvokeCommand(CommandInformation information, BaseCommandSource source)
     {
@@ -85,7 +77,10 @@ internal sealed class AdapterLoadService : IDisposable
             }
 
             //_adapterReferences[inst.Id] = adapterProperties;
-            adapterInstance.SetUp(_provider.GetRequiredService<InternalILoggerFactory>(), new CommandManager(_provider, adapterInstance));
+            //adapterInstance.SetUp(_provider.GetRequiredService<InternalILoggerFactory>(), new CommandManager(_provider, adapterInstance));
+            adapterInstance.MountCommands(provider.GetRequiredService<PluginLoadService>()
+                .AcquireCommandInstance(adapterInstance.Id));
+            adapterInstance.Initialize();
             _adapterInstances.Add(adapterInstance);
             _logger.LogInformation("Success load adapter: {Id}", adapterInstance.Id);
         }

@@ -1,11 +1,10 @@
-﻿using System.Diagnostics.CodeAnalysis;
-using System.Text.Json;
+﻿using System.Text.Json;
 using System.Text.Json.Nodes;
 using UndefinedBot.Core.Adapter.ActionParam;
 using UndefinedBot.Core.Command;
 using UndefinedBot.Core.Command.Arguments;
 using UndefinedBot.Core.Command.CommandSource;
-using UndefinedBot.Core.Plugin;
+using UndefinedBot.Core.Command.CommandUtils;
 using UndefinedBot.Core.Utils;
 
 namespace UndefinedBot.Core.Adapter;
@@ -20,7 +19,7 @@ public interface IAdapterInstance : IDisposable
     public string CommandPrefix { get; }
     internal ILogger AcquireLogger();
     internal void ExternalInvokeCommand(CommandInformation information, BaseCommandSource source);
-    internal void SetUp(ILoggerFactory loggerFactory, ICommandManager commandManager);
+    internal void MountCommands(List<CommandInstance> commandInstances);
 
     /// <summary>
     /// Handle default action invoked by command
@@ -59,8 +58,7 @@ public abstract class BaseAdapter : IAdapterInstance
     /// </summary>
     public string CommandPrefix { get; }
 
-    [AllowNull] protected ILogger Logger { get; private set; }
-    [AllowNull] private ILoggerFactory LoggerFactory { get; set; }
+    protected ILogger Logger { get; }
     protected AdapterConfigData AdapterConfig { get; }
 
     /// <summary>
@@ -68,24 +66,21 @@ public abstract class BaseAdapter : IAdapterInstance
     /// </summary>
     protected string AdapterPath => Path.GetDirectoryName(GetType().Assembly.Location) ?? Path.Join();
 
-    [AllowNull] private ICommandManager CommandManager { get; set; }
+    private CommandManager? CommandManager { get; set; }
 
     ILogger IAdapterInstance.AcquireLogger()
     {
         return Logger;
     }
 
-    void IAdapterInstance.SetUp(ILoggerFactory loggerFactory, ICommandManager commandManager)
+    void IAdapterInstance.MountCommands(List<CommandInstance> commandInstances)
     {
-        LoggerFactory = loggerFactory;
-        CommandManager = commandManager;
-        Logger = LoggerFactory.CreateCategoryLogger(GetType());
-        Initialize();
-        Logger.Info("Adapter initialized");
+        CommandManager = new CommandManager(this, commandInstances);
     }
 
     protected BaseAdapter()
     {
+        Logger = Shared.LoggerFactory.CreateCategoryLogger(GetType());
         AdapterConfig = GetAdapterConfig();
         GroupId = AdapterConfig.GroupId;
         CommandPrefix = AdapterConfig.CommandPrefix;
@@ -115,6 +110,12 @@ public abstract class BaseAdapter : IAdapterInstance
         ParsedToken[] tokens
     )
     {
+        if (CommandManager is null)
+        {
+            Logger.Warn("CommandManager not initialized");
+            return;
+        }
+
         Logger.Trace(
             $"Command submitted, command {information.CalledCommandName} called by {information.SenderId} in {information.SubType.ToString()} {information.SourceId}");
         CommandManager.InvokeCommandAsync(information, source, tokens);
@@ -122,7 +123,7 @@ public abstract class BaseAdapter : IAdapterInstance
 
     void IAdapterInstance.ExternalInvokeCommand(CommandInformation information, BaseCommandSource source)
     {
-        CommandManager.InvokeCommandAsync(information, source, information.Tokens);
+        CommandManager?.InvokeCommandAsync(information, source, information.Tokens);
     }
 
     /// <summary>
@@ -139,7 +140,7 @@ public abstract class BaseAdapter : IAdapterInstance
 
     public virtual void Dispose()
     {
-        CommandManager.Dispose();
+        CommandManager?.Dispose();
         Array.Clear(GroupId);
         GC.SuppressFinalize(this);
     }

@@ -18,7 +18,8 @@ public sealed class DateArgument(IArgumentRange? range = null) : IArgumentType
 
     public static DateTime GetDate(string key, CommandContext ctx)
     {
-        return ctx.GetArgumentReference(key) is { TokenType: ParsedTokenTypes.Text, Content: TextTokenContent content } &&
+        return ctx.GetArgumentReference(key) is
+                   { TokenType: ParsedTokenTypes.Text, Content: TextTokenContent content } &&
                DateTime.TryParse(content.Text, out DateTime val)
             ? val
             : throw new ArgumentInvalidException($"Token Is Not Valid Date");

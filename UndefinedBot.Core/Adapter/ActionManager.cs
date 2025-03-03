@@ -2,9 +2,12 @@
 
 namespace UndefinedBot.Core.Adapter;
 
-public interface IActionManager
+public sealed class ActionManager(IAdapterInstance parentAdapter)
 {
-    Task<byte[]?> InvokeAction(ActionType action, string? target = null, IActionParam? parameter = null);
+    public async Task<byte[]?> InvokeAction(ActionType action, string? target = null, IActionParam? parameter = null)
+    {
+        return await parentAdapter.HandleActionAsync(action, target, parameter);
+    }
 }
 
 public enum ActionType
