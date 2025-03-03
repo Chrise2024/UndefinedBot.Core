@@ -25,7 +25,7 @@ public sealed class UndefinedApp : IHost
     internal static readonly JsonSerializerOptions SerializerOptions = new()
     {
         WriteIndented = true,
-        IndentSize = 4
+        IndentSize = 4,
     };
 
     public UndefinedApp(IHost host)
@@ -66,7 +66,7 @@ public sealed class UndefinedApp : IHost
                         new ParsedToken(
                             ParsedTokenTypes.Text,
                             new TextTokenContent { Text = "456" }
-                        )
+                        ),
                         //new ParsedToken(ParsedTokenTypes.Normal, Encoding.UTF8.GetBytes("233"))
                     ],
                     "$$"
@@ -77,7 +77,8 @@ public sealed class UndefinedApp : IHost
         while (true)
         {
             string? tempString = Console.ReadLine();
-            if (tempString == "stop") break;
+            if (tempString == "stop")
+                break;
 
             if (tempString == "reload")
             {

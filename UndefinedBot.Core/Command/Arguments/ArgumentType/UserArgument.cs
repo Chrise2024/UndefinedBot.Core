@@ -15,24 +15,9 @@ public sealed class UserArgument(IArgumentRange? range = null) : IArgumentType
         return token.TokenType == ParsedTokenTypes.User;
     }
 
-    public object GetValue(ParsedToken token)
-    {
-        return GetExactTypeValue(token);
-    }
-
     public static UserTokenContent GetUser(string key, CommandContext ctx)
     {
-        if (ctx.ArgumentReference.TryGetValue(key, out ParsedToken token)) return GetExactTypeValue(token);
-
-        throw new ArgumentInvalidException($"Undefined Argument: {key}");
-    }
-
-    /// <summary>
-    /// 'User' may be a string of number(id) ?
-    /// </summary>
-    private static UserTokenContent GetExactTypeValue(ParsedToken token)
-    {
-        return token is { TokenType: ParsedTokenTypes.User, Content: UserTokenContent user }
+        return ctx.GetArgumentReference(key) is { TokenType: ParsedTokenTypes.User, Content: UserTokenContent user }
             ? user
             : throw new ArgumentInvalidException("Token Is Not User");
     }

@@ -8,5 +8,4 @@ public interface IArgumentType
     public string ArgumentTypeName { get; }
     public IArgumentRange? Range { get; }
     public bool IsValid(ParsedToken token);
-    public object GetValue(ParsedToken token);
 }

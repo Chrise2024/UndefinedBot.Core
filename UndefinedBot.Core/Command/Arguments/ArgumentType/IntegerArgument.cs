@@ -17,21 +17,9 @@ public sealed class IntegerArgument(IArgumentRange? range = null) : IArgumentTyp
                (Range?.InRange(val) ?? true);
     }
 
-    public object GetValue(ParsedToken token)
-    {
-        return GetExactTypeValue(token);
-    }
-
     public static long GetInteger(string key, CommandContext ctx)
     {
-        if (ctx.ArgumentReference.TryGetValue(key, out ParsedToken token)) return GetExactTypeValue(token);
-
-        throw new ArgumentInvalidException($"Undefined Argument: {key}");
-    }
-
-    private static long GetExactTypeValue(ParsedToken token)
-    {
-        return token is { TokenType: ParsedTokenTypes.Text, Content: TextTokenContent content } &&
+        return ctx.GetArgumentReference(key) is { TokenType: ParsedTokenTypes.Text, Content: TextTokenContent content } &&
                long.TryParse(content.Text, out long val)
             ? val
             : throw new ArgumentInvalidException("Token Is Not Integer");

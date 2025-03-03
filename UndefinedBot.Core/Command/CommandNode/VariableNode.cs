@@ -23,7 +23,7 @@ public sealed class VariableNode(string name, IArgumentType argumentType) : Comm
             return false;
         }
 
-        ctx.ArgumentReference[NodeName] = tokens[0];
+        ctx.AddArgumentReference(NodeName, tokens[0]);
 
         tokens = tokens[1..];
         result = null;

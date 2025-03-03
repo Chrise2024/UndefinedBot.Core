@@ -4,6 +4,10 @@ using UndefinedBot.Core.Command.CommandUtils;
 
 namespace UndefinedBot.Core.Command.Arguments.ArgumentType;
 
+/// <summary>
+/// To override the custom argument, you need to inherit this class and implement the abstract methods
+/// <remarks>Suggest to provide static method to get the value in command logic, like other types</remarks>
+/// </summary>
 public abstract class CustomArgument : IArgumentType
 {
     public ArgumentTypes ArgumentType => ArgumentTypes.Custom;
@@ -15,19 +19,5 @@ public abstract class CustomArgument : IArgumentType
         return token is { TokenType: ParsedTokenTypes.Custom, Content: CustomTokenContent content } &&
                ValidContent(content);
     }
-
-    public object GetValue(ParsedToken token)
-    {
-        return GetExactTypeValue(token);
-    }
-
-    public object GetData(string key, CommandContext ctx)
-    {
-        if (ctx.ArgumentReference.TryGetValue(key, out ParsedToken token)) return GetExactTypeValue(token);
-
-        throw new ArgumentInvalidException($"Undefined Argument: {key}");
-    }
-
     protected abstract bool ValidContent(CustomTokenContent content);
-    protected abstract object GetExactTypeValue(ParsedToken token);
 }

@@ -17,21 +17,9 @@ public sealed class StringArgument(IArgumentRange? range = null) : IArgumentType
                (Range?.InRange(token.Content) ?? true);
     }
 
-    public object GetValue(ParsedToken token)
-    {
-        return GetExactTypeValue(token);
-    }
-
     public static string GetString(string key, CommandContext ctx)
     {
-        if (ctx.ArgumentReference.TryGetValue(key, out ParsedToken token)) return GetExactTypeValue(token);
-
-        throw new ArgumentInvalidException($"Undefined Argument: {key}");
-    }
-
-    private static string GetExactTypeValue(ParsedToken token)
-    {
-        return token is { TokenType: ParsedTokenTypes.Text, Content: TextTokenContent content }
+        return ctx.GetArgumentReference(key) is { TokenType: ParsedTokenTypes.Text, Content: TextTokenContent content }
             ? content.Text
             : throw new ArgumentInvalidException("Token Is Not String");
     }

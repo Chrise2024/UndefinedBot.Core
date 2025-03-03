@@ -1,8 +1,10 @@
-﻿using UndefinedBot.Core.Adapter;
+﻿using System.Diagnostics.CodeAnalysis;
+using UndefinedBot.Core.Adapter;
 using UndefinedBot.Core.Adapter.ActionParam;
 using UndefinedBot.Core.NetWork;
 using UndefinedBot.Core.Utils;
 using UndefinedBot.Core.Command.Arguments;
+using UndefinedBot.Core.Command.Arguments.ArgumentType;
 using UndefinedBot.Core.Plugin.BasicMessage;
 
 namespace UndefinedBot.Core.Command.CommandUtils;
@@ -21,8 +23,16 @@ public sealed class CommandContext : IDisposable
     public readonly CacheManager Cache;
     public readonly HttpRequest Request;
     public readonly IActionManager Action;
-    public readonly MessageBuilder MessageBuilder;
-    internal readonly Dictionary<string, ParsedToken> ArgumentReference = [];
+
+    private readonly Dictionary<string, ParsedToken> _argumentReference = [];
+    internal void AddArgumentReference(string key, ParsedToken token)
+    {
+        _argumentReference[key] = token;
+    }
+    public ParsedToken GetArgumentReference(string key)
+    {
+        return _argumentReference.TryGetValue(key,out ParsedToken token) ? token : throw new ArgumentInvalidException($"Undefined Argument: {key}");
+    }
 
     public async Task SendFeedbackAsync(string message)
     {
@@ -49,12 +59,11 @@ public sealed class CommandContext : IDisposable
         Cache = commandInstance.Cache;
         Request = new HttpRequest(commandInstance.PluginId, Logger);
         Action = actionManager;
-        MessageBuilder = new MessageBuilder();
     }
 
     public void Dispose()
     {
         Request.Dispose();
-        ArgumentReference.Clear();
+        _argumentReference.Clear();
     }
 }

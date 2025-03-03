@@ -16,22 +16,9 @@ public sealed class PositiveIntegerArgument(IArgumentRange? range = null) : IArg
                ulong.TryParse(content.Text, out ulong val) &&
                (Range?.InRange(val) ?? true);
     }
-
-    public object GetValue(ParsedToken token)
-    {
-        return GetExactTypeValue(token);
-    }
-
     public static ulong GetPositiveInteger(string key, CommandContext ctx)
     {
-        if (ctx.ArgumentReference.TryGetValue(key, out ParsedToken token)) return GetExactTypeValue(token);
-
-        throw new ArgumentInvalidException($"Undefined Argument: {key}");
-    }
-
-    private static ulong GetExactTypeValue(ParsedToken token)
-    {
-        return token is { TokenType: ParsedTokenTypes.Text, Content: TextTokenContent content } &&
+        return ctx.GetArgumentReference(key) is { TokenType: ParsedTokenTypes.Text, Content: TextTokenContent content } &&
                ulong.TryParse(content.Text, out ulong val)
             ? val
             : throw new ArgumentInvalidException("Token Is Not Valid Positive Integer");

@@ -15,24 +15,9 @@ public sealed class ReplyArgument(IArgumentRange? range = null) : IArgumentType
         return token.TokenType == ParsedTokenTypes.Reply;
     }
 
-    public object GetValue(ParsedToken token)
-    {
-        return GetExactTypeValue(token);
-    }
-
     public static ReplyTokenContent GetReply(string key, CommandContext ctx)
     {
-        if (ctx.ArgumentReference.TryGetValue(key, out ParsedToken token)) return GetExactTypeValue(token);
-
-        throw new ArgumentInvalidException($"Undefined Argument: {key}");
-    }
-
-    /// <summary>
-    /// 'Reply' may be a string of message id ?
-    /// </summary>
-    private static ReplyTokenContent GetExactTypeValue(ParsedToken token)
-    {
-        return token is { TokenType: ParsedTokenTypes.Reply, Content: ReplyTokenContent reply }
+        return ctx.GetArgumentReference(key) is { TokenType: ParsedTokenTypes.Reply, Content: ReplyTokenContent reply }
             ? reply
             : throw new ArgumentInvalidException("Token Is Not Reply");
     }
