@@ -16,7 +16,6 @@ public sealed class CommandContext : IDisposable
     public readonly string PluginName;
     public readonly string CommandName;
     public readonly string RootPath = Environment.CurrentDirectory;
-    public readonly string CachePath;
     public readonly CommandInformation Information;
     public readonly ILogger Logger;
     public readonly CacheManager Cache;
@@ -56,11 +55,10 @@ public sealed class CommandContext : IDisposable
     {
         PluginName = commandInstance.PluginId;
         CommandName = commandInstance.Name;
-        CachePath = Path.Join(RootPath, "Cache", commandInstance.PluginId);
         Information = ip;
         Logger = commandInstance.AcquireLogger();
         Cache = commandInstance.Cache;
-        Request = new HttpRequest(commandInstance.PluginId, Logger);
+        Request = new HttpRequest(Logger);
         Action = actionManager;
     }
 

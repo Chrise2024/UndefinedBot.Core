@@ -10,4 +10,5 @@ internal static class Shared
 {
     //This is a shared logger factory for all classes, will be assigned before loading
     [AllowNull] public static ILoggerFactory LoggerFactory { get; set; }
+    [AllowNull] public static IReadonlyConfig RootConfig { get; set; }
 }

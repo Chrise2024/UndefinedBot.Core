@@ -40,11 +40,7 @@ public sealed class UndefinedApp : IHost
     public async Task StartAsync(CancellationToken cancellationToken = new())
     {
         Core.Shared.LoggerFactory = Services.GetRequiredService<UndefinedBot.Core.Utils.ILoggerFactory>();
-
-        HttpRequest.SetConfig(
-            _configuration["HttpRequest:TimeoutMS"],
-            _configuration["HttpRequest:MaxBufferSizeByte"]
-        );
+        Core.Shared.RootConfig = new ConfigProvider(_configuration);
         //Load Adapters
         _pluginLoadService.LoadPlugin();
         _adapterLoadService.LoadAdapter();
@@ -87,10 +83,6 @@ public sealed class UndefinedApp : IHost
             {
                 _adapterLoadService.Unload();
                 _pluginLoadService.Unload();
-                HttpRequest.SetConfig(
-                    _configuration["HttpRequest:TimeoutMS"],
-                    _configuration["HttpRequest:MaxBufferSizeByte"]
-                );
                 //Load Plugins
                 _pluginLoadService.LoadPlugin();
                 //Load Adapters

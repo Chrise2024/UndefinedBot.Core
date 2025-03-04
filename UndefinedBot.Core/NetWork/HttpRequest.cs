@@ -5,22 +5,25 @@ using UndefinedBot.Core.Utils;
 
 namespace UndefinedBot.Core.NetWork;
 
-public sealed class HttpRequest(string pluginName, ILogger logger) : IDisposable
+public sealed class HttpRequest : IDisposable
 {
-    private readonly HttpClient _httpClient = new()
-    {
-        Timeout = DefaultTimeout,
-        MaxResponseContentBufferSize = MaxBufferSize
-    };
+    private readonly HttpClient _httpClient;
+    private readonly TimeSpan _defaultTimeout = TimeSpan.FromSeconds(10);
+    private readonly long _maxBufferSize = 0x10000000;
+    private readonly ILogger _logger;
 
-    private readonly ILogger _logger = logger.Extend("HttpRequest");
-    private static TimeSpan DefaultTimeout { get; set; } = TimeSpan.FromSeconds(10);
-    private static long MaxBufferSize { get; set; } = 0x10000000;
-
-    internal static void SetConfig(string? timeoutString, string? maxBufferSizeString)
+    public HttpRequest(ILogger logger)
     {
-        if (int.TryParse(timeoutString, out int timeoutMs)) DefaultTimeout = TimeSpan.FromMicroseconds(timeoutMs);
-        if (int.TryParse(maxBufferSizeString, out int maxBufferSize)) MaxBufferSize = maxBufferSize;
+        _logger = logger.Extend("HttpRequest");
+        if (int.TryParse(Shared.RootConfig["HttpRequest:TimeoutMS"], out int timeoutMs))
+            _defaultTimeout = TimeSpan.FromMicroseconds(timeoutMs);
+        if (int.TryParse(Shared.RootConfig["HttpRequest:MaxBufferSizeByte"], out int maxBufferSize))
+            _maxBufferSize = maxBufferSize;
+        _httpClient = new()
+        {
+            Timeout = _defaultTimeout,
+            MaxResponseContentBufferSize = _maxBufferSize
+        };
     }
 
     public async Task<string> PostAsync([StringSyntax("Uri")] string url, object? content = null)

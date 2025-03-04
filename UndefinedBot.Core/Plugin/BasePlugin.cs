@@ -34,7 +34,7 @@ public abstract class BasePlugin : IPluginInstance
     public long[] GroupId { get; }
     public abstract void Initialize();
     protected ILogger Logger { get; }
-    protected HttpRequest Request => new(Name, Logger.Extend("HttpRequest"));
+    protected HttpRequest Request => new(Logger.Extend("HttpRequest"));
     protected PluginConfigData PluginConfig { get; }
     protected string PluginPath => Path.GetDirectoryName(GetType().Assembly.Location) ?? "/";
     private List<CommandInstance> CommandInstances { get; } = [];
