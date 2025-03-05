@@ -12,3 +12,9 @@ internal static class Shared
     [AllowNull] public static ILoggerFactory LoggerFactory { get; set; }
     [AllowNull] public static IReadonlyConfig RootConfig { get; set; }
 }
+
+[AttributeUsage(AttributeTargets.Class)]
+public sealed class AdapterAttribute : Attribute;
+
+[AttributeUsage(AttributeTargets.Class)]
+public sealed class PluginAttribute : Attribute;

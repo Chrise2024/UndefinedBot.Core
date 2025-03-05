@@ -1,7 +1,4 @@
-﻿using System.Diagnostics.CodeAnalysis;
-using System.Text.Json;
-using System.Text.Json.Nodes;
-using UndefinedBot.Core.Command;
+﻿using UndefinedBot.Core.Command;
 using UndefinedBot.Core.NetWork;
 using UndefinedBot.Core.Utils;
 
@@ -32,35 +29,24 @@ public abstract class BasePlugin : IPluginInstance
     public abstract string[] TargetAdapter { get; }
 
     public long[] GroupId { get; }
-    public abstract void Initialize();
     protected ILogger Logger { get; }
     protected HttpRequest Request => new(Logger.Extend("HttpRequest"));
-    protected PluginConfigData PluginConfig { get; }
+    protected IReadonlyConfig PluginConfig { get; }
     protected string PluginPath => Path.GetDirectoryName(GetType().Assembly.Location) ?? "/";
     private List<CommandInstance> CommandInstances { get; } = [];
+    
+    public abstract void Initialize();
 
     List<CommandInstance> IPluginInstance.GetCommandInstance()
     {
         return CommandInstances;
     }
 
-    protected BasePlugin()
+    protected BasePlugin(PluginDependencyCollection dependencyCollection)
     {
-        PluginConfig = GetPluginConfig();
-        GroupId = PluginConfig.GroupId;
-        Logger = Shared.LoggerFactory.CreateCategoryLogger(GetType());
-    }
-
-    private PluginConfigData GetPluginConfig()
-    {
-        JsonNode originJson = FileIO.ReadAsJson(Path.Join(PluginPath, "plugin.json")) ??
-                              throw new PluginLoadFailedException("Config File Not Exist");
-        PluginConfigData? pluginConfigData = originJson.Deserialize<PluginConfigData>();
-        if (pluginConfigData is null || !pluginConfigData.IsValid())
-            throw new PluginLoadFailedException("Invalid config file");
-
-        pluginConfigData.Implement(originJson);
-        return pluginConfigData;
+        Logger = dependencyCollection.LoggerFactory.CreateCategoryLogger(GetType());
+        PluginConfig = dependencyCollection.PluginConfig;
+        GroupId = PluginConfig.GetValue<long[]>("GroupId") ?? throw new Exception("GroupId not found");
     }
 
     /// <summary>
@@ -88,28 +74,6 @@ public abstract class BasePlugin : IPluginInstance
         CommandInstances.Clear();
         Request.Dispose();
         GC.SuppressFinalize(this);
-    }
-}
-
-/// <summary>
-/// This Class records what write in config file
-/// </summary>
-[Serializable]
-public sealed class PluginConfigData
-{
-    public string EntryFile { get; init; } = "";
-    public string Description { get; init; } = "";
-    public long[] GroupId { get; init; } = [];
-    public JsonNode OriginalConfig { get; private set; } = JsonNode.Parse("{}")!;
-
-    internal void Implement(JsonNode oc)
-    {
-        OriginalConfig = oc;
-    }
-
-    public bool IsValid()
-    {
-        return !string.IsNullOrEmpty(EntryFile);
     }
 }
 

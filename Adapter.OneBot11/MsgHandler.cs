@@ -2,7 +2,6 @@
 using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
 using System.Text.RegularExpressions;
-using UndefinedBot.Core.Adapter;
 using UndefinedBot.Core.Command;
 using UndefinedBot.Core.Command.Arguments;
 using UndefinedBot.Core.Command.CommandSource;
@@ -11,10 +10,12 @@ using UndefinedBot.Core.Utils;
 
 namespace Adapter.OneBot11;
 
-internal sealed partial class MsgHandler(AdapterConfigData adapterConfig, ILogger parentLogger)
+internal sealed partial class MsgHandler(IReadonlyConfig adapterConfig, ILogger parentLogger)
 {
     private readonly ILogger _logger = parentLogger.Extend("MsgHandler");
-    private AdapterConfigData AdapterConfig => adapterConfig;
+    private IReadonlyConfig AdapterConfig => adapterConfig;
+    private long[] GroupId => AdapterConfig.GetValue<long[]>("GroupId")!;
+    private string CommandPrefix => AdapterConfig.GetValue<string>("CommandPrefix")!;
 
     public (CommandInformation?, BaseCommandSource?, ParsedToken[]?) HandleMsg(JsonNode msgJson)
     {
@@ -37,7 +38,7 @@ internal sealed partial class MsgHandler(AdapterConfigData adapterConfig, ILogge
         long gid = msgJson["group_id"]?.GetValue<long>() ?? 0;
         return gid != 0 && msgJson["post_type"]?.GetValue<string>() == "message" &&
                msgJson["message_type"]?.GetValue<string>() == "group" &&
-               AdapterConfig.GroupId.Contains(gid);
+               Array.FindIndex(GroupId, i => i == gid) != -1;
     }
 
     /// <summary>
@@ -51,13 +52,13 @@ internal sealed partial class MsgHandler(AdapterConfigData adapterConfig, ILogge
         List<ParsedToken> unsortedTokens = SplitRawCqMessage(msgString);
         int commandTokenIndex = unsortedTokens.FindIndex(item =>
             item is { TokenType: ParsedTokenTypes.Text, Content: TextTokenContent text } &&
-            text.Text.StartsWith(AdapterConfig.CommandPrefix)
+            text.Text.StartsWith(CommandPrefix)
         );
         if (commandTokenIndex is -1 or > 1) return (null, []);
 
         unsortedTokens.RemoveAt(commandTokenIndex);
         return (
-            ((TextTokenContent)unsortedTokens[commandTokenIndex].Content).Text[AdapterConfig.CommandPrefix.Length..],
+            ((TextTokenContent)unsortedTokens[commandTokenIndex].Content).Text[CommandPrefix.Length..],
             unsortedTokens);
     }
 

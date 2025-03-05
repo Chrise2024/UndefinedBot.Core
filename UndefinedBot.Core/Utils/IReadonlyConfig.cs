@@ -1,7 +1,10 @@
-﻿namespace UndefinedBot.Core.Utils;
+﻿using System.Text.Json.Nodes;
 
-internal interface IReadonlyConfig
+namespace UndefinedBot.Core.Utils;
+
+public interface IReadonlyConfig
 {
-    public string? this[string key] { get; }
+    public JsonNode? this[string key] { get; }
     public T? GetValue<T>(string key)  where T : notnull;
+    public JsonNode? GetValue(string key);
 }

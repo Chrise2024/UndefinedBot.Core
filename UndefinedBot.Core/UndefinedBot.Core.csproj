@@ -19,9 +19,4 @@
         <RepositoryType>git</RepositoryType>
     </PropertyGroup>
 
-    <ItemGroup>
-        <None Remove="Readme.md"/>
-        <Content Include="Readme.md"/>
-    </ItemGroup>
-
 </Project>

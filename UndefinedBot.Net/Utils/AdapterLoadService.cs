@@ -1,12 +1,14 @@
 ﻿using System.Reflection;
 using System.Text.Json;
 using System.Text.Json.Nodes;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using UndefinedBot.Core.Adapter;
 using UndefinedBot.Core.Command;
 using UndefinedBot.Core.Command.CommandSource;
 using UndefinedBot.Core.Utils;
+using InternalILoggerFactory = UndefinedBot.Core.Utils.ILoggerFactory;
 
 namespace UndefinedBot.Net.Utils;
 
@@ -109,7 +111,22 @@ internal sealed class AdapterLoadService(IServiceProvider provider) : IDisposabl
 
             _logger.LogTrace("Adapter class: {targetClass}", targetClass.FullName);
             //Create Adapter Instance
-            if (Activator.CreateInstance(targetClass) is IAdapterInstance targetAdapterInstance)
+            if (Activator.CreateInstance(
+                    targetClass,
+                    [
+                        new AdapterDependencyCollection
+                        {
+                            LoggerFactory = provider.GetRequiredService<InternalILoggerFactory>(),
+                            AdapterConfig = new ConfigProvider(
+                                FileIO.ReadAsJson(
+                                    Path.Join(
+                                        Path.GetDirectoryName(adapterLibPath),
+                                        "adapter.json"
+                                    )
+                                ) ?? throw new FileNotFoundException("adapter.json")
+                            )
+                        }
+                    ]) is IAdapterInstance targetAdapterInstance)
             {
                 _logger.LogTrace("Adapter instance created: {targetAdapterInstance}", targetAdapterInstance.Id);
                 return targetAdapterInstance;

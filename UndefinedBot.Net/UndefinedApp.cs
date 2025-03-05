@@ -40,7 +40,7 @@ public sealed class UndefinedApp : IHost
     public async Task StartAsync(CancellationToken cancellationToken = new())
     {
         Core.Shared.LoggerFactory = Services.GetRequiredService<UndefinedBot.Core.Utils.ILoggerFactory>();
-        Core.Shared.RootConfig = new ConfigProvider(_configuration);
+        //Core.Shared.RootConfig = new ConfigProvider(_configuration);
         //Load Adapters
         _pluginLoadService.LoadPlugin();
         _adapterLoadService.LoadAdapter();

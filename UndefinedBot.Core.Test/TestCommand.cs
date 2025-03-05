@@ -4,11 +4,11 @@ using UndefinedBot.Core.Command.Arguments.ArgumentType;
 using UndefinedBot.Core.Command.Arguments.TokenContentType;
 using UndefinedBot.Core.Command.CommandNode;
 using UndefinedBot.Core.Command.CommandUtils;
-using UndefinedBot.Core.Plugin;
 
 namespace UndefinedBot.Core.Test;
 
-public sealed class TestCommand : BasePlugin
+[Plugin]
+public sealed partial class TestCommand
 {
     public override string Id => "Test";
     public override string Name => "Test Plugin";

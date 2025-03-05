@@ -1,12 +1,13 @@
-﻿using System.Diagnostics.CodeAnalysis;
-using System.Text.Json;
+﻿using System.Text.Json;
+using UndefinedBot.Core;
 using UndefinedBot.Core.Adapter;
 using UndefinedBot.Core.Adapter.ActionParam;
 using UndefinedBot.Core.Plugin.BasicMessage;
 
 namespace Adapter.OneBot11;
 
-public sealed class OneBot11Adapter : BaseAdapter
+[Adapter]
+public sealed partial class OneBot11Adapter
 {
     public override string Id => "OneBot11Adapter";
     public override string Name => "OneBot11Adapter";

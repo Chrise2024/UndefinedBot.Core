@@ -2,7 +2,7 @@
   "Description": "OneBot11",
   "EntryFile": "Adapter.OneBot11",
   "CommandPrefix": "$",
-  "GroupIds": [
+  "GroupId": [
     0
   ],
   "Post": {

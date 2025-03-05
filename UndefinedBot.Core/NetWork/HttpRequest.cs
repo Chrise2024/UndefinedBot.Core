@@ -15,10 +15,10 @@ public sealed class HttpRequest : IDisposable
     public HttpRequest(ILogger logger)
     {
         _logger = logger.Extend("HttpRequest");
-        if (int.TryParse(Shared.RootConfig["HttpRequest:TimeoutMS"], out int timeoutMs))
-            _defaultTimeout = TimeSpan.FromMicroseconds(timeoutMs);
-        if (int.TryParse(Shared.RootConfig["HttpRequest:MaxBufferSizeByte"], out int maxBufferSize))
-            _maxBufferSize = maxBufferSize;
+        // if (int.TryParse(Shared.RootConfig["HttpRequest:TimeoutMS"], out int timeoutMs))
+        //     _defaultTimeout = TimeSpan.FromMicroseconds(timeoutMs);
+        // if (int.TryParse(Shared.RootConfig["HttpRequest:MaxBufferSizeByte"], out int maxBufferSize))
+        //     _maxBufferSize = maxBufferSize;
         _httpClient = new()
         {
             Timeout = _defaultTimeout,

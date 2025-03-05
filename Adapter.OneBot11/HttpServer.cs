@@ -4,7 +4,6 @@ using System.Net.Http.Headers;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Text.RegularExpressions;
-using UndefinedBot.Core.Adapter;
 using UndefinedBot.Core.Command;
 using UndefinedBot.Core.Command.Arguments;
 using UndefinedBot.Core.Command.CommandSource;
@@ -14,9 +13,9 @@ namespace Adapter.OneBot11;
 
 public sealed class HttpServiceOptions(string host, uint port, string? accessToken = null)
 {
-    public static HttpServiceOptions CreateFromConfig(AdapterConfigData adapterConfig)
+    public static HttpServiceOptions CreateFromConfig(IReadonlyConfig adapterConfig)
     {
-        JsonNode? serverConfig = adapterConfig.OriginalConfig["Server"];
+        JsonNode? serverConfig = adapterConfig.GetValue("Server");
         if (serverConfig is null) throw new Exception("Server Properties Not Implemented");
 
         return serverConfig.Deserialize<HttpServiceOptions>() ?? throw new Exception("Invalid Server Properties");
@@ -33,7 +32,7 @@ public sealed class HttpServiceOptions(string host, uint port, string? accessTok
 }
 
 internal sealed class HttpServer(
-    AdapterConfigData adapterConfig,
+    IReadonlyConfig adapterConfig,
     Action<CommandInformation, BaseCommandSource, ParsedToken[]> submitter,
     ILogger parentLogger
 )

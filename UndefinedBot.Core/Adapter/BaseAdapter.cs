@@ -1,6 +1,4 @@
-﻿using System.Text.Json;
-using System.Text.Json.Nodes;
-using UndefinedBot.Core.Adapter.ActionParam;
+﻿using UndefinedBot.Core.Adapter.ActionParam;
 using UndefinedBot.Core.Command;
 using UndefinedBot.Core.Command.Arguments;
 using UndefinedBot.Core.Command.CommandSource;
@@ -59,7 +57,7 @@ public abstract class BaseAdapter : IAdapterInstance
     public string CommandPrefix { get; }
 
     protected ILogger Logger { get; }
-    protected AdapterConfigData AdapterConfig { get; }
+    protected IReadonlyConfig AdapterConfig { get; }
 
     /// <summary>
     /// The location of the adapter folder
@@ -67,6 +65,18 @@ public abstract class BaseAdapter : IAdapterInstance
     protected string AdapterPath => Path.GetDirectoryName(GetType().Assembly.Location) ?? Path.Join();
 
     private CommandManager? CommandManager { get; set; }
+
+    /// <summary>
+    /// Handle Custom Action Invoked by Command
+    /// </summary>
+    /// <param name="action">Action Name</param>
+    /// <param name="target">Target of action</param>
+    /// <param name="parameter">parameters</param>
+    /// <returns></returns>
+    public abstract Task<byte[]?> HandleActionAsync(ActionType action, string? target = null,
+        IActionParam? parameter = null);
+
+    public abstract void Initialize();
 
     ILogger IAdapterInstance.AcquireLogger()
     {
@@ -78,24 +88,12 @@ public abstract class BaseAdapter : IAdapterInstance
         CommandManager = new CommandManager(this, commandInstances);
     }
 
-    protected BaseAdapter()
+    protected BaseAdapter(AdapterDependencyCollection dependencyCollection)
     {
-        Logger = Shared.LoggerFactory.CreateCategoryLogger(GetType());
-        AdapterConfig = GetAdapterConfig();
-        GroupId = AdapterConfig.GroupId;
-        CommandPrefix = AdapterConfig.CommandPrefix;
-    }
-
-    private AdapterConfigData GetAdapterConfig()
-    {
-        JsonNode originJson = FileIO.ReadAsJson(Path.Join(AdapterPath, "adapter.json")) ??
-                              throw new AdapterLoadFailedException("Config file not exist");
-        AdapterConfigData? adapterConfigData = originJson.Deserialize<AdapterConfigData>();
-        if (adapterConfigData is null || !adapterConfigData.IsValid())
-            throw new AdapterLoadFailedException("Invalid config file");
-
-        adapterConfigData.Implement(originJson);
-        return adapterConfigData;
+        Logger = dependencyCollection.LoggerFactory.CreateCategoryLogger(GetType());
+        AdapterConfig = dependencyCollection.AdapterConfig;
+        GroupId = AdapterConfig.GetValue<long[]>("GroupId") ?? throw new Exception("GroupId not found");
+        CommandPrefix = AdapterConfig.GetValue<string>("CommandPrefix") ?? throw new Exception("CommandPrefix not found");
     }
 
     /// <summary>
@@ -126,46 +124,11 @@ public abstract class BaseAdapter : IAdapterInstance
         CommandManager?.InvokeCommandAsync(information, source, information.Tokens);
     }
 
-    /// <summary>
-    /// Handle Custom Action Invoked by Command
-    /// </summary>
-    /// <param name="action">Action Name</param>
-    /// <param name="target">Target of action</param>
-    /// <param name="parameter">parameters</param>
-    /// <returns></returns>
-    public abstract Task<byte[]?> HandleActionAsync(ActionType action, string? target = null,
-        IActionParam? parameter = null);
-
-    public abstract void Initialize();
-
     public virtual void Dispose()
     {
         CommandManager?.Dispose();
         Array.Clear(GroupId);
         GC.SuppressFinalize(this);
-    }
-}
-
-/// <summary>
-/// This Class records what write in config file
-/// </summary>
-[Serializable]
-public sealed class AdapterConfigData
-{
-    public string EntryFile { get; init; } = "";
-    public string Description { get; init; } = "";
-    public string CommandPrefix { get; init; } = "!";
-    public long[] GroupId { get; init; } = [];
-    public JsonNode OriginalConfig { get; private set; } = JsonNode.Parse("{}")!;
-
-    internal void Implement(JsonNode oc)
-    {
-        OriginalConfig = oc;
-    }
-
-    public bool IsValid()
-    {
-        return !(string.IsNullOrEmpty(EntryFile) || string.IsNullOrEmpty(CommandPrefix));
     }
 }
 

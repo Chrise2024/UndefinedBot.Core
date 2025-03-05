@@ -1,7 +1,7 @@
 {
   "Description": "测试",
   "EntryFile": "UndefinedBot.Core.Test",
-  "GroupIds": [
+  "GroupId": [
     0
   ]
 }

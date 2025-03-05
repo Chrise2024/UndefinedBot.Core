@@ -2,6 +2,8 @@
 
 The SDK of UndefinedBot.
 
+Use `git submodule` to refer to project.
+
 ## Plugin Config
 
 In `plugin.json`
@@ -10,7 +12,7 @@ In `plugin.json`
 {
     "Description": "帮助",
     "EntryFile": "Command.Help",
-    "GroupIds" : []
+    "GroupId" : []
     //other content
 }
 ```
@@ -24,21 +26,49 @@ In `plugin.json`
 
 Plugins are developing with `UndefinedBot.Core` on Nuget or as git submodule.
 
-Plugin's main class must not be abstract or static and must extend class `UndefinedBot.Core.Plugin.BasePlugin` and
-override it's abstract fields and have a constructor with single param `PluginConfigData`.
+Plugin's main class must not be abstract or static and
+
+- Must extend class `UndefinedBot.Core.Plugin.BasePlugin` and
+  override it's abstract fields and `Initialize` method and have a constructor with single param `PluginDependencyCollection`.
+
+- Refer to `UndefinedBot.Generator` project as `Analyzer`、mark class as `partial` and ` apply `PluginAttribute` to the class and do nothing on class declaration.Source Generator will implement the class.
 
 Use `RegisterCommand` method extends form BasePlugin to register command
 
-You can register commands in `Initialize` method. (Register commands in constructor is accepted)
+> Suggest to register commands in `Initialize` method, rather than constructor.
 
 Example:
+
+Use Class Derive
 
 ```csharp
 public class TestCommand(PluginConfigData pluginConfig) : BasePlugin(pluginConfig)
 {
     public override string Id => "Test";
     public override string Name => "Test Plugin";
-    public override string TargetAdapterId => "Adapter";
+    public override string[] TargetAdapter => ["OneBot11Adapter"];
+    public override void Initialize()
+    {
+        RegisterCommand("test")
+            .Description("指令帮助文档")
+            .ShortDescription("帮助")
+            .Usage("{0}test [xxx]")
+            .Example("{0}test 114514")
+            .Execute(async (ctx,source) => { })
+            .Then(new VariableNode("var1", new IntegerArgument()));
+    }
+}
+```
+
+Use Source Generator
+
+```csharp
+[Plugin]
+public partial class TestCommand
+{
+    public override string Id => "Test";
+    public override string Name => "Test Plugin";
+    public override string[] TargetAdapter => ["OneBot11Adapter"];
     public override void Initialize()
     {
         RegisterCommand("test")
@@ -54,7 +84,7 @@ public class TestCommand(PluginConfigData pluginConfig) : BasePlugin(pluginConfi
 
 - `Id` The plugin's unique identification
 - `Name` The plugin's name
-- `TargetAdapterId` The adapter plugin will dock to
+- `TargetAdapter` The adapters plugin will dock to
 
 ## Adapter Config
 
@@ -64,7 +94,7 @@ In `adapter.json`
 {
     "Description": "Adapter for Homo",
     "EntryFile": "Adapter.Test",
-    "GroupIds" : [],
+    "GroupId" : [],
     "CommandPrefix" : "!"
     //other content
 }
@@ -72,7 +102,7 @@ In `adapter.json`
 
 - `Description` The description of adapter
 - `EntryFile` The binary assembly of adapter(Without Suffix)
-- `GroupIds` The groups adapter will be active in
+- `GroupId` The groups adapter will be active in
 - `CommandPrefix` The message with prefix will be processed
 - You can write other content in this file. The custom content will be provided
 
@@ -80,13 +110,38 @@ In `adapter.json`
 
 Adapter are developing with `UndefinedBot.Core` on Nuget or as git submodule.
 
-Adapter's main class must not be abstract or static and must extend class `UndefinedBot.Core.Adapter.BaseAdapter` and
-override it's abstract fields and have a constructor with single param `AdapterConfigData`.
+Adapter's main class must not be abstract or static and
+
+- Extend class `UndefinedBot.Core.Adapter.BaseAdapter` and
+  override it's abstract fields and `HandleActionAsync` method and have a constructor with single param `AdapterDependencyCollection`.
+
+- Refer to `UndefinedBot.Generator` project as `Analyzer`、mark class as `partial` and ` apply `PluginAttribute` to the class and do nothing on class declaration.Source Generator will implement the class.
+
+Use `SubmitCommandEvent` to submit received command.
+
+> Suggest to initialize adapter in `Initialize` method, rather than constructor.
+
 
 Example:
 
+Use Class Derive
+
 ```csharp
 public class TestAdapter : BaseAdapter
+{
+    public override string Id => "Test";
+    public override string Name => "Test Adapter";
+    public override string Platform => "QQ";
+    public override string Protocol => "OneBot11";
+    public TestAdapter(AdapterConfigData adapterConfig) : base(adapterConfig)
+}
+```
+
+Use Source Generator
+
+```csharp
+[Adapter]
+public partial class TestAdapter : BaseAdapter
 {
     public override string Id => "Test";
     public override string Name => "Test Adapter";

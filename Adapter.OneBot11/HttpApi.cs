@@ -2,7 +2,6 @@
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
-using UndefinedBot.Core.Adapter;
 using UndefinedBot.Core.Utils;
 
 namespace Adapter.OneBot11;
@@ -12,9 +11,9 @@ public sealed class HttpApi
     private string HttpPostUrl { get; }
     private ILogger HttpApiLogger { get; }
 
-    public HttpApi(AdapterConfigData adapterConfig, ILogger parentLogger)
+    public HttpApi(IReadonlyConfig adapterConfig, ILogger parentLogger)
     {
-        HttpServiceOptions? postConfig = adapterConfig.OriginalConfig["Post"]?.Deserialize<HttpServiceOptions>();
+        HttpServiceOptions? postConfig = adapterConfig.GetValue("Post")?.Deserialize<HttpServiceOptions>();
         if (postConfig is null) throw new Exception("Server Properties Not Implemented");
 
         HttpClient.DefaultRequestHeaders.Add("Authorization", postConfig.AccessToken);
