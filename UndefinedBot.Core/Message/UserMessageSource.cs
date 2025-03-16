@@ -1,29 +1,31 @@
-﻿namespace UndefinedBot.Core.Command.CommandSource;
+﻿using UndefinedBot.Core.Command;
 
-public sealed class UserCommandSource : BaseCommandSource
+namespace UndefinedBot.Core.Message;
+
+public sealed class UserMessageSource : BaseMessageSource
 {
     public override string UserId { get; protected set; }
     public override string UserName { get; protected set; }
     public override string UserCard { get; protected set; }
     public override string GroupId { get; protected set; }
-    public override CommandSourceAuthority Authority { get; protected set; }
+    public override MessageSourceAuthority Authority { get; protected set; }
 
-    public override bool HasAuthorityLevel(CommandSourceAuthority authorityLevel)
+    public override bool HasAuthorityLevel(MessageSourceAuthority authorityLevel)
     {
         return CurrentCommandAttrib.HasFlag(CommandAttribFlags.IgnoreRequirement) ||
                Authority >= authorityLevel;
     }
 
-    public override bool IsFrom(CommandSourceType sourceType)
+    public override bool IsFrom(MessageSourceType sourceType)
     {
-        return sourceType == CommandSourceType.User;
+        return sourceType == MessageSourceType.User;
     }
 
-    private UserCommandSource(
+    private UserMessageSource(
         string userId,
         string groupId,
         string userName,
-        CommandSourceAuthority authorityLevel,
+        MessageSourceAuthority authorityLevel,
         string userCard = ""
     )
     {
@@ -34,24 +36,24 @@ public sealed class UserCommandSource : BaseCommandSource
         Authority = authorityLevel;
     }
 
-    public static UserCommandSource Friend(
+    public static UserMessageSource Friend(
         string userId,
         string userName,
-        CommandSourceAuthority authorityLevel,
+        MessageSourceAuthority authorityLevel,
         string userCard = ""
     )
     {
-        return new UserCommandSource(userId, "", userName, authorityLevel, userCard);
+        return new UserMessageSource(userId, "", userName, authorityLevel, userCard);
     }
 
-    public static UserCommandSource Group(
+    public static UserMessageSource Group(
         string userId,
         string groupId,
         string userName,
-        CommandSourceAuthority authorityLevel,
+        MessageSourceAuthority authorityLevel,
         string userCard = ""
     )
     {
-        return new UserCommandSource(userId, groupId, userName, authorityLevel, userCard);
+        return new UserMessageSource(userId, groupId, userName, authorityLevel, userCard);
     }
 }

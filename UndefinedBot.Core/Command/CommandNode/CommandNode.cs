@@ -3,8 +3,8 @@ using UndefinedBot.Core.Command.Arguments;
 using UndefinedBot.Core.Command.Arguments.ArgumentType;
 using UndefinedBot.Core.Command.CommandException;
 using UndefinedBot.Core.Command.CommandResult;
-using UndefinedBot.Core.Command.CommandSource;
 using UndefinedBot.Core.Command.CommandUtils;
+using UndefinedBot.Core.Message;
 using UndefinedBot.Core.Utils;
 
 namespace UndefinedBot.Core.Command.CommandNode;
@@ -16,10 +16,10 @@ public abstract class CommandNode(string name, IArgumentType argumentType) : IDi
     protected CommandAttribFlags CommandAttrib { get; private set; } = CommandInstance.DefaultCommandAttrib;
     protected CommandNode? Parent { get; private set; }
     protected List<CommandNode> Child { get; } = [];
-    protected Func<CommandContext, BaseCommandSource, CancellationToken, Task>? NodeAction { get; private set; }
-    protected Func<CommandInformation, BaseCommandSource, bool>? NodeRequire { get; private set; }
+    protected Func<CommandContext, BaseMessageSource, CancellationToken, Task>? NodeAction { get; private set; }
+    protected Func<CommandContent, BaseMessageSource, bool>? NodeRequire { get; private set; }
 
-    internal void SetAction(Func<CommandContext, BaseCommandSource, CancellationToken, Task> action)
+    internal void SetAction(Func<CommandContext, BaseMessageSource, CancellationToken, Task> action)
     {
         NodeAction = action;
     }
@@ -51,7 +51,7 @@ public abstract class CommandNode(string name, IArgumentType argumentType) : IDi
         return this;
     }
 
-    public CommandNode Require(Func<CommandInformation, BaseCommandSource, bool> predicate)
+    public CommandNode Require(Func<CommandContent, BaseMessageSource, bool> predicate)
     {
         NodeRequire = predicate;
         return this;
@@ -69,7 +69,7 @@ public abstract class CommandNode(string name, IArgumentType argumentType) : IDi
     /// </code>
     /// </example>
     /// <returns>This node self</returns>
-    public CommandNode Execute(Func<CommandContext, BaseCommandSource, CancellationToken, Task> action)
+    public CommandNode Execute(Func<CommandContext, BaseMessageSource, CancellationToken, Task> action)
     {
         NodeAction = action;
         return this;
@@ -78,7 +78,7 @@ public abstract class CommandNode(string name, IArgumentType argumentType) : IDi
     protected abstract bool IsTokenValid(CommandContext ctx, ref ParsedToken[] tokens,
         [NotNullWhen(false)] out ICommandResult? result);
 
-    public async Task<ICommandResult> ExecuteSelfAsyncAsync(CommandContext ctx, BaseCommandSource source,
+    public async Task<ICommandResult> ExecuteSelfAsyncAsync(CommandContext ctx, BaseMessageSource source,
         ParsedToken[] tokens)
     {
         if (!IsTokenValid(ctx, ref tokens, out ICommandResult? tempResult)) return tempResult;
@@ -104,8 +104,7 @@ public abstract class CommandNode(string name, IArgumentType argumentType) : IDi
         //有子节点
         List<ICommandResult> result = [];
         //Ignore Nodes that Not Hits NodeRequire
-        foreach (CommandNode node in Child.Where(node =>
-                     node.NodeRequire is null || node.NodeRequire(ctx.Information, source)))
+        foreach (CommandNode node in Child.Where(node => RequirementCheck(node, ctx, source)))
         {
             ICommandResult res = await node.ExecuteSelfAsyncAsync(ctx, source, tokens);
             if (res is CommandSuccess)
@@ -127,6 +126,15 @@ public abstract class CommandNode(string name, IArgumentType argumentType) : IDi
             il.Count == 0 ? "" : il[0].ErrorToken,
             il.SelectMany(item => item.RequiredType).ToList()
         );
+    }
+
+    private bool RequirementCheck(CommandNode node, CommandContext ctx, BaseMessageSource source)
+    {
+        if (source.HasAuthorityLevel(MessageSourceAuthority.Admin))
+            return true;
+        return CommandAttrib.HasFlag(CommandAttribFlags.IgnoreRequirement) ||
+               node.NodeRequire is null ||
+               node.NodeRequire(ctx.Content, source);
     }
 
     public abstract string GetArgumentRequire();

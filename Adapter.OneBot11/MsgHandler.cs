@@ -4,8 +4,8 @@ using System.Text.Json.Serialization;
 using System.Text.RegularExpressions;
 using UndefinedBot.Core.Command;
 using UndefinedBot.Core.Command.Arguments;
-using UndefinedBot.Core.Command.CommandSource;
 using UndefinedBot.Core.Command.Arguments.TokenContentType;
+using UndefinedBot.Core.Message;
 using UndefinedBot.Core.Utils;
 
 namespace Adapter.OneBot11;
@@ -17,7 +17,7 @@ internal sealed partial class MsgHandler(IReadonlyConfig adapterConfig, ILogger 
     private long[] GroupId => AdapterConfig.GetValue<long[]>("GroupId")!;
     private string CommandPrefix => AdapterConfig.GetValue<string>("CommandPrefix")!;
 
-    public (CommandInformation?, BaseCommandSource?, ParsedToken[]?) HandleMsg(JsonNode msgJson)
+    public (CommandContent?, BaseMessageSource?, ParsedToken[]?) HandleMsg(JsonNode msgJson)
     {
         if (!IsGroupMessageToHandle(msgJson)) return (null, null, null);
 
@@ -25,10 +25,10 @@ internal sealed partial class MsgHandler(IReadonlyConfig adapterConfig, ILogger 
         (string? cmdName, List<ParsedToken> tokens) = Tokenize(msgBody?.RawMessage ?? "");
         if (msgBody is null || cmdName is null) return (null, null, null);
 
-        CommandInformation cip =
-            CommandInformation.Group(cmdName, msgBody.GroupId.ToString(), msgBody.UserId.ToString(),
+        CommandContent cip =
+            CommandContent.Group(cmdName, msgBody.GroupId.ToString(), msgBody.UserId.ToString(),
                 msgBody.MessageId.ToString(), msgBody.Time);
-        UserCommandSource ucs = UserCommandSource.Group(msgBody.UserId.ToString(), msgBody.GroupId.ToString(),
+        UserMessageSource ucs = UserMessageSource.Group(msgBody.UserId.ToString(), msgBody.GroupId.ToString(),
             msgBody.Sender.Nickname, 0);
         return (cip, ucs, tokens.ToArray());
     }

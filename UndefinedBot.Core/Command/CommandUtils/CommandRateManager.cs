@@ -19,23 +19,23 @@ internal sealed class CommandRateManager : IDisposable
         Mode = mode;
     }
 
-    public bool IsReachRateLimit(CommandInformation information)
+    public bool IsReachRateLimit(CommandContent content)
     {
         return Mode switch
         {
             CommandRateManagerMode.Disable => false,
-            CommandRateManagerMode.Individual => information.SubType switch
+            CommandRateManagerMode.Individual => content.SubType switch
             {
-                MessageSubType.Friend => IsReachFriendRateLimit(information.SourceId),
-                MessageSubType.Group => IsReachGroupRateLimit(information.SourceId),
-                MessageSubType.Guild => IsReachGuildRateLimit(information.SourceId),
+                MessageSubType.Friend => IsReachFriendRateLimit(content.SourceId),
+                MessageSubType.Group => IsReachGroupRateLimit(content.SourceId),
+                MessageSubType.Guild => IsReachGuildRateLimit(content.SourceId),
                 _ => false
             },
             _ => DateTime.Now - LastExecuteGlobal < RateLimit
         };
     }
 
-    public void UpdateLastExecute(CommandInformation information)
+    public void UpdateLastExecute(CommandContent content)
     {
         DateTime nowTime = DateTime.Now;
         switch (Mode)
@@ -43,16 +43,16 @@ internal sealed class CommandRateManager : IDisposable
             case CommandRateManagerMode.Disable:
                 break;
             case CommandRateManagerMode.Individual:
-                switch (information.SubType)
+                switch (content.SubType)
                 {
                     case MessageSubType.Friend:
-                        LastExecuteFriend[information.SourceId] = nowTime;
+                        LastExecuteFriend[content.SourceId] = nowTime;
                         break;
                     case MessageSubType.Group:
-                        LastExecuteGroup[information.SourceId] = nowTime;
+                        LastExecuteGroup[content.SourceId] = nowTime;
                         break;
                     case MessageSubType.Guild:
-                        LastExecuteGuild[information.SourceId] = nowTime;
+                        LastExecuteGuild[content.SourceId] = nowTime;
                         break;
                 }
 

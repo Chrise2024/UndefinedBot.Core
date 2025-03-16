@@ -1,4 +1,5 @@
 ﻿using UndefinedBot.Core.Command;
+using UndefinedBot.Core.MessageProcessor;
 using UndefinedBot.Core.NetWork;
 using UndefinedBot.Core.Utils;
 
@@ -61,9 +62,15 @@ public abstract class BasePlugin : IPluginInstance
     protected CommandInstance RegisterCommand(string commandName)
     {
         Logger.Info($"Command {commandName} registered");
-        CommandInstance ci = new(commandName, Id, TargetAdapter);
+        CommandInstance ci = new(commandName, Id, TargetAdapter,Logger);
         CommandInstances.Add(ci);
         return ci;
+    }
+    
+    protected MessageProcessorInstance RegisterMessageProcessor(string filterName)
+    {
+        MessageProcessorInstance mfi = new(filterName, Id, Logger);
+        return mfi;
     }
 
     public virtual void Dispose()

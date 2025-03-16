@@ -16,7 +16,7 @@ public sealed class CommandContext : IDisposable
     public readonly string PluginName;
     public readonly string CommandName;
     public readonly string RootPath = Environment.CurrentDirectory;
-    public readonly CommandInformation Information;
+    public readonly CommandContent Content;
     public readonly ILogger Logger;
     public readonly CacheManager Cache;
     public readonly HttpRequest Request;
@@ -40,10 +40,10 @@ public sealed class CommandContext : IDisposable
     {
         //ActionInvoke.InvokeDefaultAction();
         await Action.InvokeAction(
-            Information.SubType == MessageSubType.Group
+            Content.SubType == MessageSubType.Group
                 ? ActionType.SendGroupMsg
                 : ActionType.SendPrivateMsg,
-            Information.SourceId,
+            Content.SourceId,
             new SendGroupMgsParam
             {
                 MessageChain = [new TextMessageNode { Text = message }]
@@ -51,11 +51,11 @@ public sealed class CommandContext : IDisposable
         );
     }
 
-    internal CommandContext(CommandInstance commandInstance, CommandInformation ip, ActionManager actionManager)
+    internal CommandContext(CommandInstance commandInstance, CommandContent content, ActionManager actionManager)
     {
         PluginName = commandInstance.PluginId;
         CommandName = commandInstance.Name;
-        Information = ip;
+        Content = content;
         Logger = commandInstance.AcquireLogger();
         Cache = commandInstance.Cache;
         Request = new HttpRequest(Logger);

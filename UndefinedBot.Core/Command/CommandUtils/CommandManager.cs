@@ -1,17 +1,15 @@
 ﻿using System.Text.Json;
 using UndefinedBot.Core.Adapter;
-using UndefinedBot.Core.Command.Arguments;
 using UndefinedBot.Core.Command.CommandException;
 using UndefinedBot.Core.Command.CommandResult;
-using UndefinedBot.Core.Command.CommandSource;
-using UndefinedBot.Core.Plugin;
+using UndefinedBot.Core.Message;
 using UndefinedBot.Core.Utils;
 
 namespace UndefinedBot.Core.Command.CommandUtils;
 
 internal sealed class CommandManager
 {
-    private readonly List<CommandInstance> _commandInstances = [];
+    private readonly List<CommandInstance> _commandInstances;
 
     private readonly HelpCommand _helpCommand;
 
@@ -26,41 +24,41 @@ internal sealed class CommandManager
         _commandInstances = commandInstances;
         _helpCommand = new HelpCommand(
             _commandInstances,
-            new ActionManager(parentAdapter)
+            new ActionManager(parentAdapter),
+            _logger
         );
     }
 
     public async void InvokeCommandAsync(
-        CommandInformation information,
-        BaseCommandSource source,
-        ParsedToken[] tokens
+        CommandContent content,
+        BaseMessageSource source
     )
     {
-        if (information.CalledCommandName.Equals("help", StringComparison.OrdinalIgnoreCase))
+        if (content.CalledCommandName.Equals("help", StringComparison.OrdinalIgnoreCase))
         {
-            _helpCommand.InvokeHelpCommandAsync(information, source);
+            _helpCommand.InvokeHelpCommandAsync(content, source);
             return;
         }
 
-        CommandInstance? targetCommand = _commandInstances.Find(t => t.IsTargetCommand(information, source));
+        CommandInstance? targetCommand = _commandInstances.Find(t => t.IsTargetCommand(content, source));
         if (targetCommand is null)
         {
-            _logger.Warn($"No such command: {information.CalledCommandName}");
+            _logger.Warn($"No such command: {content.CalledCommandName}");
             return;
         }
 
-        if (targetCommand.IsReachRateLimit(information))
+        if (targetCommand.IsReachRateLimit(content))
         {
-            _logger.Warn($"Command: {information.CalledCommandName} reached rate limit.");
+            _logger.Warn($"Command: {content.CalledCommandName} reached rate limit.");
             return;
         }
 
-        CommandContext ctx = new(targetCommand, information, new ActionManager(_parentAdapter));
+        CommandContext ctx = new(targetCommand, content, new ActionManager(_parentAdapter));
         ctx.Logger.Info("Command triggered");
 
         try
         {
-            ICommandResult result = await targetCommand.RunAsync(ctx, source, information.Tokens);
+            ICommandResult result = await targetCommand.RunAsync(ctx, source, content.Tokens);
             switch (result)
             {
                 case CommandSuccess:

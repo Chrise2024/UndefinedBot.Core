@@ -1,12 +1,11 @@
 ﻿using System.Reflection;
 using System.Text.Json;
 using System.Text.Json.Nodes;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using UndefinedBot.Core.Adapter;
 using UndefinedBot.Core.Command;
-using UndefinedBot.Core.Command.CommandSource;
+using UndefinedBot.Core.Message;
 using UndefinedBot.Core.Utils;
 using InternalILoggerFactory = UndefinedBot.Core.Utils.ILoggerFactory;
 
@@ -20,16 +19,16 @@ internal sealed class AdapterLoadService(IServiceProvider provider) : IDisposabl
     private readonly List<IAdapterInstance> _adapterInstances = [];
     private readonly ILogger<AdapterLoadService> _logger = provider.GetRequiredService<ILogger<AdapterLoadService>>();
 
-    internal void ExternalInvokeCommand(CommandInformation information, BaseCommandSource source)
+    internal void ExternalInvokeCommand(CommandContent content, BaseMessageSource source)
     {
-        IAdapterInstance? targetAdapter = _adapterInstances.Find(t => t.Id == information.AdapterId);
+        IAdapterInstance? targetAdapter = _adapterInstances.Find(t => t.Id == content.AdapterId);
         if (targetAdapter is null)
         {
-            _logger.LogWarning("No such adapter: {AdapterId}", information.AdapterId);
+            _logger.LogWarning("No such adapter: {AdapterId}", content.AdapterId);
             return;
         }
 
-        targetAdapter.ExternalInvokeCommand(information, source);
+        targetAdapter.ExternalInvokeCommand(content, source);
     }
 
     public void LoadAdapter()

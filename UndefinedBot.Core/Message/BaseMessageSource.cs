@@ -1,17 +1,16 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
-// The .NET Foundation licenses this file to you under the MIT license.
+﻿using UndefinedBot.Core.Command;
 
-namespace UndefinedBot.Core.Command.CommandSource;
+namespace UndefinedBot.Core.Message;
 
-public abstract class BaseCommandSource
+public abstract class BaseMessageSource
 {
     public virtual string UserId { get; protected set; } = "";
     public virtual string UserName { get; protected set; } = "";
     public virtual string UserCard { get; protected set; } = "";
     public virtual string GroupId { get; protected set; } = "";
-    public virtual CommandSourceAuthority Authority { get; protected set; } = CommandSourceAuthority.InvalidSource;
-    public abstract bool HasAuthorityLevel(CommandSourceAuthority authorityLevel);
-    public abstract bool IsFrom(CommandSourceType sourceType);
+    public virtual MessageSourceAuthority Authority { get; protected set; } = MessageSourceAuthority.InvalidSource;
+    public abstract bool HasAuthorityLevel(MessageSourceAuthority authorityLevel);
+    public abstract bool IsFrom(MessageSourceType sourceType);
     internal CommandAttribFlags CurrentCommandAttrib { get; private set; } = CommandInstance.DefaultCommandAttrib;
 
     internal void SetCurrentCommandAttrib(CommandAttribFlags attr)
@@ -20,14 +19,14 @@ public abstract class BaseCommandSource
     }
 }
 
-public enum CommandSourceType
+public enum MessageSourceType
 {
     User = 0,
     Console = 1,
     Redirect = 2
 }
 
-public enum CommandSourceAuthority
+public enum MessageSourceAuthority
 {
     InvalidSource = 0,
     User = 1,

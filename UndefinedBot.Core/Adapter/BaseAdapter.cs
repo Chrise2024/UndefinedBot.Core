@@ -1,8 +1,9 @@
 ﻿using UndefinedBot.Core.Adapter.ActionParam;
 using UndefinedBot.Core.Command;
 using UndefinedBot.Core.Command.Arguments;
-using UndefinedBot.Core.Command.CommandSource;
 using UndefinedBot.Core.Command.CommandUtils;
+using UndefinedBot.Core.Message;
+using UndefinedBot.Core.MessageProcessor;
 using UndefinedBot.Core.Utils;
 
 namespace UndefinedBot.Core.Adapter;
@@ -16,8 +17,9 @@ public interface IAdapterInstance : IDisposable
     public long[] GroupId { get; }
     public string CommandPrefix { get; }
     internal ILogger AcquireLogger();
-    internal void ExternalInvokeCommand(CommandInformation information, BaseCommandSource source);
+    internal void ExternalInvokeCommand(CommandContent content, BaseMessageSource source);
     internal void MountCommands(List<CommandInstance> commandInstances);
+    internal void MountMessageProcessor(List<MessageProcessorInstance> messageProcessorInstances);
 
     /// <summary>
     /// Handle default action invoked by command
@@ -65,6 +67,7 @@ public abstract class BaseAdapter : IAdapterInstance
     protected string AdapterPath => Path.GetDirectoryName(GetType().Assembly.Location) ?? Path.Join();
 
     private CommandManager? CommandManager { get; set; }
+    private MessageProcessorManager? MessageProcessorManager { get; set; }
 
     /// <summary>
     /// Handle Custom Action Invoked by Command
@@ -87,7 +90,16 @@ public abstract class BaseAdapter : IAdapterInstance
     {
         CommandManager = new CommandManager(this, commandInstances);
     }
-
+    void IAdapterInstance.MountMessageProcessor(List<MessageProcessorInstance> messageProcessorInstances)
+    {
+        MessageProcessorManager = new MessageProcessorManager(this, messageProcessorInstances);
+    }
+    
+    void IAdapterInstance.ExternalInvokeCommand(CommandContent content, BaseMessageSource source)
+    {
+        CommandManager?.InvokeCommandAsync(content, source);
+    }
+    
     protected BaseAdapter(AdapterDependencyCollection dependencyCollection)
     {
         Logger = dependencyCollection.LoggerFactory.CreateCategoryLogger(GetType());
@@ -99,12 +111,12 @@ public abstract class BaseAdapter : IAdapterInstance
     /// <summary>
     /// After processing message, use it to submit this event
     /// </summary>
-    /// <param name="information">Command's basic information</param>
+    /// <param name="content">Command's basic information</param>
     /// <param name="source">Command Source</param>
     /// <param name="tokens">Tokens, the body of the command</param>
     protected void SubmitCommandEvent(
-        CommandInformation information,
-        BaseCommandSource source,
+        CommandContent content,
+        BaseMessageSource source,
         ParsedToken[] tokens
     )
     {
@@ -115,13 +127,24 @@ public abstract class BaseAdapter : IAdapterInstance
         }
 
         Logger.Trace(
-            $"Command submitted, command {information.CalledCommandName} called by {information.SenderId} in {information.SubType.ToString()} {information.SourceId}");
-        CommandManager.InvokeCommandAsync(information, source, tokens);
+            $"Command submitted, command {content.CalledCommandName} called by {content.SenderId} in {content.SubType.ToString()} {content.SourceId}");
+        CommandManager.InvokeCommandAsync(
+            content.Implement(Id,Platform,Protocol,tokens,CommandPrefix),
+            source
+            );
     }
-
-    void IAdapterInstance.ExternalInvokeCommand(CommandInformation information, BaseCommandSource source)
+    
+    protected void SubmitMessageEvent(MessageContent content, BaseMessageSource source)
     {
-        CommandManager?.InvokeCommandAsync(information, source, information.Tokens);
+        if (CommandManager is null)
+        {
+            Logger.Warn("CommandManager not initialized");
+            return;
+        }
+
+        Logger.Trace(
+            $"Message submitted, message {content.MessageString} called by {content.SenderId} in {content.SubType.ToString()} {content.SourceId}");
+        //CommandManager.InvokeMessageAsync(content, source);
     }
 
     public virtual void Dispose()

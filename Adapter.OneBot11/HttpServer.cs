@@ -6,7 +6,7 @@ using System.Text.Json.Nodes;
 using System.Text.RegularExpressions;
 using UndefinedBot.Core.Command;
 using UndefinedBot.Core.Command.Arguments;
-using UndefinedBot.Core.Command.CommandSource;
+using UndefinedBot.Core.Message;
 using UndefinedBot.Core.Utils;
 
 namespace Adapter.OneBot11;
@@ -33,7 +33,7 @@ public sealed class HttpServiceOptions(string host, uint port, string? accessTok
 
 internal sealed class HttpServer(
     IReadonlyConfig adapterConfig,
-    Action<CommandInformation, BaseCommandSource, ParsedToken[]> submitter,
+    Action<CommandContent, BaseMessageSource, ParsedToken[]> submitter,
     ILogger parentLogger
 )
 {
@@ -41,7 +41,7 @@ internal sealed class HttpServer(
     private readonly HttpServiceOptions _options = HttpServiceOptions.CreateFromConfig(adapterConfig);
     private readonly MsgHandler _handler = new(adapterConfig, parentLogger);
     private readonly ILogger _logger = parentLogger.Extend("HttpServer");
-    private Action<CommandInformation, BaseCommandSource, ParsedToken[]> Submitter => submitter;
+    private Action<CommandContent, BaseMessageSource, ParsedToken[]> Submitter => submitter;
 
     public async Task ExecuteAsync(CancellationToken token)
     {
@@ -156,7 +156,7 @@ internal sealed class HttpServer(
             sr.Close();
             context.Response.StatusCode = 200;
             context.Response.Close();
-            (CommandInformation? cip, BaseCommandSource? ucs, ParsedToken[]? tokens) =
+            (CommandContent? cip, BaseMessageSource? ucs, ParsedToken[]? tokens) =
                 _handler.HandleMsg(JsonNode.Parse(reqString) ?? throw new Exception("Parse Failed"));
             if (cip is not null && ucs is not null && tokens is not null)
             {

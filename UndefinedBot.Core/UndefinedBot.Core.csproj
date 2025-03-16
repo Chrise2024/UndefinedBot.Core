@@ -19,4 +19,8 @@
         <RepositoryType>git</RepositoryType>
     </PropertyGroup>
 
+    <ItemGroup>
+      <Folder Include="Command\CommandSource\" />
+    </ItemGroup>
+
 </Project>

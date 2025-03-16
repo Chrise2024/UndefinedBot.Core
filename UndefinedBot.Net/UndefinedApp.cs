@@ -6,7 +6,7 @@ using Microsoft.Extensions.Logging;
 using UndefinedBot.Core.Command;
 using UndefinedBot.Core.Command.Arguments;
 using UndefinedBot.Core.Command.Arguments.TokenContentType;
-using UndefinedBot.Core.Command.CommandSource;
+using UndefinedBot.Core.Message;
 using UndefinedBot.Core.NetWork;
 using UndefinedBot.Net.Utils;
 
@@ -51,7 +51,7 @@ public sealed class UndefinedApp : IHost
         //for test
         _logger.LogInformation("Test Command");
         _adapterLoadService.ExternalInvokeCommand(
-            CommandInformation
+            CommandContent
                 .Group("test", "0", "0", "0", 114514191)
                 .Implement(
                     "OneBot11Adapter",
@@ -70,7 +70,7 @@ public sealed class UndefinedApp : IHost
                     ],
                     "$$"
                 ),
-            UserCommandSource.Friend("", "", 0)
+            UserMessageSource.Friend("", "", 0)
         );
         //Console Loop
         while (true)

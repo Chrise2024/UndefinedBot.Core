@@ -2,8 +2,8 @@
 using UndefinedBot.Core.Command.CommandResult;
 using UndefinedBot.Core.Command.Arguments;
 using UndefinedBot.Core.Command.CommandNode;
-using UndefinedBot.Core.Command.CommandSource;
 using UndefinedBot.Core.Command.CommandUtils;
+using UndefinedBot.Core.Message;
 using UndefinedBot.Core.Utils;
 
 namespace UndefinedBot.Core.Command;
@@ -23,38 +23,38 @@ public sealed class CommandInstance : IDisposable
     internal CacheManager Cache { get; }
     private ILogger Logger { get; }
 
-    internal CommandInstance(string commandName, string pluginId, string[] targetAdapterId)
+    internal CommandInstance(string commandName, string pluginId, string[] targetAdapterId,ILogger parentLogger)
     {
         TargetAdapterId = targetAdapterId;
         PluginId = pluginId;
         Name = commandName;
-        Logger = Shared.LoggerFactory.CreateCategoryLogger(GetType(), [$"{pluginId}/{commandName}"]);
+        Logger = parentLogger.Extend(["Command",commandName]);
         Cache = new CacheManager(pluginId, Logger);
         RootNode = new RootCommandNode(commandName);
         RootNode.SetCommandAttrib(CommandAttrib);
     }
 
     //For internal invoke command
-    internal async Task<ICommandResult> RunAsync(CommandContext ctx, BaseCommandSource source, ParsedToken[] tokens)
+    internal async Task<ICommandResult> RunAsync(CommandContext ctx, BaseMessageSource source, ParsedToken[] tokens)
     {
-        RateManager.UpdateLastExecute(ctx.Information);
+        RateManager.UpdateLastExecute(ctx.Content);
         source.SetCurrentCommandAttrib(CommandAttrib);
         return await RootNode.ExecuteSelfAsyncAsync(ctx, source, tokens);
     }
 
     #region CommandTargetJudgment
 
-    internal bool IsTargetCommand(CommandInformation information, BaseCommandSource source)
+    internal bool IsTargetCommand(CommandContent content, BaseMessageSource source)
     {
-        return IsProperEnvironment(information) && IsRequirementMet(information, source) && IsNameMatch(information);
+        return IsProperEnvironment(content) && IsRequirementMet(content, source) && IsNameMatch(content);
     }
 
-    internal bool IsTargetCommandLiteral(CommandInformation information, string commandName)
+    internal bool IsTargetCommandLiteral(CommandContent content, string commandName)
     {
-        return IsProperEnvironment(information) && IsNameMatch(commandName);
+        return IsProperEnvironment(content) && IsNameMatch(commandName);
     }
 
-    private bool IsProperEnvironment(CommandInformation cip)
+    private bool IsProperEnvironment(CommandContent cip)
     {
         switch (cip.SubType)
         {
@@ -67,13 +67,13 @@ public sealed class CommandInstance : IDisposable
         return true;
     }
 
-    private bool IsRequirementMet(CommandInformation cip, BaseCommandSource source)
+    private bool IsRequirementMet(CommandContent cip, BaseMessageSource source)
     {
         return CommandAttrib.HasFlag(CommandAttribFlags.IgnoreRequirement) || CommandRequire is null ||
                !CommandRequire(cip, source);
     }
 
-    private bool IsNameMatch(CommandInformation cip)
+    private bool IsNameMatch(CommandContent cip)
     {
         return IsNameMatch(cip.CalledCommandName);
     }
@@ -195,23 +195,23 @@ public sealed class CommandInstance : IDisposable
         return this;
     }
 
-    internal bool IsReachRateLimit(CommandInformation information)
+    internal bool IsReachRateLimit(CommandContent content)
     {
-        return RateManager.IsReachRateLimit(information);
+        return RateManager.IsReachRateLimit(content);
     }
 
     #endregion
 
     #region UserFunctional
 
-    private Func<CommandInformation, BaseCommandSource, bool>? CommandRequire { get; set; }
+    private Func<CommandContent, BaseMessageSource, bool>? CommandRequire { get; set; }
 
     /// <summary>
     /// Add command requirement
     /// </summary>
     /// <param name="predicate">requirement</param>
     /// <returns>self</returns>
-    public CommandInstance Require(Func<CommandInformation, BaseCommandSource, bool> predicate)
+    public CommandInstance Require(Func<CommandContent, BaseMessageSource, bool> predicate)
     {
         CommandRequire = predicate;
         return this;
@@ -230,7 +230,7 @@ public sealed class CommandInstance : IDisposable
     /// </example>
     /// <remarks>While action added,control flow will goto command tree building.</remarks>
     /// <returns>self</returns>
-    public CommandNode.CommandNode Execute(Func<CommandContext, BaseCommandSource, CancellationToken, Task> action)
+    public CommandNode.CommandNode Execute(Func<CommandContext, BaseMessageSource, CancellationToken, Task> action)
     {
         //RootNode.SetAction(action);
         return RootNode.Execute(action);
@@ -254,20 +254,20 @@ public sealed class CommandInstance : IDisposable
 
     #region InternalUsage
 
-    internal string GetFullHelpText(CommandInformation information)
+    internal string GetFullHelpText(CommandContent content)
     {
         return string.Format(
             "---------------help---------------\n{0}{1}{2}\n可用指令别名: \n{3}",
             CommandDescription == null ? "" : $"{Name} - {CommandDescription}\n",
-            CommandUsage == null ? "" : $"使用方法: \n{string.Format(CommandUsage, information.CommandPrefix)}\n",
-            CommandExample == null ? "" : $"e.g.\n{string.Format(CommandExample, information.CommandPrefix)}\n",
+            CommandUsage == null ? "" : $"使用方法: \n{string.Format(CommandUsage, content.CommandPrefix)}\n",
+            CommandExample == null ? "" : $"e.g.\n{string.Format(CommandExample, content.CommandPrefix)}\n",
             JsonSerializer.Serialize(CommandAlias)
         );
     }
 
-    internal string GetShortHelpText(CommandInformation information)
+    internal string GetShortHelpText(CommandContent content)
     {
-        return $"{information.CommandPrefix}{Name} - {CommandShortDescription ?? "NULL"}\n";
+        return $"{content.CommandPrefix}{Name} - {CommandShortDescription ?? "NULL"}\n";
     }
 
     internal bool IsHidden()
