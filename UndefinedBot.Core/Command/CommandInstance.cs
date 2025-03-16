@@ -46,7 +46,7 @@ public sealed class CommandInstance : IDisposable
 
     internal bool IsTargetCommand(CommandContent content, BaseMessageSource source)
     {
-        return IsProperEnvironment(content) && IsRequirementMet(content, source) && IsNameMatch(content);
+        return IsProperEnvironment(content) && IsRequirementMet(content, source) && IsNameMatch(content) && IsAuthorized(source);
     }
 
     internal bool IsTargetCommandLiteral(CommandContent content, string commandName)
@@ -54,7 +54,7 @@ public sealed class CommandInstance : IDisposable
         return IsProperEnvironment(content) && IsNameMatch(commandName);
     }
 
-    private bool IsProperEnvironment(CommandContent cip)
+    private bool IsProperEnvironment(MessageProperty cip)
     {
         switch (cip.SubType)
         {
@@ -87,6 +87,11 @@ public sealed class CommandInstance : IDisposable
         return Name.Equals(commandName, comparison) ||
                (allowAlias && CommandAlias.FindIndex(x => x.Equals(commandName, comparison)) != -1);
     }
+    
+    private bool IsAuthorized(BaseMessageSource source)
+    {
+        return CommandAttrib.HasFlag(CommandAttribFlags.IgnoreAuthority) || source.HasAuthorityLevel(CommandAuthority);
+    }
 
     #endregion
 
@@ -97,6 +102,7 @@ public sealed class CommandInstance : IDisposable
     private string? CommandShortDescription { get; set; }
     private string? CommandUsage { get; set; }
     private string? CommandExample { get; set; }
+    private MessageSourceAuthority CommandAuthority { get; set; } = MessageSourceAuthority.Admin;
     private CommandAttribFlags CommandAttrib { get; set; } = DefaultCommandAttrib;
 
     /// <summary>
@@ -158,6 +164,13 @@ public sealed class CommandInstance : IDisposable
     {
         CommandExample = example;
         Logger.Trace($"Example set to \"{example}\"");
+        return this;
+    }
+    
+    public CommandInstance Authority(MessageSourceAuthority authority)
+    {
+        CommandAuthority = authority;
+        Logger.Trace($"Authority set to \"{authority}\"");
         return this;
     }
 
@@ -334,5 +347,10 @@ public enum CommandAttribFlags
     /// <summary>
     /// Allow using alias to trigger the command
     /// </summary>
-    AllowAlias = 0b_0000_0000_1000_0000
+    AllowAlias = 0b_0000_0000_1000_0000,
+
+    /// <summary>
+    /// The command can be triggered with ignoring user authority level
+    /// </summary>
+    IgnoreAuthority = 0b_0000_0001_0000_0000
 }
