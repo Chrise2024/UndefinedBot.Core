@@ -12,6 +12,7 @@ public interface IPluginInstance : IDisposable
     string[] TargetAdapter { get; }
     long[] GroupId { get; }
     internal List<CommandInstance> GetCommandInstance();
+    internal List<MessageProcessorInstance> GetMessageProcessorInstance();
     void Initialize();
 }
 
@@ -35,12 +36,18 @@ public abstract class BasePlugin : IPluginInstance
     protected IReadonlyConfig PluginConfig { get; }
     protected string PluginPath => Path.GetDirectoryName(GetType().Assembly.Location) ?? "/";
     private List<CommandInstance> CommandInstances { get; } = [];
-    
+    private List<MessageProcessorInstance> MessageProcessorInstances { get; } = [];
+
     public abstract void Initialize();
 
     List<CommandInstance> IPluginInstance.GetCommandInstance()
     {
         return CommandInstances;
+    }
+
+    List<MessageProcessorInstance> IPluginInstance.GetMessageProcessorInstance()
+    {
+        return MessageProcessorInstances;
     }
 
     protected BasePlugin(PluginDependencyCollection dependencyCollection)
@@ -62,15 +69,17 @@ public abstract class BasePlugin : IPluginInstance
     protected CommandInstance RegisterCommand(string commandName)
     {
         Logger.Info($"Command {commandName} registered");
-        CommandInstance ci = new(commandName, Id, TargetAdapter,Logger);
+        CommandInstance ci = new(commandName, Id, TargetAdapter, Logger);
         CommandInstances.Add(ci);
         return ci;
     }
-    
-    protected MessageProcessorInstance RegisterMessageProcessor(string filterName)
+
+    protected MessageProcessorInstance RegisterMessageProcessor(string processorName)
     {
-        MessageProcessorInstance mfi = new(filterName, Id, Logger);
-        return mfi;
+        Logger.Info($"Processor {processorName} registered");
+        MessageProcessorInstance mpi = new(processorName, Id, TargetAdapter, Logger);
+        MessageProcessorInstances.Add(mpi);
+        return mpi;
     }
 
     public virtual void Dispose()

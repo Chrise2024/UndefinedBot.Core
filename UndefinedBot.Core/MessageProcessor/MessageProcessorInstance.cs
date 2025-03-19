@@ -8,35 +8,38 @@ public sealed class MessageProcessorInstance
 {
     internal string Name { get; }
     internal string PluginId { get; }
+    internal string[] TargetAdapterId { get; }
     private ILogger Logger { get; }
-    
+
     private MsgProcessorAttribFlags ProcessorAttrib { get; set; }
     internal CacheManager Cache { get; }
-    
-    private Func<ProcessorContext,BaseMessageSource,bool>? FilterCondition { get; set; }
-    private Func<ProcessorContext,BaseMessageSource,CancellationToken,Task>? Processor { get; set; }
+
+    private Func<ProcessorContext, BaseMessageSource, bool>? FilterCondition { get; set; }
+    private Func<ProcessorContext, BaseMessageSource, CancellationToken, Task>? Processor { get; set; }
     private bool InvertCondition { get; set; }
 
-    internal MessageProcessorInstance(string filterName,string pluginId,ILogger parentLogger)
+    internal MessageProcessorInstance(string filterName, string pluginId, string[] target, ILogger parentLogger)
     {
         Name = filterName;
         PluginId = pluginId;
+        TargetAdapterId = target;
         Logger = parentLogger.Extend(["MsgFilter", filterName]);
         Cache = new CacheManager(pluginId, Logger);
     }
-    
+
     internal ILogger AcquireLogger()
     {
         return Logger;
     }
-    
+
     /// <summary>
     /// Set filter
     /// </summary>
     /// <param name="predicate"></param>
     /// <param name="invert">If false,msg that make FilterCondition return true will be processed.</param>
     /// <returns></returns>
-    public MessageProcessorInstance Require(Func<ProcessorContext,BaseMessageSource,bool> predicate,bool invert = false)
+    public MessageProcessorInstance Require(Func<ProcessorContext, BaseMessageSource, bool> predicate,
+        bool invert = false)
     {
         FilterCondition = predicate;
         InvertCondition = invert;
@@ -48,29 +51,29 @@ public sealed class MessageProcessorInstance
         ProcessorAttrib = attrib;
         return this;
     }
-    
-    public void Execute(Func<ProcessorContext,BaseMessageSource,CancellationToken,Task> processor)
+
+    public void Execute(Func<ProcessorContext, BaseMessageSource, CancellationToken, Task> processor)
     {
         Processor = processor;
     }
 
-    internal async Task RunAsync(ProcessorContext ctx,BaseMessageSource source)
+    internal async Task RunAsync(ProcessorContext ctx, BaseMessageSource source, Action callback)
     {
         if (Processor is null)
         {
             return;
         }
-        
-        if (!ShouldProcess(ctx,source))
+
+        if (!ShouldProcess(ctx, source))
         {
             return;
         }
 
-        await Processor.TimeoutAfter(TimeSpan.FromSeconds(20)).Invoke(ctx,source);
-        ctx.Dispose();
+        await Processor.TimeoutAfter(TimeSpan.FromSeconds(20)).Invoke(ctx, source);
+        callback.Invoke();
     }
-    
-    private bool ShouldProcess(ProcessorContext ctx,BaseMessageSource source)
+
+    private bool ShouldProcess(ProcessorContext ctx, BaseMessageSource source)
     {
         switch (ctx.Content.SubType)
         {
@@ -79,8 +82,9 @@ public sealed class MessageProcessorInstance
             case MessageSubType.Guild when !ProcessorAttrib.HasFlag(MsgProcessorAttribFlags.ActiveInGuild):
                 return false;
         }
-        
-        if (!ProcessorAttrib.HasFlag(MsgProcessorAttribFlags.IgnoreAuthority) && source.HasAuthorityLevel(MessageSourceAuthority.Admin))
+
+        if (!ProcessorAttrib.HasFlag(MsgProcessorAttribFlags.IgnoreAuthority) &&
+            source.HasAuthorityLevel(MessageSourceAuthority.Admin))
         {
             return false;
         }

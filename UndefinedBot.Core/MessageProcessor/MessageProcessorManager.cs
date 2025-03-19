@@ -24,7 +24,8 @@ internal sealed class MessageProcessorManager
         await Task.WhenAny(_messageProcessorInstances.Select(i =>
         {
             ProcessorContext ctx = new(i, content, new ActionManager(_parentAdapter));
-            return i.RunAsync(ctx, source);
+            ctx.Dispose();
+            return i.RunAsync(ctx, source,() => ctx.Dispose());
         }));
     }
 }

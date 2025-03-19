@@ -77,10 +77,9 @@ internal sealed class AdapterLoadService(IServiceProvider provider) : IDisposabl
                 continue;
             }
 
-            //_adapterReferences[inst.Id] = adapterProperties;
-            //adapterInstance.SetUp(_provider.GetRequiredService<InternalILoggerFactory>(), new CommandManager(_provider, adapterInstance));
-            adapterInstance.MountCommands(provider.GetRequiredService<PluginLoadService>()
-                .AcquireCommandInstance(adapterInstance.Id));
+            PluginLoadService pluginLoadService = provider.GetRequiredService<PluginLoadService>();
+            adapterInstance.MountCommands(pluginLoadService.AcquireCommandInstance(adapterInstance.Id));
+            adapterInstance.MountMessageProcessor(pluginLoadService.AcquireMessageProcessorInstance(adapterInstance.Id));
             adapterInstance.Initialize();
             _adapterInstances.Add(adapterInstance);
             _logger.LogInformation("Success load adapter: {Id}", adapterInstance.Id);

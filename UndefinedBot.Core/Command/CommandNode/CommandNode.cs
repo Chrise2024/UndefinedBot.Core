@@ -124,7 +124,7 @@ public abstract class CommandNode(string name, IArgumentType argumentType) : IDi
         List<InvalidArgumentCommandResult> il = result.OfType<InvalidArgumentCommandResult>().ToList();
         return new InvalidArgumentCommandResult(
             il.Count == 0 ? "" : il[0].ErrorToken,
-            il.SelectMany(item => item.RequiredType).ToList()
+            il.SelectMany(item => item.RequiredType).ToArray()
         );
     }
 

@@ -5,6 +5,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using UndefinedBot.Core.Utils;
 using UndefinedBot.Core.Command;
+using UndefinedBot.Core.MessageProcessor;
 using UndefinedBot.Core.Plugin;
 using InternalILoggerFactory = UndefinedBot.Core.Utils.ILoggerFactory;
 
@@ -18,12 +19,19 @@ internal sealed class PluginLoadService(IServiceProvider provider) : IDisposable
 
     private readonly List<IPluginInstance> _pluginInstanceList = [];
     private readonly List<CommandInstance> _commandInstanceList = [];
+    private readonly List<MessageProcessorInstance> _processorInstanceList = [];
     private readonly Dictionary<string, List<CommandInstance>> _commandIndex = [];
+    private readonly Dictionary<string, List<MessageProcessorInstance>> _processorIndex = [];
     private readonly ILogger<PluginLoadService> _logger = provider.GetRequiredService<ILogger<PluginLoadService>>();
 
     public List<CommandInstance> AcquireCommandInstance(string adapterId)
     {
         return _commandIndex.TryGetValue(adapterId, out List<CommandInstance>? v) ? v : [];
+    }
+
+    public List<MessageProcessorInstance> AcquireMessageProcessorInstance(string adapterId)
+    {
+        return _processorIndex.TryGetValue(adapterId, out List<MessageProcessorInstance>? v) ? v : [];
     }
 
     public void LoadPlugin()
@@ -75,6 +83,7 @@ internal sealed class PluginLoadService(IServiceProvider provider) : IDisposable
 
             pluginInstance.Initialize();
             _commandInstanceList.AddRange(pluginInstance.GetCommandInstance());
+            _processorInstanceList.AddRange(pluginInstance.GetMessageProcessorInstance());
             _pluginInstanceList.Add(pluginInstance);
 
             string pluginCachePath = Path.Join(_programCache, pluginInstance.Id);
@@ -86,10 +95,15 @@ internal sealed class PluginLoadService(IServiceProvider provider) : IDisposable
         string commandListText = JsonSerializer.Serialize(
             _commandInstanceList.Select(c => $"{c.PluginId}/{c.Name} - {JsonSerializer.Serialize(c.TargetAdapterId)}"),
             UndefinedApp.SerializerOptions);
+        string processorListText = JsonSerializer.Serialize(
+            _processorInstanceList.Select(c =>
+                $"{c.PluginId}/{c.Name} - {JsonSerializer.Serialize(c.TargetAdapterId)}"),
+            UndefinedApp.SerializerOptions);
         FileIO.WriteFile(Path.Join(Environment.CurrentDirectory, "loaded_plugins.json"), pluginListText);
         _logger.LogInformation("Loaded plugins:{PluginList}", pluginListText);
         _logger.LogInformation("Loaded commands:{PluginList}", commandListText);
-        IndexCommand();
+        _logger.LogInformation("Loaded message processors:{PluginList}", processorListText);
+        IndexInstances();
     }
 
     private IPluginInstance? CreatePluginInstance(string pluginLibPath)
@@ -110,23 +124,21 @@ internal sealed class PluginLoadService(IServiceProvider provider) : IDisposable
 
             _logger.LogTrace("Plugin class: {targetClass}", targetClass.FullName);
             //Create Plugin Class Instance to Invoke Initialize Method
-            if (Activator.CreateInstance(
-                    targetClass,
-                    [
-                        new PluginDependencyCollection
-                        {
-                            LoggerFactory = provider.GetRequiredService<InternalILoggerFactory>(),
-                            PluginConfig =
-                                new ConfigProvider(
-                                    FileIO.ReadAsJson(
-                                        Path.Join(
-                                            Path.GetDirectoryName(pluginLibPath),
-                                            "plugin.json"
-                                            )
-                                        ) ?? throw new FileNotFoundException("plugin.json")
-                                    )
-                        }
-                    ]) is IPluginInstance targetPluginInstance)
+            object? instance = Activator.CreateInstance(
+                targetClass,
+                [
+                    new PluginDependencyCollection
+                    {
+                        LoggerFactory = provider.GetRequiredService<InternalILoggerFactory>(),
+                        PluginConfig =
+                            new ConfigProvider(
+                                FileIO.ReadAsJson(
+                                    Path.Join(Path.GetDirectoryName(pluginLibPath), "plugin.json")
+                                ) ?? throw new FileNotFoundException("plugin.json")
+                            )
+                    }
+                ]);
+            if (instance is IPluginInstance targetPluginInstance)
             {
                 _logger.LogTrace("Plugin instance created: {targetAdapterInstance}", targetPluginInstance.Id);
                 return targetPluginInstance;
@@ -166,7 +178,7 @@ internal sealed class PluginLoadService(IServiceProvider provider) : IDisposable
             throw new PlatformNotSupportedException();
         }
     }*/
-    private void IndexCommand()
+    private void IndexInstances()
     {
         foreach (CommandInstance ci in _commandInstanceList)
         foreach (string tai in ci.TargetAdapterId)
@@ -174,6 +186,14 @@ internal sealed class PluginLoadService(IServiceProvider provider) : IDisposable
             if (_commandIndex.TryAdd(tai, [ci])) continue;
 
             _commandIndex[tai].Add(ci);
+        }
+
+        foreach (MessageProcessorInstance mpi in _processorInstanceList)
+        foreach (string tai in mpi.TargetAdapterId)
+        {
+            if (_processorIndex.TryAdd(tai, [mpi])) continue;
+
+            _processorIndex[tai].Add(mpi);
         }
     }
 

@@ -90,6 +90,7 @@ public abstract class BaseAdapter : IAdapterInstance
     {
         CommandManager = new CommandManager(this, commandInstances);
     }
+    
     void IAdapterInstance.MountMessageProcessor(List<MessageProcessorInstance> messageProcessorInstances)
     {
         MessageProcessorManager = new MessageProcessorManager(this, messageProcessorInstances);
