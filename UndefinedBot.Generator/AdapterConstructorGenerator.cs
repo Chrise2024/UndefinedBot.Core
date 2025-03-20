@@ -15,13 +15,13 @@ public sealed class AdapterConstructorGenerator : IIncrementalGenerator
     {
         IncrementalValuesProvider<ClassDeclarationSyntax> provider = context.SyntaxProvider
             .CreateSyntaxProvider(
-                (s, _) => s is ClassDeclarationSyntax,
-                (ctx, _) =>
+                static (s, _) => s is ClassDeclarationSyntax,
+                static (ctx, cancellationToken) =>
                 {
                     ClassDeclarationSyntax classDeclarationSyntax = (ClassDeclarationSyntax)ctx.Node;
                     foreach (AttributeSyntax attributeSyntax in classDeclarationSyntax.AttributeLists.SelectMany(attributeListSyntax => attributeListSyntax.Attributes))
                     {
-                        if (ctx.SemanticModel.GetSymbolInfo(attributeSyntax).Symbol is not IMethodSymbol attributeSymbol)
+                        if (ctx.SemanticModel.GetSymbolInfo(attributeSyntax, cancellationToken: cancellationToken).Symbol is not IMethodSymbol attributeSymbol)
                             continue;
 
                         if (attributeSymbol.ContainingType.ToDisplayString() == "UndefinedBot.Core.AdapterAttribute")

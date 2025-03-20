@@ -15,10 +15,6 @@
     
     <ItemGroup>
         <ProjectReference Include="..\UndefinedBot.Core\UndefinedBot.Core.csproj"/>
-        <ProjectReference Include="..\UndefinedBot.Generator\UndefinedBot.Generator.csproj"
-                          OutputItemType="Analyzer"
-                          ReferenceOutputAssembly="false"
-        />
     </ItemGroup>
 
 </Project>

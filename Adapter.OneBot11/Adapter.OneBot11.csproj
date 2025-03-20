@@ -5,18 +5,20 @@
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
     </PropertyGroup>
-    <ItemGroup>
-        <ProjectReference Include="..\UndefinedBot.Core\UndefinedBot.Core.csproj"/>
-        <ProjectReference Include="..\UndefinedBot.Generator\UndefinedBot.Generator.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
-    </ItemGroup>
+    
     <ItemGroup>
         <PackageReference Include="Google.Protobuf" Version="3.29.2"/>
     </ItemGroup>
+    
     <ItemGroup>
         <None Remove="adapter.json"/>
         <Content Include="adapter.json">
             <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
         </Content>
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\UndefinedBot.Core\UndefinedBot.Core.csproj"/>
     </ItemGroup>
 
 </Project>

@@ -6,6 +6,9 @@
         <Nullable>enable</Nullable>
         <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
 
+        <EnforceExtendedAnalyzerRules>true</EnforceExtendedAnalyzerRules>
+        <IsRoslynComponent>true</IsRoslynComponent>
+
         <!-- NuGet 包信息 -->
         <PackageId>UndefinedBot.Core</PackageId>
         <Title>UndefinedBot.Core</Title>
@@ -18,5 +21,9 @@
         <RepositoryUrl>https://github.com/Chrise2024/UndefinedBot.Core</RepositoryUrl>
         <RepositoryType>git</RepositoryType>
     </PropertyGroup>
+
+    <ItemGroup>
+      <PackageReference Include="UndefinedBot.Generator" Version="2.1.0-alpha" />
+    </ItemGroup>
     
 </Project>
