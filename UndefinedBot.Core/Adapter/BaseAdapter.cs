@@ -109,6 +109,16 @@ public abstract class BaseAdapter : IAdapterInstance
         CommandPrefix = AdapterConfig.GetValue<string>("CommandPrefix") ?? throw new Exception("CommandPrefix not found");
     }
 
+
+    /// <summary>
+    /// This constructor is used to disable CS7036 in adapter class
+    /// </summary>
+    /// <exception cref="NotSupportedException"></exception>
+    protected BaseAdapter()
+    {
+        throw new NotSupportedException();
+    }
+
     /// <summary>
     /// After processing message, use it to submit this event
     /// </summary>

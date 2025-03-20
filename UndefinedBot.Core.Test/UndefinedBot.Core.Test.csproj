@@ -12,6 +12,7 @@
             <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
         </Content>
     </ItemGroup>
+    
     <ItemGroup>
         <ProjectReference Include="..\UndefinedBot.Core\UndefinedBot.Core.csproj"/>
         <ProjectReference Include="..\UndefinedBot.Generator\UndefinedBot.Generator.csproj"

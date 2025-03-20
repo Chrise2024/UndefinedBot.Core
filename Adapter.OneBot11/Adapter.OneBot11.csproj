@@ -7,10 +7,7 @@
     </PropertyGroup>
     <ItemGroup>
         <ProjectReference Include="..\UndefinedBot.Core\UndefinedBot.Core.csproj"/>
-        <ProjectReference Include="..\UndefinedBot.Generator\UndefinedBot.Generator.csproj"
-                          OutputItemType="Analyzer"
-                          ReferenceOutputAssembly="false"
-        />
+        <ProjectReference Include="..\UndefinedBot.Generator\UndefinedBot.Generator.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
     </ItemGroup>
     <ItemGroup>
         <PackageReference Include="Google.Protobuf" Version="3.29.2"/>

@@ -16,7 +16,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UndefinedBot.Core.Test", "U
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Adapter.OneBot11", "Adapter.OneBot11\Adapter.OneBot11.csproj", "{1E12DA56-74BD-4956-85CA-FC3B6A0D9FF2}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DevelopDerivedClassGenerator", "UndefinedBot.Generator\UndefinedBot.Generator.csproj", "{8C886F79-4CD4-42B6-B18C-BA8CC196CE4F}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UndefinedBot.Generator", "UndefinedBot.Generator\UndefinedBot.Generator.csproj", "{8C886F79-4CD4-42B6-B18C-BA8CC196CE4F}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

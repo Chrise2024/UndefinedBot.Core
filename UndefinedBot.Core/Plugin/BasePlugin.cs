@@ -58,6 +58,15 @@ public abstract class BasePlugin : IPluginInstance
     }
 
     /// <summary>
+    /// This constructor is used to disable CS7036 in plugin class
+    /// </summary>
+    /// <exception cref="NotSupportedException"></exception>
+    protected BasePlugin()
+    {
+        throw new NotSupportedException();
+    }
+
+    /// <summary>
     /// Register Command
     /// </summary>
     /// <param name="commandName">

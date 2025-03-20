@@ -14,6 +14,12 @@ public sealed partial class TestCommand
     public override string Name => "Test Plugin";
     public override string[] TargetAdapter => ["OneBot11Adapter"];
 
+    public TestCommand()
+    {
+        
+        //Console.WriteLine(dependencyCollection);
+    }
+
     public override void Initialize()
     {
         //Console.WriteLine(PluginPath);
