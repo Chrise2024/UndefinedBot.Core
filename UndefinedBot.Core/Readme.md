@@ -31,7 +31,7 @@ Plugin's main class must not be abstract or static and
 - Must extend class `UndefinedBot.Core.Plugin.BasePlugin` and
   override it's abstract fields and `Initialize` method and have a constructor with single param `PluginDependencyCollection`.
 
-- Refer to `UndefinedBot.Generator` project as `Analyzer`、mark class as `partial` and apply `PluginAttribute` to the class and do nothing on class declaration.Source Generator will implement the class.
+- Mark class as `partial` and apply `PluginAttribute` to the class and do nothing on class declaration.Source Generator will implement the class.
 
 Use `RegisterCommand` method extends form BasePlugin to register command
 
@@ -115,7 +115,7 @@ Adapter's main class must not be abstract or static and
 - Extend class `UndefinedBot.Core.Adapter.BaseAdapter` and
   override it's abstract fields and `HandleActionAsync` method and have a constructor with single param `AdapterDependencyCollection`.
 
-- Refer to `UndefinedBot.Generator` project as `Analyzer`、mark class as `partial` and apply `PluginAttribute` to the class and do nothing on class declaration.Source Generator will implement the class.
+- Mark class as `partial` and apply `PluginAttribute` to the class and do nothing on class declaration.Source Generator will implement the class.
 
 Use `SubmitCommandEvent` to submit received command.
 
